@@ -1193,7 +1193,7 @@ class ResampleBase(object):
         Returns
         -------
         blocks : list
-            A list of the return values from the :method:`process_block` method
+            A list of the return values from the `process_block` method
             for each block.
         """
 

@@ -8,4 +8,5 @@ gridded data with associated errors.
 Reference/API
 =============
 
-.. automodapi:: grig
+.. toctree::
+   ../source/grig

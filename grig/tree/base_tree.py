@@ -797,6 +797,23 @@ class BaseTree(object):
             return self._balltree.query_radius(c, radius, **kwargs)
 
     def block_members(self, block, get_locations=False):
+        """
+        Get block members from the neighborhood tree.
+
+        Parameters
+        ----------
+        block : np.ndarray of int
+            Block locations.
+        get_locations : bool, optional
+            If set, locations of members are also returned.
+
+        Returns
+        -------
+        members : np.ndarray
+            Members of the block.
+        locations : np.ndarray, optional
+            Locations of the members.
+        """
         if not self._hood_initialized:
             raise RuntimeError("Neighborhood tree not initialized.")
         members = self._tree[block]
@@ -806,6 +823,25 @@ class BaseTree(object):
             return members, self.coordinates[:, members]
 
     def neighborhood(self, index, cull=False, valid_neighbors=False):
+        """
+        Make a neighborhood from an input index.
+
+        Parameters
+        ----------
+        index : int
+            The center index for the neighborhood.
+        cull : bool, optional
+            If set, bad indices are dropped.
+        valid_neighbors : bool, optional
+            If set, returns good locations as well as the neighborhood..
+
+        Returns
+        -------
+        hood : np.ndarray of int
+            The tree block indices for the neighborhood.
+        keep : np.ndarray of bool, optional
+            Good indices in the neighborhood.
+        """
         expanded = self.from_index(index)[:, None] + self.search
         bad = np.any(
             (expanded < 0) | (expanded >= self._shape[:, None]), axis=0)
