@@ -5323,7 +5323,7 @@ def solve_fit(window_coordinates, window_phi, window_values, window_error,
     performed on-the-fly if the order was lowered to zero during the order
     check.  Finally, if `is_covar` was set to `True`, the `window_values` are
     considered covariances to propagate, and a fit will derived by propagating
-    a weighted variance (this was created for the SOFIA HAWC+ pipeline).
+    a weighted variance.
 
     FINAL VALIDATION
 

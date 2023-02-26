@@ -10,7 +10,7 @@ from grig.grid.base_grid import *
 from grig.tree.polynomial_tree import *
 from grig.resample import *
 
-__all__ = ['__version__', 'test']
+__all__ = ['__version__']
 
 try:
     from .version import version as __version__

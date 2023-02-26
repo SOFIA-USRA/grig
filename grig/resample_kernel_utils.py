@@ -330,7 +330,7 @@ def solve_kernel_fit(window_coordinates, window_values, window_error,
     fit that may be performed.  The first is the standard kernel fit described
     above.  However, if `is_covar` was set to `True`, the `window_values` are
     considered covariances to propagate, and a fit will derived by propagating
-    a weighted variance (this was created for the SOFIA HAWC+ pipeline).
+    a weighted variance.
 
     Parameters
     ----------
