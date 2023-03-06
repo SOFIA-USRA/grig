@@ -27,14 +27,6 @@ Spline Handling
 
   splines/index.rst
 
-Statistics (:mod:`stats`)
-=========================
-
-.. toctree::
-  :maxdepth: 2
-
-  stats/index.rst
-
 
 Miscellaneous Functions (:mod:`func`)
 =====================================

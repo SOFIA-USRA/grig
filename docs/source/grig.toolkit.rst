@@ -27,11 +27,3 @@ grig.toolkit.multiproc module
    :members:
    :undoc-members:
    :show-inheritance:
-
-grig.toolkit.stats module
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: grig.toolkit.stats
-   :members:
-   :undoc-members:
-   :show-inheritance:

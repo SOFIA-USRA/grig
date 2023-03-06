@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from grig.toolkit.stats import robust_mask
+from grig.toolkit.func import robust_mask
 
 
 def test_robust_mask():

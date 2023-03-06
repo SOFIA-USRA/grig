@@ -11,11 +11,11 @@ from tempfile import mkdtemp
 import time
 import warnings
 
-from grig.toolkit.multiproc import (
-    multitask, relative_cores, pickle_object)
-from grig.toolkit.stats import robust_mask
 from grig.grid.base_grid import BaseGrid
 from grig.resample_utils import scale_coordinates
+from grig.toolkit.multiproc import (
+    multitask, relative_cores, pickle_object)
+from grig.toolkit.func import robust_mask
 from grig.tree.base_tree import BaseTree
 
 

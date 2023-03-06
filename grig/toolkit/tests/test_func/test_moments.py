@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy.stats import skewnorm
 
-from grig.toolkit.stats import moments
+from grig.toolkit.func import moments
 
 
 def test_invalid_input():
