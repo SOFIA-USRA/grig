@@ -14,6 +14,7 @@ import psutil
 import pytest
 
 log = logging.getLogger('grig')
+log.setLevel(logging.INFO)
 
 
 def records_valid(records):
@@ -67,8 +68,7 @@ def test_multitask_handler():
     log.removeHandler(handler)
     handler.reorder_records()
 
-    # todo: failing - come back to this
-    #assert records_valid(handler.records[1:])
+    assert records_valid(handler.records[2:])
 
 
 @pytest.mark.skipif(psutil.cpu_count() < 2, reason='Require multiple CPUs')
