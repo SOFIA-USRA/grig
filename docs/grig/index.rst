@@ -5,6 +5,12 @@ Grig Documentation
 Grig is a fully N-dimensional resampling package for irregularly
 gridded data with associated errors.
 
+Getting Started
+===============
+
+.. include:: ../install.rst
+
+
 Submodules
 ==========
 
