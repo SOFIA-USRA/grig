@@ -54,6 +54,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-docs
     steps:
+      - name: Download docs artifact
+        uses: actions/cache@v3
+        with:
+          path: docs/_build/
+          key: docs-${{ github.run_id }}
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
