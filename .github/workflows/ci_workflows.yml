@@ -41,3 +41,17 @@ jobs:
           python-version: 3.11
         - linux: test-alldeps-cov
           coverage: codecov
+  docs:
+    - name: Deploy docs
+    - steps:
+      - uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
+        with:
+          envs: |
+            - linux: build-docs
+      - uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _build/
+          force_orphan: true
