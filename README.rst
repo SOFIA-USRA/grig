@@ -1,5 +1,14 @@
 N-Dimensional Resampler for Irregularly Gridded Data
-----------------------------------------------------
+====================================================
+.. image:: https://github.com/SOFIA-USRA/grig/workflows/CI/badge.svg
+    :target: https://github.com/SOFIA-USRA/grig/actions
+    :alt: GitHub Actions CI Status
+.. image:: https://codecov.io/gh/SOFIA-USRA/grig/branch/main/graph/badge.svg
+    :target: https://codecov.io/gh/SOFIA-USRA/grig
+    :alt: Coverage Status
+.. image:: https://github.com/SOFIA-USRA/grig/actions/workflows/pages/pages-build-deployment/badge.svg
+    :target: https://SOFIA-USRA.github.io/grig
+    :alt: Documentation Status
 
 Grig is a fully N-dimensional resampling package for irregularly
 gridded data.  It was primarily developed for generating astronomical
