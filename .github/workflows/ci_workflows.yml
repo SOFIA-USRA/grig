@@ -46,7 +46,7 @@ jobs:
   build-docs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
     with:
-      cache-path: docs/_build/
+      cache-path: docs/_build/html
       cache-key: docs-${{ github.run_id }}
       envs: |
         - linux: build-docs
@@ -57,7 +57,7 @@ jobs:
       - name: Download docs artifact
         uses: actions/cache@v3
         with:
-          path: docs/_build/
+          path: docs/_build/html
           key: docs-${{ github.run_id }}
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
@@ -65,5 +65,5 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/_build/
+          publish_dir: docs/_build/html
           force_orphan: true
