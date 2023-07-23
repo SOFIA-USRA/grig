@@ -42,8 +42,8 @@ jobs:
         - linux: test-alldeps-cov
           coverage: codecov
   docs:
-    - name: Deploy docs
-    - steps:
+    name: Deploy docs
+    steps:
       - uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
         with:
           envs: |
