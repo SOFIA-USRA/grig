@@ -47,6 +47,7 @@ jobs:
     uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
     with:
       cache-path: docs/_build/
+      cache-key: docs-${{ github.run_id }}
       envs: |
         - linux: build-docs
   deploy-docs:
