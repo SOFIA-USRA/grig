@@ -5,11 +5,7 @@ Installation
 Stable release
 --------------
 
-The `grig` package is available via anaconda or pip::
-
-   conda install -c sofia-usra -c conda-forge grig
-
-or::
+The `grig` package is available via pip::
 
    pip install grig
 
@@ -86,7 +82,7 @@ methods, it may be useful to install the frozen versions directly. For example, 
 from source using conda to create a new Python environment from the grig package
 directory::
 
-   conda create --name grig python=3.10
+   conda create --name grig python=3.11
    pip install -r freeze_requirements.txt
    pip install -e .
 

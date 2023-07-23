@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   check:
-    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@v1
+    uses: OpenAstronomy/github-actions-workflows/.github/workflows/tox.yml@main
     with:
       envs: |
         - linux: check-style
@@ -45,3 +45,4 @@ jobs:
           python-version: 3.11
         - linux: test-alldeps-cov
           coverage: codecov
+
