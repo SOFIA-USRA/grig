@@ -48,7 +48,7 @@ jobs:
     with:
       envs: |
         - linux: build-docs
-      path: |
+      cache-path: |
           - _build
   deploy-docs:
     runs-on: ubuntu-latest
