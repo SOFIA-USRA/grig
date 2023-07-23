@@ -1,7 +1,5 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-import os
-
 from grig.clean_image import *
 from grig.resample_polynomial import *
 from grig.resample_kernel import *

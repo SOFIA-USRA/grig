@@ -13,11 +13,13 @@ __pycache__
 */version.py
 */cython_version.py
 htmlcov
+coverage.xml
 .coverage
 .coverage.subprocess
 .coverage.*
 MANIFEST
 .ipynb_checkpoints
+requirements-min.txt
 
 # Sphinx
 docs/api
@@ -53,16 +55,13 @@ sdist
 develop-eggs
 .installed.cfg
 distribute-*.tar.gz
+pip-wheel-metadata/
 
 # Other
 .cache
 .tox
 .*.sw[op]
 *~
-.project
-.pydevproject
-.settings
-pip-wheel-metadata/
 .pytest_cache
 
 # Mac OSX
