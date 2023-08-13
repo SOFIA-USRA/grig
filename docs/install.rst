@@ -53,11 +53,7 @@ Remove the environment if necessary::
 Via Pip
 ^^^^^^^
 
-Alternately, prerequisites for the package can be installed with::
-
-  pip install -r requirements.txt
-
-and the package can then be installed as usual::
+Alternately, prerequisites for the package can be installed along with the source code::
 
    pip install -e .
 
@@ -84,6 +80,6 @@ directory::
 
    conda create --name grig python=3.11
    pip install -r freeze_requirements.txt
-   pip install -e .
+   pip install -e . --no-deps
 
 
