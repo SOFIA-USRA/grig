@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Grig Documentation &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Resampling (grig.resample)" href="resampling/index.html" />
+    <link rel="prev" title="Grig Documentation" href="../index.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resampling/index.html" title="Resampling (grig.resample)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Grig Documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Grig Documentation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grig-documentation">
+<h1>Grig Documentation<a class="headerlink" href="#grig-documentation" title="Link to this heading">¶</a></h1>
+<p>Grig is a fully N-dimensional resampling package for irregularly
+gridded data with associated errors. It was primarily developed for
+generating astronomical image mosaics and spectral image cubes, but has broad
+applicability to scientific data arrays with or without associated errors.</p>
+<p>Given a cloud of irregularly spaced data points, the resampling algorithm
+assigns values to voxels of a regular grid by fitting data points in a local cloud
+with a low-order polynomial function, by default. See the figure below for an
+illustration.</p>
+<p>The resampling algorithm has a wide set of parameters to allow customization to
+particular use cases:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Splines can be used in place of polynomial fits for the local interpolation.</p></li>
+<li><p>The convolution kernel may be regular or irregular.</p></li>
+<li><p>The kernel size and shape may be fixed or may adapt to the data.</p></li>
+</ul>
+</div></blockquote>
+<p>See the <a class="reference internal" href="resampling/examples.html#resample-examples"><span class="std std-ref">example section</span></a> for more possible applications, or the
+<a class="reference external" href="https://raw.githubusercontent.com/SOFIA-USRA/grig/main/docs/grig/resampling/paper/Perera.pdf">white paper</a>
+included with the source distribution for a complete technical description.</p>
+<figure class="align-default" id="resample-algorithm">
+<img alt="Left: Observations: Cloud of irregular data points with spatial (x,y) and spectral (lambda) coordinates. The image shows many irregularly spaced points. Middle: 1. Model observations as F = f(x, y, lambda) + epsilon where F = flux, epsilon = error, and f is a polynomial function. 2. For voxel (i, j, k), derive the local function f by fitting to a localized cloud of samples in the region of (x-i, y-j, lambda-k).  3. Set F-i-j-k = f(x-i, y-i, lambda-k) where F-i-j-k is the flux at voxel (i, j, k).  The image shows a three dimensional grid containing a sphere, representing the local datacloud. The sphere contains a small red cube, representing a single output voxel. Right: Data Cube: Regularly spaced array of voxels where each voxel element is at coordinate (x-i, y-j, lambda-k) and i, j, k respectively mark indices along dimensions x, y, lambda of the cube.  The image shows a regular cube with edges labeled x, y, and lambda, containing a small red cube representing the voxel from the middle image." src="../_images/resample_algorithm.png" />
+<figcaption>
+<p><span class="caption-text">Resampling algorithm application to a spectral cube with two spatial dimensions and
+one spectral.  The algorithm assigns values to voxels of a regular grid by fitting data
+points in a local cloud with a low-order polynomial function.  Data points in the local
+cloud are weighted by distance from the output point and by their associated error
+estimates.</span><a class="headerlink" href="#resample-algorithm" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h2>
+<section id="installation">
+<h3>Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h3>
+<section id="stable-release">
+<h4>Stable release<a class="headerlink" href="#stable-release" title="Link to this heading">¶</a></h4>
+<p>The <cite>grig</cite> package is available via pip:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">grig</span>
+</pre></div>
+</div>
+</section>
+<section id="from-source">
+<h4>From source<a class="headerlink" href="#from-source" title="Link to this heading">¶</a></h4>
+<p>Obtain the source code for this package from the <a class="reference external" href="https://github.com/SOFIA-USRA/grig">Grig GitHub project</a>, then install via one of the
+two methods below.</p>
+<section id="via-anaconda">
+<h5>Via Anaconda<a class="headerlink" href="#via-anaconda" title="Link to this heading">¶</a></h5>
+<p>We recommend Anaconda for managing your Python environment.  A conda
+environment specification is included with this package, as
+<a class="reference external" href="https://raw.githubusercontent.com/SOFIA-USRA/grig/main/environment.yml">environment.yml</a>.</p>
+<p>To install a <code class="docutils literal notranslate"><span class="pre">grig</span></code> environment with Anaconda from the package directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>Activate the environment:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">grig</span>
+</pre></div>
+</div>
+<p>Install an editable copy of the <cite>grig</cite> package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>Deactivate the environment when done:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">deactivate</span>
+</pre></div>
+</div>
+<p>Remove the environment if necessary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">remove</span> <span class="o">--</span><span class="n">name</span> <span class="n">grig</span> <span class="o">--</span><span class="nb">all</span>
+</pre></div>
+</div>
+</section>
+<section id="via-pip">
+<h5>Via Pip<a class="headerlink" href="#via-pip" title="Link to this heading">¶</a></h5>
+<p>Alternately, prerequisites for the package can be installed along with the source code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h4>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">¶</a></h4>
+<p>Please note that direct support for this project will end in September 2023.</p>
+<p>Prior to this time, please submit a ticket on the GitHub issues page for
+installation assistance.</p>
+<p>After this time, the source distribution of this package will remain available,
+but it will not be maintained for the latest versions of all dependencies. It
+is recommended that users fork their own copies of this package for continued
+maintenance and development.</p>
+<p>The last working set of installed versions of all dependencies is recorded in the
+<a class="reference external" href="https://raw.githubusercontent.com/SOFIA-USRA/grig/main/freeze_requirements.txt">freeze_requirements.txt</a>
+file in this package. If errors are encountered in the other listed installation
+methods, it may be useful to install the frozen versions directly. For example, to install
+from source using conda to create a new Python environment from the grig package
+directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">grig</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.11</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">freeze_requirements</span><span class="o">.</span><span class="n">txt</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="resampling/index.html">Resampling (<cite>grig.resample</cite>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="resampling/index.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resampling/index.html#numba">Numba</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resampling/index.html#k-dimensional-polynomial-theory">K-dimensional Polynomial Theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resampling/index.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="resampling/index.html#irregular-kernel-resampling">Irregular Kernel Resampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="toolkit/index.html">Toolkit (<cite>grig.toolkit</cite>)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="toolkit/index.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toolkit/index.html#multiprocessing">Multiprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toolkit/index.html#spline-handling">Spline Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="toolkit/index.html#miscellaneous-functions-func">Miscellaneous Functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">func</span></code>)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="reference-api">
+<h2>Reference/API<a class="headerlink" href="#reference-api" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../source/grig.html">grig package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../source/grig.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.grid.html">grig.grid package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.grid.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.grid.html#module-grig.grid.base_grid">grig.grid.base_grid module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid"><code class="docutils literal notranslate"><span class="pre">BaseGrid</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.features"><code class="docutils literal notranslate"><span class="pre">BaseGrid.features</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.get_class_for"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_class_for()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.get_class_for_name"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_class_for_name()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.get_tree_class"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_tree_class()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.regular"><code class="docutils literal notranslate"><span class="pre">BaseGrid.regular</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.rescale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.rescale()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.reshape_data"><code class="docutils literal notranslate"><span class="pre">BaseGrid.reshape_data()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.scale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.scale_factor"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale_factor</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.scale_offset"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale_offset</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.set_indexer"><code class="docutils literal notranslate"><span class="pre">BaseGrid.set_indexer()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.shape"><code class="docutils literal notranslate"><span class="pre">BaseGrid.shape</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.singular"><code class="docutils literal notranslate"><span class="pre">BaseGrid.singular</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.size"><code class="docutils literal notranslate"><span class="pre">BaseGrid.size</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.tree_class"><code class="docutils literal notranslate"><span class="pre">BaseGrid.tree_class</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.grid.html#grig.grid.base_grid.BaseGrid.unscale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.unscale()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.grid.html#module-grig.grid.kernel_grid">grig.grid.kernel_grid module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.grid.html#grig.grid.kernel_grid.KernelGrid"><code class="docutils literal notranslate"><span class="pre">KernelGrid</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.grid.html#module-grig.grid.polynomial_grid">grig.grid.polynomial_grid module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.grid.html#grig.grid.polynomial_grid.PolynomialGrid"><code class="docutils literal notranslate"><span class="pre">PolynomialGrid</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.toolkit.html">grig.toolkit package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.toolkit.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.toolkit.splines.html">grig.toolkit.splines package</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.splines.html#submodules">Submodules</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.toolkit.splines.html#module-grig.toolkit.splines.spline">grig.toolkit.splines.spline module</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline"><code class="docutils literal notranslate"><span class="pre">Spline</span></code></a><ul>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.check_array_inputs"><code class="docutils literal notranslate"><span class="pre">Spline.check_array_inputs()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.create_mapping_indices"><code class="docutils literal notranslate"><span class="pre">Spline.create_mapping_indices()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.determine_smoothing_spline"><code class="docutils literal notranslate"><span class="pre">Spline.determine_smoothing_spline()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.exit_message"><code class="docutils literal notranslate"><span class="pre">Spline.exit_message</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.final_reorder"><code class="docutils literal notranslate"><span class="pre">Spline.final_reorder()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.fit_knots"><code class="docutils literal notranslate"><span class="pre">Spline.fit_knots()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.initialize_iteration"><code class="docutils literal notranslate"><span class="pre">Spline.initialize_iteration()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.iterate"><code class="docutils literal notranslate"><span class="pre">Spline.iterate()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices"><code class="docutils literal notranslate"><span class="pre">Spline.knot_indices_to_panel_indices()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.knot_size"><code class="docutils literal notranslate"><span class="pre">Spline.knot_size</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.next_iteration"><code class="docutils literal notranslate"><span class="pre">Spline.next_iteration()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.order_points"><code class="docutils literal notranslate"><span class="pre">Spline.order_points()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices"><code class="docutils literal notranslate"><span class="pre">Spline.panel_indices_to_knot_indices()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.parse_inputs"><code class="docutils literal notranslate"><span class="pre">Spline.parse_inputs()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.reorder_dimensions"><code class="docutils literal notranslate"><span class="pre">Spline.reorder_dimensions()</span></code></a></li>
+<li class="toctree-l9"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.size"><code class="docutils literal notranslate"><span class="pre">Spline.size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.toolkit.splines.html#module-grig.toolkit.splines.spline_utils">grig.toolkit.splines.spline_utils module</a><ul>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.add_knot"><code class="docutils literal notranslate"><span class="pre">add_knot()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.back_substitute"><code class="docutils literal notranslate"><span class="pre">back_substitute()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.build_observation"><code class="docutils literal notranslate"><span class="pre">build_observation()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.calculate_minimum_bandwidth"><code class="docutils literal notranslate"><span class="pre">calculate_minimum_bandwidth()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.check_input_arrays"><code class="docutils literal notranslate"><span class="pre">check_input_arrays()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.create_ordering"><code class="docutils literal notranslate"><span class="pre">create_ordering()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.determine_smoothing_spline"><code class="docutils literal notranslate"><span class="pre">determine_smoothing_spline()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.discontinuity_jumps"><code class="docutils literal notranslate"><span class="pre">discontinuity_jumps()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.evaluate_bspline"><code class="docutils literal notranslate"><span class="pre">evaluate_bspline()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.find_knot"><code class="docutils literal notranslate"><span class="pre">find_knot()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.find_knots"><code class="docutils literal notranslate"><span class="pre">find_knots()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.fit_point"><code class="docutils literal notranslate"><span class="pre">fit_point()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.givens_parameters"><code class="docutils literal notranslate"><span class="pre">givens_parameters()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.givens_rotate"><code class="docutils literal notranslate"><span class="pre">givens_rotate()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.knot_fit"><code class="docutils literal notranslate"><span class="pre">knot_fit()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.perform_fit"><code class="docutils literal notranslate"><span class="pre">perform_fit()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.rational_interp_zero"><code class="docutils literal notranslate"><span class="pre">rational_interp_zero()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.single_fit"><code class="docutils literal notranslate"><span class="pre">single_fit()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.solve_observation"><code class="docutils literal notranslate"><span class="pre">solve_observation()</span></code></a></li>
+<li class="toctree-l8"><a class="reference internal" href="../source/grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.solve_rank_deficiency"><code class="docutils literal notranslate"><span class="pre">solve_rank_deficiency()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.toolkit.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.toolkit.html#module-grig.toolkit.func">grig.toolkit.func module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.byte_size_of_object"><code class="docutils literal notranslate"><span class="pre">byte_size_of_object()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.julia_fractal"><code class="docutils literal notranslate"><span class="pre">julia_fractal()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.moments"><code class="docutils literal notranslate"><span class="pre">moments()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.robust_mask"><code class="docutils literal notranslate"><span class="pre">robust_mask()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.slicer"><code class="docutils literal notranslate"><span class="pre">slicer()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.func.taylor"><code class="docutils literal notranslate"><span class="pre">taylor()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.toolkit.html#module-grig.toolkit.multiproc">grig.toolkit.multiproc module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler.emit"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler.emit()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler.reorder_records"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler.reorder_records()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.get_core_number"><code class="docutils literal notranslate"><span class="pre">get_core_number()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.in_main_thread"><code class="docutils literal notranslate"><span class="pre">in_main_thread()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.log_for_multitask"><code class="docutils literal notranslate"><span class="pre">log_for_multitask()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.log_records_to_pickle_file"><code class="docutils literal notranslate"><span class="pre">log_records_to_pickle_file()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.log_with_multi_handler"><code class="docutils literal notranslate"><span class="pre">log_with_multi_handler()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.multitask"><code class="docutils literal notranslate"><span class="pre">multitask()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.pickle_list"><code class="docutils literal notranslate"><span class="pre">pickle_list()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.pickle_object"><code class="docutils literal notranslate"><span class="pre">pickle_object()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.purge_multitask_logs"><code class="docutils literal notranslate"><span class="pre">purge_multitask_logs()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.relative_cores"><code class="docutils literal notranslate"><span class="pre">relative_cores()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.unpickle_file"><code class="docutils literal notranslate"><span class="pre">unpickle_file()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.unpickle_list"><code class="docutils literal notranslate"><span class="pre">unpickle_list()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.valid_relative_jobs"><code class="docutils literal notranslate"><span class="pre">valid_relative_jobs()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.wrap_function"><code class="docutils literal notranslate"><span class="pre">wrap_function()</span></code></a></li>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.toolkit.html#grig.toolkit.multiproc.wrapped_with_logger"><code class="docutils literal notranslate"><span class="pre">wrapped_with_logger()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.tree.html">grig.tree package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.tree.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.tree.html#module-grig.tree.base_tree">grig.tree.base_tree module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree"><code class="docutils literal notranslate"><span class="pre">BaseTree</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.balltree_initialized"><code class="docutils literal notranslate"><span class="pre">BaseTree.balltree_initialized</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.block_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.block_members()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.build_ball_tree_for_block"><code class="docutils literal notranslate"><span class="pre">BaseTree.build_ball_tree_for_block()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.build_tree"><code class="docutils literal notranslate"><span class="pre">BaseTree.build_tree()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_ball_tree_bytes()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_hood_tree_bytes()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.estimate_max_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_max_bytes()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.estimate_n_bins"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_n_bins()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.estimate_split_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_split_tree_bytes()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.features"><code class="docutils literal notranslate"><span class="pre">BaseTree.features</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.from_index"><code class="docutils literal notranslate"><span class="pre">BaseTree.from_index()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.get_class_for"><code class="docutils literal notranslate"><span class="pre">BaseTree.get_class_for()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.get_class_for_name"><code class="docutils literal notranslate"><span class="pre">BaseTree.get_class_for_name()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.hood_initialized"><code class="docutils literal notranslate"><span class="pre">BaseTree.hood_initialized</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.hood_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.hood_members()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.n_blocks"><code class="docutils literal notranslate"><span class="pre">BaseTree.n_blocks</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.n_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.n_members</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.neighborhood"><code class="docutils literal notranslate"><span class="pre">BaseTree.neighborhood()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.query_radius"><code class="docutils literal notranslate"><span class="pre">BaseTree.query_radius()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.search"><code class="docutils literal notranslate"><span class="pre">BaseTree.search</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.shape"><code class="docutils literal notranslate"><span class="pre">BaseTree.shape</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.base_tree.BaseTree.to_index"><code class="docutils literal notranslate"><span class="pre">BaseTree.to_index()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.tree.html#module-grig.tree.kernel_tree">grig.tree.kernel_tree module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree"><code class="docutils literal notranslate"><span class="pre">KernelTree</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.coefficients"><code class="docutils literal notranslate"><span class="pre">KernelTree.coefficients</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.degrees"><code class="docutils literal notranslate"><span class="pre">KernelTree.degrees</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.exit_code"><code class="docutils literal notranslate"><span class="pre">KernelTree.exit_code</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.exit_message"><code class="docutils literal notranslate"><span class="pre">KernelTree.exit_message</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.extent"><code class="docutils literal notranslate"><span class="pre">KernelTree.extent</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.fit_spline"><code class="docutils literal notranslate"><span class="pre">KernelTree.fit_spline()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.fit_valid"><code class="docutils literal notranslate"><span class="pre">KernelTree.fit_valid</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.knot_steps"><code class="docutils literal notranslate"><span class="pre">KernelTree.knot_steps</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.knots"><code class="docutils literal notranslate"><span class="pre">KernelTree.knots</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.n_knots"><code class="docutils literal notranslate"><span class="pre">KernelTree.n_knots</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.nk1"><code class="docutils literal notranslate"><span class="pre">KernelTree.nk1</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.panel_mapping"><code class="docutils literal notranslate"><span class="pre">KernelTree.panel_mapping</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.panel_steps"><code class="docutils literal notranslate"><span class="pre">KernelTree.panel_steps</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.parse_kernel"><code class="docutils literal notranslate"><span class="pre">KernelTree.parse_kernel()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.resampling_arguments"><code class="docutils literal notranslate"><span class="pre">KernelTree.resampling_arguments</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.set_kernel"><code class="docutils literal notranslate"><span class="pre">KernelTree.set_kernel()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.smoothing"><code class="docutils literal notranslate"><span class="pre">KernelTree.smoothing</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.kernel_tree.KernelTree.spline_mapping"><code class="docutils literal notranslate"><span class="pre">KernelTree.spline_mapping</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.tree.html#module-grig.tree.polynomial_tree">grig.tree.polynomial_tree module</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree"><code class="docutils literal notranslate"><span class="pre">PolynomialTree</span></code></a><ul>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.block_members"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.block_members()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.create_phi_terms_for()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.derivative_term_map"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.derivative_term_map</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.estimate_max_bytes()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.exponents"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.exponents</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.hood_members"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.hood_members()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.order"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.order_symmetry"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order_symmetry</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.order_varies"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order_varies</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.phi_terms_precalculated</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.precalculate_phi_terms()</span></code></a></li>
+<li class="toctree-l7"><a class="reference internal" href="../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.set_order"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.set_order()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../source/grig.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.clean_image">grig.clean_image module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.clean_image.clean_image"><code class="docutils literal notranslate"><span class="pre">clean_image()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample">grig.resample module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample.Resample"><code class="docutils literal notranslate"><span class="pre">Resample</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample.resampler"><code class="docutils literal notranslate"><span class="pre">resampler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample_base">grig.resample_base module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase"><code class="docutils literal notranslate"><span class="pre">ResampleBase</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.block_loop"><code class="docutils literal notranslate"><span class="pre">ResampleBase.block_loop()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.calculate_minimum_points"><code class="docutils literal notranslate"><span class="pre">ResampleBase.calculate_minimum_points()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.combine_blocks"><code class="docutils literal notranslate"><span class="pre">ResampleBase.combine_blocks()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.estimate_feature_windows"><code class="docutils literal notranslate"><span class="pre">ResampleBase.estimate_feature_windows()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.estimate_max_bytes"><code class="docutils literal notranslate"><span class="pre">ResampleBase.estimate_max_bytes()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.features"><code class="docutils literal notranslate"><span class="pre">ResampleBase.features</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.fit_settings"><code class="docutils literal notranslate"><span class="pre">ResampleBase.fit_settings</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.fit_tree"><code class="docutils literal notranslate"><span class="pre">ResampleBase.fit_tree</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.get_grid_class"><code class="docutils literal notranslate"><span class="pre">ResampleBase.get_grid_class()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.global_resampling_values"><code class="docutils literal notranslate"><span class="pre">ResampleBase.global_resampling_values()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.grid_class"><code class="docutils literal notranslate"><span class="pre">ResampleBase.grid_class</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.multi_set"><code class="docutils literal notranslate"><span class="pre">ResampleBase.multi_set</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.n_samples"><code class="docutils literal notranslate"><span class="pre">ResampleBase.n_samples</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.n_sets"><code class="docutils literal notranslate"><span class="pre">ResampleBase.n_sets</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.pre_fit"><code class="docutils literal notranslate"><span class="pre">ResampleBase.pre_fit()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.process_block"><code class="docutils literal notranslate"><span class="pre">ResampleBase.process_block()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.process_blocks"><code class="docutils literal notranslate"><span class="pre">ResampleBase.process_blocks()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.reduction_settings"><code class="docutils literal notranslate"><span class="pre">ResampleBase.reduction_settings()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.set_sample_tree"><code class="docutils literal notranslate"><span class="pre">ResampleBase.set_sample_tree()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.sufficient_memory_for"><code class="docutils literal notranslate"><span class="pre">ResampleBase.sufficient_memory_for()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_base.ResampleBase.window"><code class="docutils literal notranslate"><span class="pre">ResampleBase.window</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample_kernel">grig.resample_kernel module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel"><code class="docutils literal notranslate"><span class="pre">ResampleKernel</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.block_loop"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.block_loop()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.combine_blocks"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.combine_blocks()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.degrees"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.degrees</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.estimate_feature_windows"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.estimate_feature_windows()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.exit_code"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.exit_code</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.exit_message"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.exit_message</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.kernel"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.kernel</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.kernel_offsets"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.kernel_offsets</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.kernel_spacing"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.kernel_spacing</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.process_block"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.process_block()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.reduction_settings"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.reduction_settings()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.set_kernel"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.set_kernel()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.set_sample_tree"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.set_sample_tree()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_kernel.ResampleKernel.spline"><code class="docutils literal notranslate"><span class="pre">ResampleKernel.spline</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample_kernel_utils">grig.resample_kernel_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_kernel_utils.apply_mask_to_kernel_set_arrays"><code class="docutils literal notranslate"><span class="pre">apply_mask_to_kernel_set_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_kernel_utils.calculate_kernel_weights"><code class="docutils literal notranslate"><span class="pre">calculate_kernel_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_kernel_utils.solve_kernel_fit"><code class="docutils literal notranslate"><span class="pre">solve_kernel_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_kernel_utils.solve_kernel_fits"><code class="docutils literal notranslate"><span class="pre">solve_kernel_fits()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample_polynomial">grig.resample_polynomial module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial</span></code></a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.calculate_adaptive_smoothing"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.calculate_adaptive_smoothing()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.calculate_minimum_points"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.calculate_minimum_points()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.check_order"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.check_order()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.fit_tree"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.fit_tree</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.order"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.order</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.pre_fit"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.pre_fit()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.process_block"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.process_block()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.reduction_settings"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.reduction_settings()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.ResamplePolynomial.set_sample_tree"><code class="docutils literal notranslate"><span class="pre">ResamplePolynomial.set_sample_tree()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_polynomial.resamp"><code class="docutils literal notranslate"><span class="pre">resamp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../source/grig.html#module-grig.resample_utils">grig.resample_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.apply_mask_to_set_arrays"><code class="docutils literal notranslate"><span class="pre">apply_mask_to_set_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.array_sum"><code class="docutils literal notranslate"><span class="pre">array_sum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.calculate_adaptive_distance_weights_scaled"><code class="docutils literal notranslate"><span class="pre">calculate_adaptive_distance_weights_scaled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.calculate_adaptive_distance_weights_shaped"><code class="docutils literal notranslate"><span class="pre">calculate_adaptive_distance_weights_shaped()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.calculate_distance_weights"><code class="docutils literal notranslate"><span class="pre">calculate_distance_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.calculate_distance_weights_from_matrix"><code class="docutils literal notranslate"><span class="pre">calculate_distance_weights_from_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.calculate_fitting_weights"><code class="docutils literal notranslate"><span class="pre">calculate_fitting_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_edge_with_box"><code class="docutils literal notranslate"><span class="pre">check_edge_with_box()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_edge_with_distribution"><code class="docutils literal notranslate"><span class="pre">check_edge_with_distribution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_edge_with_ellipsoid"><code class="docutils literal notranslate"><span class="pre">check_edge_with_ellipsoid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_edge_with_range"><code class="docutils literal notranslate"><span class="pre">check_edge_with_range()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_edges"><code class="docutils literal notranslate"><span class="pre">check_edges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_orders"><code class="docutils literal notranslate"><span class="pre">check_orders()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_orders_with_bounds"><code class="docutils literal notranslate"><span class="pre">check_orders_with_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_orders_with_counts"><code class="docutils literal notranslate"><span class="pre">check_orders_with_counts()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.check_orders_without_bounds"><code class="docutils literal notranslate"><span class="pre">check_orders_without_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.convert_to_numba_list"><code class="docutils literal notranslate"><span class="pre">convert_to_numba_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.coordinate_covariance"><code class="docutils literal notranslate"><span class="pre">coordinate_covariance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.coordinate_mean"><code class="docutils literal notranslate"><span class="pre">coordinate_mean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.covariance_matrix_inverse"><code class="docutils literal notranslate"><span class="pre">covariance_matrix_inverse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.derivative_mscp"><code class="docutils literal notranslate"><span class="pre">derivative_mscp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.distribution_variances"><code class="docutils literal notranslate"><span class="pre">distribution_variances()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.estimated_covariance_matrix_inverse"><code class="docutils literal notranslate"><span class="pre">estimated_covariance_matrix_inverse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.evaluate_derivative"><code class="docutils literal notranslate"><span class="pre">evaluate_derivative()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.evaluate_derivatives"><code class="docutils literal notranslate"><span class="pre">evaluate_derivatives()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.fasttrapz"><code class="docutils literal notranslate"><span class="pre">fasttrapz()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.fit_phi_value"><code class="docutils literal notranslate"><span class="pre">fit_phi_value()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.fit_phi_variance"><code class="docutils literal notranslate"><span class="pre">fit_phi_variance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.fit_residual"><code class="docutils literal notranslate"><span class="pre">fit_residual()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.half_max_sigmoid"><code class="docutils literal notranslate"><span class="pre">half_max_sigmoid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.logistic_curve"><code class="docutils literal notranslate"><span class="pre">logistic_curve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.multiple_polynomial_terms"><code class="docutils literal notranslate"><span class="pre">multiple_polynomial_terms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.multivariate_gaussian"><code class="docutils literal notranslate"><span class="pre">multivariate_gaussian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.no_fit_solution"><code class="docutils literal notranslate"><span class="pre">no_fit_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.offset_variance"><code class="docutils literal notranslate"><span class="pre">offset_variance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.polynomial_derivative_map"><code class="docutils literal notranslate"><span class="pre">polynomial_derivative_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.polynomial_exponents"><code class="docutils literal notranslate"><span class="pre">polynomial_exponents()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.polynomial_terms"><code class="docutils literal notranslate"><span class="pre">polynomial_terms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.relative_density"><code class="docutils literal notranslate"><span class="pre">relative_density()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scale_coordinates"><code class="docutils literal notranslate"><span class="pre">scale_coordinates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scale_forward_scalar"><code class="docutils literal notranslate"><span class="pre">scale_forward_scalar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scale_forward_vector"><code class="docutils literal notranslate"><span class="pre">scale_forward_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scale_reverse_scalar"><code class="docutils literal notranslate"><span class="pre">scale_reverse_scalar()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scale_reverse_vector"><code class="docutils literal notranslate"><span class="pre">scale_reverse_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scaled_adaptive_weight_matrices"><code class="docutils literal notranslate"><span class="pre">scaled_adaptive_weight_matrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.scaled_adaptive_weight_matrix"><code class="docutils literal notranslate"><span class="pre">scaled_adaptive_weight_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.shaped_adaptive_weight_matrices"><code class="docutils literal notranslate"><span class="pre">shaped_adaptive_weight_matrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.shaped_adaptive_weight_matrix"><code class="docutils literal notranslate"><span class="pre">shaped_adaptive_weight_matrix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.sigmoid"><code class="docutils literal notranslate"><span class="pre">sigmoid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.single_polynomial_terms"><code class="docutils literal notranslate"><span class="pre">single_polynomial_terms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_amat_beta"><code class="docutils literal notranslate"><span class="pre">solve_amat_beta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_coefficients"><code class="docutils literal notranslate"><span class="pre">solve_coefficients()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_fit"><code class="docutils literal notranslate"><span class="pre">solve_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_fits"><code class="docutils literal notranslate"><span class="pre">solve_fits()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_inverse_covariance_matrices"><code class="docutils literal notranslate"><span class="pre">solve_inverse_covariance_matrices()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_mean_fit"><code class="docutils literal notranslate"><span class="pre">solve_mean_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_polynomial_fit"><code class="docutils literal notranslate"><span class="pre">solve_polynomial_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_rchi2_from_error"><code class="docutils literal notranslate"><span class="pre">solve_rchi2_from_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.solve_rchi2_from_variance"><code class="docutils literal notranslate"><span class="pre">solve_rchi2_from_variance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.sscp"><code class="docutils literal notranslate"><span class="pre">sscp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.stretch_correction"><code class="docutils literal notranslate"><span class="pre">stretch_correction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.update_mask"><code class="docutils literal notranslate"><span class="pre">update_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.variance_from_offsets"><code class="docutils literal notranslate"><span class="pre">variance_from_offsets()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.weighted_fit_variance"><code class="docutils literal notranslate"><span class="pre">weighted_fit_variance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.weighted_mean"><code class="docutils literal notranslate"><span class="pre">weighted_mean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.weighted_mean_variance"><code class="docutils literal notranslate"><span class="pre">weighted_mean_variance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../source/grig.html#grig.resample_utils.weighted_variance"><code class="docutils literal notranslate"><span class="pre">weighted_variance()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Grig Documentation</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a><ul>
+<li><a class="reference internal" href="#stable-release">Stable release</a></li>
+<li><a class="reference internal" href="#from-source">From source</a><ul>
+<li><a class="reference internal" href="#via-anaconda">Via Anaconda</a></li>
+<li><a class="reference internal" href="#via-pip">Via Pip</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#reference-api">Reference/API</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../index.html"
+                          title="previous chapter">Grig Documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="resampling/index.html"
+                          title="next chapter">Resampling (<cite>grig.resample</cite>)</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/grig/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="resampling/index.html" title="Resampling (grig.resample)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Grig Documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Grig Documentation</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>grig.toolkit.splines package &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="grig.tree package" href="grig.tree.html" />
+    <link rel="prev" title="grig.toolkit package" href="grig.toolkit.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.tree.html" title="grig.tree package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.html" title="grig.toolkit package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" >grig package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="grig.toolkit.html" accesskey="U">grig.toolkit package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.splines package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grig-toolkit-splines-package">
+<h1>grig.toolkit.splines package<a class="headerlink" href="#grig-toolkit-splines-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<section id="module-grig.toolkit.splines.spline">
+<span id="grig-toolkit-splines-spline-module"></span><h3>grig.toolkit.splines.spline module<a class="headerlink" href="#module-grig.toolkit.splines.spline" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline.</span></span><span class="sig-name descname"><span class="pre">Spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_knots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solve</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.exit_message" title="grig.toolkit.splines.spline.Spline.exit_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exit_message</span></code></a></dt><dd><p>Returns an exit message for the spline fit.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.knot_size" title="grig.toolkit.splines.spline.Spline.knot_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">knot_size</span></code></a></dt><dd><p>Return the number of knots in each dimension.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.size" title="grig.toolkit.splines.spline.Spline.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a></dt><dd><p>Return the number of values used for the spline fit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args)</p></td>
+<td><p>Evaluate the spline at given coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.check_array_inputs" title="grig.toolkit.splines.spline.Spline.check_array_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_array_inputs</span></code></a>()</p></td>
+<td><p>Remove zero weights and invalid data points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.create_mapping_indices" title="grig.toolkit.splines.spline.Spline.create_mapping_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_mapping_indices</span></code></a>()</p></td>
+<td><p>Mapping indices allow 1-D representation of N-D data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.determine_smoothing_spline" title="grig.toolkit.splines.spline.Spline.determine_smoothing_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_smoothing_spline</span></code></a>([smoothing])</p></td>
+<td><p>Smooth the interpolating spline to the required level.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.final_reorder" title="grig.toolkit.splines.spline.Spline.final_reorder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">final_reorder</span></code></a>()</p></td>
+<td><p>Re-order the dimensions of various arrays to match those of the inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.fit_knots" title="grig.toolkit.splines.spline.Spline.fit_knots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_knots</span></code></a>()</p></td>
+<td><p>Derive fits at the current knot locations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.initialize_iteration" title="grig.toolkit.splines.spline.Spline.initialize_iteration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_iteration</span></code></a>()</p></td>
+<td><p>Initialize the iteration for the number of current panels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.iterate" title="grig.toolkit.splines.spline.Spline.iterate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">iterate</span></code></a>()</p></td>
+<td><p>Iteratively determine the spline fit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices" title="grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">knot_indices_to_panel_indices</span></code></a>(knot_indices)</p></td>
+<td><p>Convert knot indices to flat panel indices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.next_iteration" title="grig.toolkit.splines.spline.Spline.next_iteration"><code class="xref py py-obj docutils literal notranslate"><span class="pre">next_iteration</span></code></a>()</p></td>
+<td><p>Perform a single iteration of the spline fit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.order_points" title="grig.toolkit.splines.spline.Spline.order_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">order_points</span></code></a>()</p></td>
+<td><p>Sort the data points according to which panel they belong to.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices" title="grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">panel_indices_to_knot_indices</span></code></a>(panel_indices)</p></td>
+<td><p>Convert panel indices to dimensional knot indices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.parse_inputs" title="grig.toolkit.splines.spline.Spline.parse_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_inputs</span></code></a>(*args[, weights, limits, ...])</p></td>
+<td><p>Parse and apply user inputs to the spline fit.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.reorder_dimensions" title="grig.toolkit.splines.spline.Spline.reorder_dimensions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reorder_dimensions</span></code></a>(order)</p></td>
+<td><p>Re-order the dimensions in various attributes.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.check_array_inputs">
+<span class="sig-name descname"><span class="pre">check_array_inputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.check_array_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.check_array_inputs" title="Link to this definition">¶</a></dt>
+<dd><p>Remove zero weights and invalid data points.</p>
+<p>Invalid data points are those that contain NaN values, weights, or
+coordinates, or zero weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.create_mapping_indices">
+<span class="sig-name descname"><span class="pre">create_mapping_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.create_mapping_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.create_mapping_indices" title="Link to this definition">¶</a></dt>
+<dd><p>Mapping indices allow 1-D representation of N-D data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.determine_smoothing_spline">
+<span class="sig-name descname"><span class="pre">determine_smoothing_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.determine_smoothing_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.determine_smoothing_spline" title="Link to this definition">¶</a></dt>
+<dd><p>Smooth the interpolating spline to the required level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>smoothing</strong><span class="classifier">float, optional</span></dt><dd><p>Used to specify the an alternate smoothing factor.  Note that this
+should be very close to the original smoothing factor in order to
+succeed.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.exit_message">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exit_message</span></span><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.exit_message" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an exit message for the spline fit.  Error codes in the range
+-2 -&gt; 0 generally indicate a successful fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>message</strong><span class="classifier">str</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.final_reorder">
+<span class="sig-name descname"><span class="pre">final_reorder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.final_reorder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.final_reorder" title="Link to this definition">¶</a></dt>
+<dd><p>Re-order the dimensions of various arrays to match those of the inputs.</p>
+<p>The dimensions of the various data structures may have changed during
+the course of processing to reduce the bandwidth of the observation
+matrix.  This step correctly reorders all dimensions such that they
+match those initially provided by the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.fit_knots">
+<span class="sig-name descname"><span class="pre">fit_knots</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.fit_knots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.fit_knots" title="Link to this definition">¶</a></dt>
+<dd><p>Derive fits at the current knot locations.</p>
+<p>In addition to finding the value of the function at each knot,
+the knot weights and weight normalized coordinates are also determined.
+These a subsequently used to decide where a new knot should be placed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.initialize_iteration">
+<span class="sig-name descname"><span class="pre">initialize_iteration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.initialize_iteration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.initialize_iteration" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the iteration for the number of current panels.</p>
+<p>Creates array maps that represents N-dimensional data flattened to
+a single dimension for fast access and the ability to pass these
+structures to numba JIT compiled functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.iterate">
+<span class="sig-name descname"><span class="pre">iterate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.iterate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.iterate" title="Link to this definition">¶</a></dt>
+<dd><p>Iteratively determine the spline fit.</p>
+<p>Calculates the splines and coefficients for the provided data.  If
+this cannot be accomplished before reaching the maximum number of
+iterations, a smoothing spline will be calculated instead.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices">
+<span class="sig-name descname"><span class="pre">knot_indices_to_panel_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">knot_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.knot_indices_to_panel_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices" title="Link to this definition">¶</a></dt>
+<dd><p>Convert knot indices to flat panel indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>knot_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions, n_knots).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>panel_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat 1-D panel indices for the knots.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.knot_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">knot_size</span></span><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.knot_size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of knots in each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n_knots</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.next_iteration">
+<span class="sig-name descname"><span class="pre">next_iteration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.next_iteration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.next_iteration" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a single iteration of the spline fit.</p>
+<p>During each iteration, the observation matrix is built and solved.  An
+exit code will be generated in cases where no further modifications to
+the solution are appropriate.  Additional knots will also be added if
+required and possible.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>continue_iterations</strong><span class="classifier">bool</span></dt><dd><p>If <cite>False</cite> no further iterations should occur due to an acceptable
+solution being reached or due to a given limitation.  If <cite>True</cite>,
+subsequent iterations are deemed appropriate.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.order_points">
+<span class="sig-name descname"><span class="pre">order_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.order_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.order_points" title="Link to this definition">¶</a></dt>
+<dd><p>Sort the data points according to which panel they belong to.</p>
+<p>This is based on the fporde Fortran fitpack routine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices">
+<span class="sig-name descname"><span class="pre">panel_indices_to_knot_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">panel_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.panel_indices_to_knot_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices" title="Link to this definition">¶</a></dt>
+<dd><p>Convert panel indices to dimensional knot indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>panel_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_knots,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>panel_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>knot.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.parse_inputs">
+<span class="sig-name descname"><span class="pre">parse_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_knots</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.parse_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.parse_inputs" title="Link to this definition">¶</a></dt>
+<dd><p>Parse and apply user inputs to the spline fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>args</strong><span class="classifier">n-tuple (numpy.ndarray) or numpy.ndarray</span></dt><dd><p>The input arguments of the form (c1, …, cn, d) or d where c
+signifies data coordinates and d are the data values.  If a single
+data array is passed in, the coordinates are derived from the data
+dimensions.  For example if d is an array of shape (a, b, c), c1
+will range from 0 -&gt; a - 1 etc.  If coordinates are specified, the
+coordinates for each dimension and the data array should be
+one-dimensional.</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray, optional</span></dt><dd><p>Optional weights to supply to the spline fit for each data point.
+Should be the same shape as the supplied data values.</p>
+</dd>
+<dt><strong>limits</strong><span class="classifier">numpy.ndarray (float), optional</span></dt><dd><p>An array of shape (n_dimensions, 2) that may be supplied to set the
+minimum and maximum coordinate values used during the spline fit.
+For example, limits[1, 0] sets the minimum knot value in the second
+dimensions and limits[1, 1] sets the maximum knot value in the
+second dimension.  By default this is set to the minimum and
+maximum values of the coordinates in each dimension.</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">int or numpy.ndarray (int), optional</span></dt><dd><p>The degree of spline to fit in each dimension.  Either a scalar can
+be supplied pertaining to all dimensions, or an array of shape
+(n_dimensions,) can be used.</p>
+</dd>
+<dt><strong>smoothing</strong><span class="classifier">float, optional</span></dt><dd><p>Used to specify the smoothing factor.  If set to <cite>None</cite>, the
+smoothing will be determined based on user settings or input data.
+If <cite>exact</cite> is <cite>True</cite>, smoothing will be disabled (zero).  If
+<cite>exact</cite> is <cite>False</cite>, smoothing will be set to n - sqrt(2 * n)
+where n is the number of data values.  If supplied, smoothing
+must be greater than zero.  See __init__() for further details.
+Note that if smoothing is zero, and the degrees are not equal
+over each dimension, smoothing will be set to <cite>eps</cite> due to
+numerical instabilities.</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">list or tuple or numpy.ndarray, optional</span></dt><dd><p>A set of starting knot coordinates for each dimension.  If a list
+or tuple is supplied it should be of length n_dimensions where
+element i is an array of shape (n_knots[i]) for dimension i.  If
+an array is supplied, it should be of shape
+(n_dimension, max(n_knots)). Note that there must be at least
+2 * (degree + 1) knots for each dimension.  Unused or invalid
+knots may be set to NaN, at the end of each array.  Knot
+coordinates must also be monotonically increasing in each
+dimension.</p>
+</dd>
+<dt><strong>fix_knots</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, do not attempt to modify or add knots to the spline fit.
+Only the initial supplied user knots will be used.</p>
+</dd>
+<dt><strong>knot_estimate</strong><span class="classifier">numpy.ndarray (int), optional</span></dt><dd><p>The maximum number of knots required for the spline fit in each
+dimension and of shape (n_dimensions,).  If not supplied, the knot
+estimate will be set to
+int((n / n_dimensions) ** n_dimensions^(-1)) or n_knots
+if knots were supplied and fixed.</p>
+</dd>
+<dt><strong>exact</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, the initial knots used will coincide with the actual
+input coordinates and smoothing will be set to zero.  No knots
+should be supplied by the user in this instance.</p>
+</dd>
+<dt><strong>reduce_degrees</strong><span class="classifier">bool, optional</span></dt><dd><p>Only relevant if <cite>exact</cite> is <cite>True</cite>.  If set to <cite>True</cite>, the maximum
+allowable degree in each dimension will be limited to
+(len(unique(x)) // 2) - 1 where x are the coordinate values in any
+dimension.</p>
+</dd>
+<dt><strong>eps</strong><span class="classifier">float, optional</span></dt><dd><p>A value where 0 &lt; eps &lt; 1.  This defines the magnitude used to
+identify singular values in the spline observation matrix (A).  If
+any row of A[:, 0] &lt; (eps * max(A[:,0])) it will be considered
+singular.</p>
+</dd>
+<dt><strong>tolerance</strong><span class="classifier">float, optional</span></dt><dd><p>A value in the range 0 &lt; tolerance &lt; 1 used to determine the exit
+criteria for the spline fit.  See __init__() further details.</p>
+</dd>
+<dt><strong>max_iteration</strong><span class="classifier">int, optional</span></dt><dd><p>The maximum number of iterations to perform when solving for the
+spline fit.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.reorder_dimensions">
+<span class="sig-name descname"><span class="pre">reorder_dimensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline.html#Spline.reorder_dimensions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.reorder_dimensions" title="Link to this definition">¶</a></dt>
+<dd><p>Re-order the dimensions in various attributes.</p>
+<p>Occasionally it is beneficial to re-order the dimensions of the
+data structures such that a minimal bandwidth for the observation
+matrix is achievable.  This reduces the amount of processing time
+required to reach a solution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) indicating the new order of the
+dimensions.  E.g., to re-order dimensions [1, 2, 3] to [3, 1, 2],
+order should be [1, 2, 0].</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline.Spline.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#grig.toolkit.splines.spline.Spline.size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of values used for the spline fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-grig.toolkit.splines.spline_utils">
+<span id="grig-toolkit-splines-spline-utils-module"></span><h3>grig.toolkit.splines.spline_utils module<a class="headerlink" href="#module-grig.toolkit.splines.spline_utils" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.add_knot">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">add_knot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">knot_weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_estimate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#add_knot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.add_knot" title="Link to this definition">¶</a></dt>
+<dd><p>Add a knot to the spline fit.</p>
+<p>Adds a knot near the currently highest weighted knot.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>knot_weights</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knot weights of shape (n_dimensions, n_knots).</p>
+</dd>
+<dt><strong>knot_coords</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knot coordinates of shape (n_dimensions, n_knots).</p>
+</dd>
+<dt><strong>panel_shape</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of panels in the spline fit of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>n_knots</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of knots in each dimension of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>knot_estimate</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The maximum number of knots allowable of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>k1</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) where k1[dimension] =
+degree[dimension] + 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>exit_code</strong><span class="classifier">int</span></dt><dd><p>Returns an exit code of 1 if the maximum number of allowable knots has
+already been reached and no more should be added.  Returns an exit code
+of 5 if the new knot location coincides with an already existing knot.
+Returns 0 if a knot was successfully added.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.back_substitute">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">back_substitute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#back_substitute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.back_substitute" title="Link to this definition">¶</a></dt>
+<dd><p>Use back-substitution to solve a reduced row-echelon form matrix.</p>
+<p>The amat matrix MUST be full rank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amat</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘A’ in the system Ax = B of shape (&gt;=n_coefficients, &gt;=bandwidth).</p>
+</dd>
+<dt><strong>beta</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘B’ in the system Ax = B of shape (&gt;=n_coefficients,).</p>
+</dd>
+<dt><strong>n_coefficients</strong><span class="classifier">int</span></dt><dd><p>The number of coefficients to solve for.</p>
+</dd>
+<dt><strong>bandwidth</strong><span class="classifier">int</span></dt><dd><p>The bandwidth of matrix A (amat).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coefficients</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coefficients of shape (n_coefficients.).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.build_observation">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">build_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#build_observation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.build_observation" title="Link to this definition">¶</a></dt>
+<dd><p>Build the spline observation matrices.</p>
+<p>The observation matrices are used to solve the linear system of equations
+Ax = B in row-echelon form.  A and B (amat and beta) may be used to solve
+for x using either <a class="reference internal" href="#grig.toolkit.splines.spline_utils.back_substitute" title="grig.toolkit.splines.spline_utils.back_substitute"><code class="xref py py-func docutils literal notranslate"><span class="pre">back_substitute()</span></code></a> if A is full rank, or
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.solve_rank_deficiency" title="grig.toolkit.splines.spline_utils.solve_rank_deficiency"><code class="xref py py-func docutils literal notranslate"><span class="pre">solve_rank_deficiency()</span></code></a> if A is rank deficient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The m coordinates to fit (n_dimensions, m).</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The values at each coordinate (m,).</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The associated weight value for each coordinate (m,).</p>
+</dd>
+<dt><strong>n_coefficients</strong><span class="classifier">int</span></dt><dd><p>The number of coefficients to fit.</p>
+</dd>
+<dt><strong>bandwidth</strong><span class="classifier">int</span></dt><dd><p>The bandwidth of the observation.</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The degrees of the splines to fit (n_dimensions,).</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in knot-space of shape (n_dimensions,).
+These are returned by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>start_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The starting indices of shape (m,) as returned by
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a>.</p>
+</dd>
+<dt><strong>next_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The next indices of shape (m,) as returned by <a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a>.</p>
+</dd>
+<dt><strong>panel_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the panel mapping (flat to n-D) indices.  This is
+created by passing the panel shape (n_knots - (2 * degrees) - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the spline mapping (flat to n-D) indices.  This is
+created by passing the spline shape (degrees + 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_spline_coefficients).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>amat, beta, knot_splines, ssr</strong><span class="classifier">array, array, array, float</span></dt><dd><p>The observation matrix amat of shape (n_coefficients, bandwidth), the
+observation matrix beta of shape (n_coefficients,), the base spline
+coefficients for each knot (n_dimensions, n_knots, max(degree) + 1),
+and ssr (sum of the residuals squared)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.calculate_minimum_bandwidth">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">calculate_minimum_bandwidth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#calculate_minimum_bandwidth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.calculate_minimum_bandwidth" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the minimum possible bandwidth given knots and spline degree.</p>
+<p>The bandwidth of a given observation matrix is given as:</p>
+<p>k0(d1*d2*d3*…*dn) + k1(d2*d3*…*dn) + k2(d3*…*dn) + … + kn</p>
+<p>for the n-dimensional case where a number (1,2,3, etc) signifies the
+dimension number, k represents the degree, and dn is given as
+n_knots - k - 1.  This function loops through all available dimensional
+permutations in order to find the permutation that results in the smallest
+bandwidth.</p>
+<p>Finding the bandwidth is only relevant in more than one dimension.
+The bandwidth of the observation matrix may be minimized by switching the
+order of dimensions (coordinates, degrees, knot lines, etc.).  This can
+speed up evaluation of spline coefficients and knot locations.</p>
+<p>To save speed, permutations should be pre-calculated and supplied to this
+function, containing each possible ordering of the dimensions.  For
+example, for two dimensions, permutations would be [[0, 1], [1, 0]].
+For three dimensions permutations would be:</p>
+<dl class="simple">
+<dt>[[0 1 2]</dt><dd><p>[0 2 1]
+[1 0 2]
+[1 2 0]
+[2 0 1]
+[2 1 0]]</p>
+</dd>
+</dl>
+<p>Note that for 1-dimension the minimum bandwidth will be fixed.</p>
+<p>Dimensional permutations can be calculated via:</p>
+<blockquote>
+<div><p>permutations = np.array(list(itertools.permutations(range(n_dim))))</p>
+</div></blockquote>
+<p>where ndim is the number of dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>degrees</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The degrees of the spline in each dimension (n_dimensions,).</p>
+</dd>
+<dt><strong>n_knots</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of knots in each dimension (n_dimensions,).</p>
+</dd>
+<dt><strong>permutations</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>All possible dimensional ordering of shape
+(n_permutations, n_dimensions).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>minimum_bandwidth, permutation_index, changed</strong><span class="classifier">int, int, bool</span></dt><dd><p>The minimum bandwidth, the index of the permutation for the minimum
+bandwidth, and whether the permutation is different to the first
+available permutation.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.check_input_arrays">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">check_input_arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#check_input_arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.check_input_arrays" title="Link to this definition">¶</a></dt>
+<dd><p>Check all input arrays.</p>
+<p>For a data point to be valid, it must have a finite value, weight
+and coordinate.  The weight must greater than zero, and coordinates
+must be finite in each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>values</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>An array of values of shape (n_data,).</p>
+</dd>
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinate values of shape (n_dimensions, n_data).</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The point weights of shape (n_data,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>valid</strong><span class="classifier">numpy.ndarray (bool)</span></dt><dd><p>A boolean mask of shape (n_data,) where <cite>False</cite> marks an invalid
+data coordinate.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.create_ordering">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">create_ordering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#create_ordering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.create_ordering" title="Link to this definition">¶</a></dt>
+<dd><p>Given a list of indices, create an ordering structure for fast access.</p>
+<p>The purpose of this function is to create two arrays than can be used
+to quickly retrieve all reverse indices for a given index using numba.
+For example, consider the array x:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">si</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">create_ordering</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now extract the indices on x for a given value.  E.g.,</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ri</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">inds</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">... </span>    <span class="n">ri</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inds</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">reverse_index</span> <span class="o">=</span> <span class="n">si</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">while</span> <span class="n">reverse_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reverse_index</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="n">reverse_index</span> <span class="o">=</span> <span class="n">ni</span><span class="p">[</span><span class="n">reverse_index</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">ri</span><span class="p">)</span>
+<span class="go">[[1, 0], [9, 6, 3], [8, 7, 5, 2], [], [4]]</span>
+</pre></div>
+</div>
+<p>i.e., the indices on x where x is equal to 0 are [1, 0], and [8, 7, 5, 2]
+where x is equal to 2.</p>
+<p>This is a very useful feature for N-D numba functions as reverse indices
+can be precalculated and represented as 1-dimensional arrays and we avoid
+functions such as np.nonzero, argwhere etc, that introduce additional
+overhead associated with array creation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>A list of input indices.</p>
+</dd>
+<dt><strong>size</strong><span class="classifier">int</span></dt><dd><p>The size of the array to return.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>start_indices, next_indices</strong><span class="classifier">numpy.ndarray (int), numpy.ndarray (int)</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.determine_smoothing_spline">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">determine_smoothing_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_estimate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_sum_square_residual</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing_difference</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">amat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iteration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accuracy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#determine_smoothing_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.determine_smoothing_spline" title="Link to this definition">¶</a></dt>
+<dd><p>Smooth the current solution to a specified level.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>n_knots</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of knots in each dimension of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>knot_estimate</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The maximum number of knots allowable of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The degrees of the spline in each dimension (n_dimensions,).</p>
+</dd>
+<dt><strong>initial_sum_square_residual</strong><span class="classifier">float</span></dt><dd><p>The initial sum square of the residuals from the first knot fit.</p>
+</dd>
+<dt><strong>smoothing</strong><span class="classifier">float</span></dt><dd><p>Used to specify the smoothing factor.</p>
+</dd>
+<dt><strong>smoothing_difference</strong><span class="classifier">float</span></dt><dd><p>The sum of the square residuals minus the smoothing factor.</p>
+</dd>
+<dt><strong>n_coefficients</strong><span class="classifier">int</span></dt><dd><p>The number of coefficients to fit.</p>
+</dd>
+<dt><strong>bandwidth</strong><span class="classifier">int</span></dt><dd><p>The bandwidth of the observation.</p>
+</dd>
+<dt><strong>amat</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘A’ in the system Ax = B of shape (&gt;=n_coefficients, &gt;=bandwidth).</p>
+</dd>
+<dt><strong>beta</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘B’ in the system Ax = B of shape (&gt;=n_coefficients,).</p>
+</dd>
+<dt><strong>max_iteration</strong><span class="classifier">int</span></dt><dd><p>The maximum number of iterations used to determine the
+smoothing spline.</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in knot-space of shape (n_dimensions,).
+These are returned by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>knot_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the knot mapping (flat to n-D) indices.  This is
+created by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>eps</strong><span class="classifier">float</span></dt><dd><p>The precision to determine singular values of A.  If any row of
+amat[:,0] &lt; (eps * max(amat[:,0])) it will be considered singular.</p>
+</dd>
+<dt><strong>splines</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The splines of shape (n_dimensions, n_data, max(k1)).</p>
+</dd>
+<dt><strong>start_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The starting indices of shape (m,) as returned by
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a>.</p>
+</dd>
+<dt><strong>next_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The next indices of shape (m,) as returned by <a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a>.</p>
+</dd>
+<dt><strong>panel_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the panel mapping (flat to n-D) indices.  This is
+created by passing the panel shape (n_knots - (2 * degrees) - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The 1-D to N-D spline mapping array as returned by
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be of shape
+(n_dimensions, n_spline).</p>
+</dd>
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinates at which to evaluate the spline of shape
+(n_dimensions, n).</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>An array of values of shape (n_data,).</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The value weights of shape (n_data,).</p>
+</dd>
+<dt><strong>panel_shape</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of panels in the spline fit of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>accuracy</strong><span class="classifier">float</span></dt><dd><p>The accuracy that is used to determine when a suitable smoothing fit
+has been achieved.  Iterations will stop when
+abs(smoothing - sum_square_residuals) &lt; accuracy.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coefficients, fp, ier, fitted_values</strong><span class="classifier">ndarray, float, float, ndarray</span></dt><dd><p>The new spline coefficients, sum of the residuals^2, exit code, and
+the fitted values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.discontinuity_jumps">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">discontinuity_jumps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">knot_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_knot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b_spline</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#discontinuity_jumps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.discontinuity_jumps" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates the discontinuity jumps.</p>
+<p>Calculates the discontinuity jumps of the kth derivative of the b-splines
+of degree k at the knots k+2 -&gt; n - k - 1.  The results are updated
+in-place in the <cite>b_spline</cite> array.</p>
+<p>Adapted from the Fortran function fpdisc in the fitpack library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>knot_line</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knot locations in a single dimension of shape (&gt;= n_knots,).</p>
+</dd>
+<dt><strong>n_knot</strong><span class="classifier">int</span></dt><dd><p>The number of knots in the knot line.</p>
+</dd>
+<dt><strong>degree</strong><span class="classifier">int</span></dt><dd><p>The degree of the spline.</p>
+</dd>
+<dt><strong>b_spline</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>An array of shape (max(knot_estimate), k + 2) where k is the degree of
+the spline containing the spline coefficients.  Values will be updated
+in-place.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.evaluate_bspline">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">evaluate_bspline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">knot_line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#evaluate_bspline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.evaluate_bspline" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate b-splines for given knots at a coordinate.</p>
+<p>Evaluates the (degree + 1) non-zero b-splines at t[i] &lt;= x &lt; t[i + 1]
+where t is the line of knots <cite>knot_line</cite> and i is the <cite>knot_index</cite>.
+This uses the stable recurrence relation of DeBoor and Cox (2007).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>knot_line</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The line of monotonically increasing knots of shape (&gt;=n_knots).</p>
+</dd>
+<dt><strong>degree</strong><span class="classifier">int</span></dt><dd><p>The degree of spline to evaluate.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">float</span></dt><dd><p>The coordinate at which the spline should be evaluated.</p>
+</dd>
+<dt><strong>knot_index</strong><span class="classifier">int</span></dt><dd><p>The index (i) of the knot satisfying t[i] &lt;= x &lt; t[i + 1] where
+t is the <cite>knot_line</cite>.</p>
+</dd>
+<dt><strong>spline</strong><span class="classifier">numpy.ndarray (float), optional</span></dt><dd><p>An optionally created array to hold the results of this function of
+shape (&gt;=degree + 1).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>spline</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The output spline of shape (degree + 1) if <cite>spline</cite> is not supplied as
+an input parameter, or (spline.size,) otherwise.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.find_knot">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">find_knot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_knot_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_knot_end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_outside</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#find_knot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.find_knot" title="Link to this definition">¶</a></dt>
+<dd><p>Find the knot index for a single coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinate</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinates of shape (n_dimensions, m).</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>valid_knot_start</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The start indices for the first valid knot in each dimension.  For a
+spline of degree k, this should be k.  The shape is (n_dimensions,).</p>
+</dd>
+<dt><strong>valid_knot_end</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The last valid knot index in each dimension of shape (n_dimensions,).
+for a spline of degree k, this should be n_knots - degree - 1.</p>
+</dd>
+<dt><strong>allow_outside</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite> (default), allow a fit outside the bounds of the knots.</p>
+</dd>
+<dt><strong>lower_bounds</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>Specifies the lower range of valid coordinates for each dimension.</p>
+</dd>
+<dt><strong>upper_bounds</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>Specifies the upper range of valid coordinates for each dimension.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>knot_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The knot index for each coordinate in each dimension of shape
+(n_dimensions, m).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.find_knots">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">find_knots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_knot_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_knot_end</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#find_knots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.find_knots" title="Link to this definition">¶</a></dt>
+<dd><p>Find the knot indices for an array of coordinates.</p>
+<p>The knot index (i) for a given coordinate (x) is defined such that
+knot[i] &lt;= x &lt; knot[i + 1].  Coordinates that are less than the minimum
+valid knot are set to the minimum valid knot index, and values that are
+greater than the maximum valid knot are set to the maximum valid knot
+index - 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinates of shape (n_dimensions, m) where m are the number of
+coordinates.</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>valid_knot_start</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The start indices for the first valid knot in each dimension.  For a
+spline of degree k, this should be k.  The shape is (n_dimensions,).</p>
+</dd>
+<dt><strong>valid_knot_end</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The last valid knot index in each dimension of shape (n_dimensions,).
+for a spline of degree k, this should be n_knots - degree - 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>knot_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The knot index for each coordinate in each dimension of shape
+(n_dimensions, m).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.fit_point">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">fit_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_rot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_spline</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_dimensions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#fit_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.fit_point" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate fitted value given a spline and coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coefficients</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coefficients of shape (n_coefficients,).</p>
+</dd>
+<dt><strong>spline</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The spline for the point of shape (n_dimensions, n_spline).</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The 1-D to N-D spline mapping array as returned by
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be of shape
+(n_dimensions, n_spline).</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The N-D to 1-D knot mapping steps as returned by
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>j_rot</strong><span class="classifier">int</span></dt><dd><p>The starting 1-D index on the coefficient array for the given spline.</p>
+</dd>
+<dt><strong>n_spline</strong><span class="classifier">int</span></dt><dd><p>The total number of spline coefficients that will be used to perform
+the fit.</p>
+</dd>
+<dt><strong>n_dimensions</strong><span class="classifier">int</span></dt><dd><p>The number of dimensions in the fit.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fitted_value</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.flat_index_mapping">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">flat_index_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#flat_index_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="Link to this definition">¶</a></dt>
+<dd><p>Return index slices for Numba flattened arrays.</p>
+<p>Given the shape of an array, return a variety of useful parameters for
+indexing a flattened (x.ravel()) version of that array.</p>
+<p>For example, consider an array (x) of shape (3, 4):</p>
+<dl class="simple">
+<dt>x = [[ 0,  1,  2,  3],</dt><dd><p>[ 4,  5,  6,  7],
+[ 8,  9, 10, 11]]</p>
+</dd>
+</dl>
+<p>which when flattened (x_flat) is equal to</p>
+<p>x_flat = [ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11]</p>
+<p><cite>map_indices</cite> returns the indices of x_flat on x, and is a 2-D array of
+shape (n_dimensions, x.size).  map_indices[:, 6] gives the N-D index of
+element 6 of x_flat in terms of x.  i.e, map_indices[:, 6] = [1, 2].</p>
+<p><cite>transpose_indices</cite> contains the flat indices of an array that has been
+transposed.  i.e. x.T.ravel()[transpose_indices] == x_flat</p>
+<p><cite>step_size</cite> contains indicates the flat index jump along the given
+dimension.  i.e., the step size for the above example is [4, 1], indicating
+that for every increment along the first dimension, the flat index
+increments by 4.  Likewise, for every increment along the second dimension,
+the flat index increments by 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>shape</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>map_indices, transpose_indices, step_size</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.givens_parameters">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">givens_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#givens_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.givens_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the parameters of a Givens transformation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">float</span></dt><dd><p>The x value.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">float</span></dt><dd><p>The y value.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>updated_y, cos, sin</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.givens_rotate">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">givens_rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#givens_rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.givens_rotate" title="Link to this definition">¶</a></dt>
+<dd><p>Apply the Givens transformation to a value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cos</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>sin</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>x</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>y</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>x_rotated, y_rotated</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.knot_fit">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">knot_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">splines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#knot_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.knot_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the spline fit at each knot location.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>splines</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The splines of shape (n_dimensions, n_data, max(k1)).</p>
+</dd>
+<dt><strong>coefficients</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The spline coefficients of shape (n_coefficients,).</p>
+</dd>
+<dt><strong>start_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The start indices of the reverse lookup array of shape (n_data,).  See
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a> for further details.</p>
+</dd>
+<dt><strong>next_indices</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The “next” indices of the reverse lookup array of shape (n_data,_.  See
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering" title="grig.toolkit.splines.spline_utils.create_ordering"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_ordering()</span></code></a> for further details.</p>
+</dd>
+<dt><strong>panel_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the panel mapping (flat to n-D) indices.  This is
+created by passing the panel shape (n_knots - (2 * degrees) - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the spline mapping (flat to n-D) indices.  This is
+created by passing the spline shape (degrees + 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_spline_coefficients).</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in knot-space of shape (n_dimensions,).
+These are returned by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>panel_shape</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The panel shape will be defined as n_knots - (2 * k1) + 1 where k1 and
+n_knots are both of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>k1</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) where k1[dimension] =
+degree[dimension] + 1.</p>
+</dd>
+<dt><strong>weights</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The value weights of shape (n_data,).</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The values to fit of shape (n_data,).</p>
+</dd>
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinates of each value in each dimension of shape
+(n_dimensions, n_data).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fit, knot_weights, knot_coordinates</strong><span class="classifier">3-tuple of numpy.ndarray (float)</span></dt><dd><p>The fitted value at each knot of shape (n_data,), the knot weights of
+shape (max_panels,), and the knot coordinates of shape (max_panels,)
+where max_panels is the maximum number of panels available in the
+spline fit.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.perform_fit">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">perform_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nk1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_knots</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#perform_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.perform_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate a given spline at multiple coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinates at which to evaluate the spline of shape
+(n_dimensions, n).</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>coefficients</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The spline coefficients of shape (n_coefficients,).</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The degrees of the spline in each dimension (n_dimensions,).</p>
+</dd>
+<dt><strong>panel_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the panel mapping (flat to n-D) indices.  This is
+created by passing the panel shape (n_knots - (2 * degrees) - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>panel_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in panel-space of shape (n_dimensions,).
+These are returned by passing the shape <cite>Spline.panel_shape</cite> into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in knot-space of shape (n_dimensions,).
+These are returned by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>nk1</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) containing the values n_knots - k1
+where n_knots are the number of knots in each dimension, and k1 are the
+spline degrees + 1 in each dimension.</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the spline mapping (flat to n-D) indices.  This is
+created by passing the spline shape (degrees + 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_spline_coefficients).</p>
+</dd>
+<dt><strong>n_knots</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The number of knots in each dimension (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fitted_values</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The spline evaluated at <cite>coordinates</cite> of shape (n,).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.rational_interp_zero">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">rational_interp_zero</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#rational_interp_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.rational_interp_zero" title="Link to this definition">¶</a></dt>
+<dd><p>Determines p where (u + p + v)/(p + w) = 0.</p>
+<p>Given three points (p1, f1), (p2, f2), (p3, f3), rational_interp_zero gives
+the value of p such that the rational interpolating function of the form
+r(p) = (u*p+v)/(p+w) equals zero at p.</p>
+<p>Adapted from the Fortran function fprati in the fitpack library.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>p1</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>f1</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>p2</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>f2</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>p3</strong><span class="classifier">float</span></dt><dd></dd>
+<dt><strong>f3</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>p, p1, f1, p2, f2, p3, f3</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.single_fit">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">single_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">panel_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">knot_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nk1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_spline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work_spline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#single_fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.single_fit" title="Link to this definition">¶</a></dt>
+<dd><p>Return a fitted value at the given coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinate</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coordinate at which to return a fit of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>knots</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The knots in each dimension of shape (n_dimensions, max_knot_estimate).
+Must be monotonically increasing for each dimension.</p>
+</dd>
+<dt><strong>coefficients</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The coefficients of shape (n_coefficients,).</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The degrees of the spline in each dimension (n_dimensions,).</p>
+</dd>
+<dt><strong>panel_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the panel mapping (flat to n-D) indices.  This is
+created by passing the panel shape (n_knots - (2 * degrees) - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_panels).</p>
+</dd>
+<dt><strong>panel_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in panel-space of shape (n_dimensions,).
+These are returned by passing the shape <cite>Spline.panel_shape</cite> into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>knot_steps</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>The flat index mapping steps in knot-space of shape (n_dimensions,).
+These are returned by passing the shape (n_knots - degrees - 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.</p>
+</dd>
+<dt><strong>nk1</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) containing the values n_knots - k1
+where n_knots are the number of knots in each dimension, and k1 are the
+spline degrees + 1 in each dimension.</p>
+</dd>
+<dt><strong>spline_mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array containing the spline mapping (flat to n-D) indices.  This is
+created by passing the spline shape (degrees + 1) into
+<a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping" title="grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="xref py py-func docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a>.  Should be an array of shape
+(n_dimensions, n_spline_coefficients).</p>
+</dd>
+<dt><strong>k1</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_dimensions,) where k1[dimension] =
+degree[dimension] + 1.</p>
+</dd>
+<dt><strong>n_spline</strong><span class="classifier">int</span></dt><dd><p>The total number of spline coefficients that will be used to perform
+the fit.</p>
+</dd>
+<dt><strong>work_spline</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>An optional work array of shape (n_dimensions, max(k1)) that can
+be supplied in order to skip the overhead involved with array creation.</p>
+</dd>
+<dt><strong>lower_bounds</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>Specifies the lower range of valid coordinates for each dimension and
+is of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>upper_bounds</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>Specifies the upper range of valid coordinates for each dimension and
+is of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fitted_value</strong><span class="classifier">float</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.solve_observation">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">solve_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#solve_observation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.solve_observation" title="Link to this definition">¶</a></dt>
+<dd><p>Solve a row-echelon reduced linear system of equations Ax=B.</p>
+<p>Returns the results of <a class="reference internal" href="#grig.toolkit.splines.spline_utils.back_substitute" title="grig.toolkit.splines.spline_utils.back_substitute"><code class="xref py py-func docutils literal notranslate"><span class="pre">back_substitute()</span></code></a> if A is full rank, or the
+results of <a class="reference internal" href="#grig.toolkit.splines.spline_utils.solve_rank_deficiency" title="grig.toolkit.splines.spline_utils.solve_rank_deficiency"><code class="xref py py-func docutils literal notranslate"><span class="pre">solve_rank_deficiency()</span></code></a> otherwise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amat</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The array A in row-echelon form.  Should be of shape
+(&gt;=n_coefficients, &gt;=bandwidth).</p>
+</dd>
+<dt><strong>beta</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The array B accounting for row-echelon form.  Should be of shape
+(&gt;=n_coefficients,).</p>
+</dd>
+<dt><strong>n_coefficients</strong><span class="classifier">int</span></dt><dd><p>The number of coefficients to solve for.</p>
+</dd>
+<dt><strong>bandwidth</strong><span class="classifier">int</span></dt><dd><p>The bandwidth of the observation matrix A (<cite>amat</cite>).</p>
+</dd>
+<dt><strong>eps</strong><span class="classifier">float</span></dt><dd><p>The precision to determine singular values of A.  If any row of
+amat[:,0] &lt; (eps * max(amat[:,0])) it will be considered singular.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coefficients, rank, ssr</strong><span class="classifier">numpy.ndarray (float), int, float</span></dt><dd><p>The derived coefficients, the rank of A, and the sum of the squared
+residuals.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.splines.spline_utils.solve_rank_deficiency">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.splines.spline_utils.</span></span><span class="sig-name descname"><span class="pre">solve_rank_deficiency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_coefficients</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bandwidth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/splines/spline_utils.html#solve_rank_deficiency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.splines.spline_utils.solve_rank_deficiency" title="Link to this definition">¶</a></dt>
+<dd><p>Solve a rank-deficient row-echelon reduced form matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>amat</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘A’ in the system Ax = B of shape (&gt;=n_coefficients, &gt;=bandwidth).</p>
+</dd>
+<dt><strong>beta</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The ‘B’ in the system Ax = B of shape (&gt;=n_coefficients,).</p>
+</dd>
+<dt><strong>n_coefficients</strong><span class="classifier">int</span></dt><dd><p>The number of coefficients to solve for.</p>
+</dd>
+<dt><strong>bandwidth</strong><span class="classifier">int</span></dt><dd><p>The bandwidth of matrix A (amat).</p>
+</dd>
+<dt><strong>tolerance</strong><span class="classifier">float</span></dt><dd><p>The value over which the zeroth element of <cite>amat</cite> will be considered
+rank deficient.  Deficient rows will be rotated into a new reduced
+rank matrix and solved accordingly.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>coefficients, ssr, rank</strong><span class="classifier">numpy.ndarray (float), float, int</span></dt><dd><p>The coefficients of shape (n_coefficients.), the sum of the squared
+residuals (ssr), and the rank.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">grig.toolkit.splines package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li><a class="reference internal" href="#module-grig.toolkit.splines.spline">grig.toolkit.splines.spline module</a><ul>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline"><code class="docutils literal notranslate"><span class="pre">Spline</span></code></a><ul>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.check_array_inputs"><code class="docutils literal notranslate"><span class="pre">Spline.check_array_inputs()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.create_mapping_indices"><code class="docutils literal notranslate"><span class="pre">Spline.create_mapping_indices()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.determine_smoothing_spline"><code class="docutils literal notranslate"><span class="pre">Spline.determine_smoothing_spline()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.exit_message"><code class="docutils literal notranslate"><span class="pre">Spline.exit_message</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.final_reorder"><code class="docutils literal notranslate"><span class="pre">Spline.final_reorder()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.fit_knots"><code class="docutils literal notranslate"><span class="pre">Spline.fit_knots()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.initialize_iteration"><code class="docutils literal notranslate"><span class="pre">Spline.initialize_iteration()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.iterate"><code class="docutils literal notranslate"><span class="pre">Spline.iterate()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices"><code class="docutils literal notranslate"><span class="pre">Spline.knot_indices_to_panel_indices()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.knot_size"><code class="docutils literal notranslate"><span class="pre">Spline.knot_size</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.next_iteration"><code class="docutils literal notranslate"><span class="pre">Spline.next_iteration()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.order_points"><code class="docutils literal notranslate"><span class="pre">Spline.order_points()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices"><code class="docutils literal notranslate"><span class="pre">Spline.panel_indices_to_knot_indices()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.parse_inputs"><code class="docutils literal notranslate"><span class="pre">Spline.parse_inputs()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.reorder_dimensions"><code class="docutils literal notranslate"><span class="pre">Spline.reorder_dimensions()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline.Spline.size"><code class="docutils literal notranslate"><span class="pre">Spline.size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.toolkit.splines.spline_utils">grig.toolkit.splines.spline_utils module</a><ul>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.add_knot"><code class="docutils literal notranslate"><span class="pre">add_knot()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.back_substitute"><code class="docutils literal notranslate"><span class="pre">back_substitute()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.build_observation"><code class="docutils literal notranslate"><span class="pre">build_observation()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.calculate_minimum_bandwidth"><code class="docutils literal notranslate"><span class="pre">calculate_minimum_bandwidth()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.check_input_arrays"><code class="docutils literal notranslate"><span class="pre">check_input_arrays()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.create_ordering"><code class="docutils literal notranslate"><span class="pre">create_ordering()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.determine_smoothing_spline"><code class="docutils literal notranslate"><span class="pre">determine_smoothing_spline()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.discontinuity_jumps"><code class="docutils literal notranslate"><span class="pre">discontinuity_jumps()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.evaluate_bspline"><code class="docutils literal notranslate"><span class="pre">evaluate_bspline()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.find_knot"><code class="docutils literal notranslate"><span class="pre">find_knot()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.find_knots"><code class="docutils literal notranslate"><span class="pre">find_knots()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.fit_point"><code class="docutils literal notranslate"><span class="pre">fit_point()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.givens_parameters"><code class="docutils literal notranslate"><span class="pre">givens_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.givens_rotate"><code class="docutils literal notranslate"><span class="pre">givens_rotate()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.knot_fit"><code class="docutils literal notranslate"><span class="pre">knot_fit()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.perform_fit"><code class="docutils literal notranslate"><span class="pre">perform_fit()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.rational_interp_zero"><code class="docutils literal notranslate"><span class="pre">rational_interp_zero()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.single_fit"><code class="docutils literal notranslate"><span class="pre">single_fit()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.solve_observation"><code class="docutils literal notranslate"><span class="pre">solve_observation()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.splines.spline_utils.solve_rank_deficiency"><code class="docutils literal notranslate"><span class="pre">solve_rank_deficiency()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="grig.toolkit.html"
+                          title="previous chapter">grig.toolkit package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="grig.tree.html"
+                          title="next chapter">grig.tree package</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/grig.toolkit.splines.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.tree.html" title="grig.tree package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.html" title="grig.toolkit package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" >grig package</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="grig.toolkit.html" >grig.toolkit package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.splines package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

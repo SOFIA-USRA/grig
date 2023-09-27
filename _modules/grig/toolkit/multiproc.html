@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.toolkit.multiproc &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.multiproc</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.toolkit.multiproc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">cloudpickle</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;get_core_number&#39;</span><span class="p">,</span> <span class="s1">&#39;relative_cores&#39;</span><span class="p">,</span> <span class="s1">&#39;valid_relative_jobs&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;multitask&#39;</span><span class="p">,</span> <span class="s1">&#39;pickle_object&#39;</span><span class="p">,</span> <span class="s1">&#39;unpickle_file&#39;</span><span class="p">,</span> <span class="s1">&#39;pickle_list&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;unpickle_list&#39;</span><span class="p">,</span> <span class="s1">&#39;in_main_thread&#39;</span><span class="p">,</span> <span class="s1">&#39;log_with_multi_handler&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;log_for_multitask&#39;</span><span class="p">,</span> <span class="s1">&#39;purge_multitask_logs&#39;</span><span class="p">,</span> <span class="s1">&#39;wrapped_with_logger&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;log_records_to_pickle_file&#39;</span><span class="p">,</span> <span class="s1">&#39;MultitaskHandler&#39;</span><span class="p">,</span> <span class="s1">&#39;wrap_function&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_core_number">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.get_core_number">[docs]</a>
+<span class="k">def</span> <span class="nf">get_core_number</span><span class="p">(</span><span class="n">cores</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the maximum number of CPU cores available</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cores : bool or int, optional</span>
+<span class="sd">        If False, returns 1.  If True, returns the maximum number</span>
+<span class="sd">        of cores available.  An integer specifies an upper limit</span>
+<span class="sd">        on the maximum number of cores to return</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cores : int</span>
+<span class="sd">        The maximum number of cores to use for parallel processing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">cores</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="n">max_cores</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">cores</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">max_cores</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_cores</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">max_cores</span></div>
+
+
+
+<div class="viewcode-block" id="relative_cores">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.relative_cores">[docs]</a>
+<span class="k">def</span> <span class="nf">relative_cores</span><span class="p">(</span><span class="n">jobs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the actual number of cores to use for a given number of jobs.</span>
+
+<span class="sd">    Returns 1 in cases where jobs is None or 0.  If jobs is less than zero,</span>
+<span class="sd">    the returned value will be max_available_cores + jobs + 1.  i.e., -1 will</span>
+<span class="sd">    use all available cores.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    jobs : int or float or None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    n_cores : int</span>
+<span class="sd">        The number of cores to use which will always be in the range 1 -&gt;</span>
+<span class="sd">        max_available_cores.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">jobs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">max_cores</span> <span class="o">=</span> <span class="n">get_core_number</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">jobs</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">jobs</span> <span class="o">*=</span> <span class="n">max_cores</span>
+
+    <span class="n">jobs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">jobs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">max_cores</span> <span class="o">+</span> <span class="n">jobs</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="n">jobs</span>
+    <span class="k">return</span> <span class="n">get_core_number</span><span class="p">(</span><span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="valid_relative_jobs">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.valid_relative_jobs">[docs]</a>
+<span class="k">def</span> <span class="nf">valid_relative_jobs</span><span class="p">(</span><span class="n">jobs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a valid number of jobs in the range 1 &lt;= jobs &lt;= max_cores.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    jobs : int</span>
+<span class="sd">        An positive or negative integer.  Negative values are processed as</span>
+<span class="sd">        max_cores - jobs + 1.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    valid_jobs : int</span>
+<span class="sd">        The number of jobs available to process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_core_number</span><span class="p">(</span><span class="n">relative_cores</span><span class="p">(</span><span class="n">jobs</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="multitask">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.multitask">[docs]</a>
+<span class="k">def</span> <span class="nf">multitask</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">max_nbytes</span><span class="o">=</span><span class="s1">&#39;1M&#39;</span><span class="p">,</span> <span class="n">force_threading</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force_processes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+              <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process a series of tasks in serial, or in parallel using joblib.</span>
+
+<span class="sd">    `multitask` is used to run a function multiple times on a series of</span>
+<span class="sd">    arguments.  Tasks may be run in series (default), or in parallel using</span>
+<span class="sd">    multi-processing via the joblib package.</span>
+
+<span class="sd">    If an error is encountered while attempting to process in parallel with</span>
+<span class="sd">    joblib, an attempt will be made to process the tasks in series.</span>
+
+<span class="sd">    The function to process multiple times (`func`) must take one of the</span>
+<span class="sd">    following forms::</span>
+
+<span class="sd">        1. result[i] = func(args, iterable[i])</span>
+<span class="sd">        2. result[i] = func(args, kwargs, iterable[i])</span>
+
+<span class="sd">    Here, the above &quot;args&quot; is the same as the `args` argument.  i.e., the</span>
+<span class="sd">    full argument list.  Setting the argument `kwargs` to `None` implies</span>
+<span class="sd">    that `func` takes form 1, while anything else sets multitask to assume</span>
+<span class="sd">    the function is of form 2.</span>
+
+<span class="sd">    Since this is a non-standard method of specifying a function, it is highly</span>
+<span class="sd">    likely the user will have to define their own `func`.  For example, to</span>
+<span class="sd">    use multitask to add ten to a series of numbers:</span>
+
+<span class="sd">    &gt;&gt;&gt; from grig.toolkit.multiproc import multitask</span>
+<span class="sd">    &gt;&gt;&gt; numbers = list(range(5))</span>
+<span class="sd">    &gt;&gt;&gt; numbers</span>
+<span class="sd">    [0, 1, 2, 3, 4]</span>
+<span class="sd">    &gt;&gt;&gt; def add_ten(args, i):</span>
+<span class="sd">    ...     return args[i] + 10</span>
+<span class="sd">    &gt;&gt;&gt; multitask(add_ten, range(len(numbers)), numbers, None)</span>
+<span class="sd">    [10, 11, 12, 13, 14]</span>
+
+<span class="sd">    In the above example, `iterable` has been set to range(len(numbers))</span>
+<span class="sd">    indicating that multitask should supply `i` to `add_ten` multiple times</span>
+<span class="sd">    (0, 1, 2, 3, 4).  Note that `kwargs` is explicitly set to None indicating</span>
+<span class="sd">    that `add_ten` is of form 1.  While multitask may seem like overkill in</span>
+<span class="sd">    this example, it can be highly adaptable for complex procedures.</span>
+
+<span class="sd">    The `skip` parameter can be used to skip processing of certain tasks.</span>
+<span class="sd">    For example:</span>
+
+<span class="sd">    &gt;&gt;&gt; skip = [False] * len(numbers)</span>
+<span class="sd">    &gt;&gt;&gt; skip[2] = True</span>
+<span class="sd">    &gt;&gt;&gt; multitask(add_ten, range(len(numbers)), numbers, None, skip=skip)</span>
+<span class="sd">    [10, 11, 13, 14]</span>
+
+<span class="sd">    By default, parallelization is managed with the loky backend.  If</span>
+<span class="sd">    calling code is known to perform better with the threading backend,</span>
+<span class="sd">    it should be called within the joblib parallel_backend context manager:</span>
+
+<span class="sd">    &gt;&gt;&gt; from joblib import parallel_backend</span>
+<span class="sd">    &gt;&gt;&gt; with parallel_backend(&#39;threading&#39;, n_jobs=2):</span>
+<span class="sd">    ...    multitask(add_ten, range(len(numbers)), numbers, None)</span>
+<span class="sd">    [10, 11, 12, 13, 14]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to repeat multiple times on different sets of arguments.</span>
+<span class="sd">        Must be of the form func(args, i) if `kwargs` is None, or</span>
+<span class="sd">        func(args, kwargs, i) otherwise, where `i` is a member of `iterable`.</span>
+<span class="sd">    iterable : iterable</span>
+<span class="sd">        A Python object that can be iterated though such that each member</span>
+<span class="sd">        can be passed to `func` as the final argument.</span>
+<span class="sd">    args</span>
+<span class="sd">        Anything that should be passed to `func` as the first argument.  The</span>
+<span class="sd">        intended use is such that the output of `func` is</span>
+<span class="sd">        result[i] = f(args[iterable[i]]).</span>
+<span class="sd">    kwargs : None or anything</span>
+<span class="sd">        If set to None, multitask assumes `func` is of the form func(args, i).</span>
+<span class="sd">        Otherwise, multitask assumes `func` is of the form</span>
+<span class="sd">        func(args, kwargs, i).</span>
+<span class="sd">    jobs : int, optional</span>
+<span class="sd">        If set to a positive integer, processes tasks in parallel using</span>
+<span class="sd">        `jobs` threads.  If negative, sets the number of threads to the</span>
+<span class="sd">        number of CPUs - jobs + 1.  i.e., if jobs = -1, multitask will use</span>
+<span class="sd">        all available CPUs.</span>
+<span class="sd">    skip : array_like of bool, optional</span>
+<span class="sd">        Should be of len(`iterable`), where a value of True signifies that</span>
+<span class="sd">        processing should be skipped for that task and omitted from the</span>
+<span class="sd">        final result.</span>
+<span class="sd">    max_nbytes : int or str or None, optional</span>
+<span class="sd">        Threshold on the size of arrays passed to the workers that triggers</span>
+<span class="sd">        automated memory mapping in temp_folder. Can be an int in Bytes, or a</span>
+<span class="sd">        human-readable string, e.g., ‘1M’ for 1 megabyte. Use None to disable</span>
+<span class="sd">        memmapping of large arrays. Only active when backend=”loky” or</span>
+<span class="sd">        “multiprocessing”.  The default is currently set to &#39;1M&#39; for</span>
+<span class="sd">        consistency with the joblib library.  Note that memmapping disallows</span>
+<span class="sd">        in-place modification of data, so if this functionality is required set</span>
+<span class="sd">        `max_nbytes` to `None`.</span>
+<span class="sd">    force_threading : bool, optional</span>
+<span class="sd">        If `True`, force joblib to run parrallel jobs using threads so that</span>
+<span class="sd">        shared memory can be used.  Otherwise, threading will only occur</span>
+<span class="sd">        when parallel processing is spawned from a child process of the main</span>
+<span class="sd">        thread.</span>
+<span class="sd">    force_processes : bool, optional</span>
+<span class="sd">        If `True`, force joblib to run parallel jobs using CPUs rather than</span>
+<span class="sd">        threads.  This can sometimes lead to unexpected outcomes when the</span>
+<span class="sd">        multiprocessing is launched from a non-main thread.  Pickling arguments</span>
+<span class="sd">        prior and return values during processing is recommended in this case.</span>
+<span class="sd">    logger : logging.Logger, optional</span>
+<span class="sd">        If supplied, will attempt to produce sensibly ordered logs for the</span>
+<span class="sd">        multiprocessing tasks for all handlers.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        The final output where result[i] = func(args, iterable[i]).  Will be</span>
+<span class="sd">        of length len(`iterable`) if `skip` is None, otherwise</span>
+<span class="sd">        len(iterable) - sum(skip).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">_serial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_parallel</span><span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">jobs</span><span class="p">),</span> <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">,</span>
+        <span class="n">max_nbytes</span><span class="o">=</span><span class="n">max_nbytes</span><span class="p">,</span> <span class="n">force_threading</span><span class="o">=</span><span class="n">force_threading</span><span class="p">,</span>
+        <span class="n">force_processes</span><span class="o">=</span><span class="n">force_processes</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_wrap_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrap given arguments and keyword arguments to a function.</span>
+
+<span class="sd">    Removes the requirement of supplying args and kwargs to the given function.</span>
+<span class="sd">    :func:`multitask` should be run on a function supplied in a very strict</span>
+<span class="sd">    format, and actually only takes one single runtime argument.  Functions</span>
+<span class="sd">    should be designed so that they are of the form:</span>
+
+<span class="sd">    def some_function(args, kwargs, run_time_argument):</span>
+<span class="sd">        &lt;code here&gt;</span>
+
+<span class="sd">    or</span>
+
+<span class="sd">    def some_function(args, run_time_argument):</span>
+<span class="sd">        &lt;code here&gt;</span>
+
+<span class="sd">    All calls to `some_function` will always contain the same arguments and</span>
+<span class="sd">    keyword arguments, but a different run time argument will be supplied to</span>
+<span class="sd">    each call.  An easy way to set this up is to set args and kwargs to a list</span>
+<span class="sd">    of arguments for each call, and then select which set to use using the</span>
+<span class="sd">    run time argument.  For example, you could set up something like:</span>
+
+<span class="sd">    &gt;&gt;&gt; arguments = [(x, x + 2) for x in range(10)]</span>
+<span class="sd">    &gt;&gt;&gt; keyword_arguments = {&#39;multiply&#39;: True}</span>
+<span class="sd">    &gt;&gt;&gt; def my_func(my_args, my_kwargs, index):</span>
+<span class="sd">    ...     x, y = my_args[index]</span>
+<span class="sd">    ...     if my_kwargs[&#39;multiply&#39;]:</span>
+<span class="sd">    ...         return x * y</span>
+<span class="sd">    ...     else:</span>
+<span class="sd">    ...         return x + y</span>
+
+<span class="sd">    :func:`_wrap_function` will remove the requirement to always specify args</span>
+<span class="sd">    and kwargs for each call, so `my_func(args, kwargs, index)` is the same</span>
+<span class="sd">    as `_wrap_function(my_func, args, kwargs)(index)`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to wrap.</span>
+<span class="sd">    args : tuple</span>
+<span class="sd">        The function arguments.</span>
+<span class="sd">    kwargs : dict or None</span>
+<span class="sd">        Any function keyword arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    wrapped_function : function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_wrap_function_with_logger</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">logger_pickle_file</span><span class="p">,</span>
+                               <span class="n">log_directory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrap a function and also halt all logging until the process is complete.</span>
+
+<span class="sd">    Please see :func:`_wrap_function` for details on how the function should</span>
+<span class="sd">    be implemented.  Additionally, a logger is unpickled and used to emit any</span>
+<span class="sd">    log messages one the function is complete.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to wrap.</span>
+<span class="sd">    args : tuple</span>
+<span class="sd">        The function arguments.</span>
+<span class="sd">    kwargs : dict or None</span>
+<span class="sd">        Any function keyword arguments.</span>
+<span class="sd">    logger_pickle_file : str</span>
+<span class="sd">        A filename containing the logger to unpickle and use.</span>
+<span class="sd">    log_directory : str</span>
+<span class="sd">        Pickles the log records to the given directory.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    wrapped_function : function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wrapped</span> <span class="o">=</span> <span class="n">_wrap_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">partial</span><span class="p">(</span><span class="n">wrapped_with_logger</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">,</span> <span class="n">logger_pickle_file</span><span class="p">,</span>
+                   <span class="n">log_directory</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="wrapped_with_logger">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.wrapped_with_logger">[docs]</a>
+<span class="k">def</span> <span class="nf">wrapped_with_logger</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">logger_pickle_file</span><span class="p">,</span> <span class="n">log_directory</span><span class="p">,</span>
+                        <span class="n">run_arg_and_identifier</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the results of the function in multitask and save log records.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to wrap.</span>
+<span class="sd">    logger_pickle_file : str</span>
+<span class="sd">        The file path to the pickled logger (:class:`logging.Logger`).</span>
+<span class="sd">    log_directory : str</span>
+<span class="sd">        The directory in which to store the log records for each run.</span>
+<span class="sd">    run_arg_and_identifier : 2-tuple</span>
+<span class="sd">        Any run time argument that the wrapped function returned by</span>
+<span class="sd">        :func:`_wrap_function` requires (object), and an integer identifier</span>
+<span class="sd">        signifying it&#39;s position in a list of run arguments.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results : object</span>
+<span class="sd">        The results of running `func` on a given run time argument.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpickle_file</span><span class="p">(</span><span class="n">logger_pickle_file</span><span class="p">)</span>
+    <span class="n">run_arg</span><span class="p">,</span> <span class="n">identifier</span> <span class="o">=</span> <span class="n">run_arg_and_identifier</span>
+    <span class="n">log_basename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;multitask_log_</span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2">.p&quot;</span>
+    <span class="n">record_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="n">log_basename</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">log_records_to_pickle_file</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">record_file</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">run_arg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="wrap_function">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.wrap_function">[docs]</a>
+<span class="k">def</span> <span class="nf">wrap_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_directory</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrap a function for use with :func:`multitask`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to wrap.</span>
+<span class="sd">    args : tuple</span>
+<span class="sd">        The function arguments.</span>
+<span class="sd">    kwargs : dict, optional</span>
+<span class="sd">        Any function keyword arguments.</span>
+<span class="sd">    logger : logging.Logger or str, optional</span>
+<span class="sd">        A logger used to output any log messages once complete.  If supplied,</span>
+<span class="sd">        a valid `log_directory` must also be supplied.  A path to a pickle file</span>
+<span class="sd">        containing the logger may also be supplied.</span>
+<span class="sd">    log_directory : str, optional</span>
+<span class="sd">        If supplied together with a `logger`, will store all log records to</span>
+<span class="sd">        a pickle file in the given directory.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    wrapped_function, log_pickle_file : function, str</span>
+<span class="sd">        The wrapped function and the file location of the pickle file for any</span>
+<span class="sd">        supplied logger.  If no logger was supplied, this value will be `None`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_wrap_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">),</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span>
+            <span class="n">log_directory</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Must supply a valid log directory.  Received &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">log_directory</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+        <span class="n">pickle_file</span> <span class="o">=</span> <span class="n">logger</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger_id</span> <span class="o">=</span> <span class="nb">id</span><span class="p">((</span><span class="n">logger</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+        <span class="n">tmp_fh</span><span class="p">,</span> <span class="n">tmp_fname</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;multitask_logger_</span><span class="si">{</span><span class="n">logger_id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.p&#39;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">tmp_fh</span><span class="p">)</span>
+        <span class="n">pickle_file</span> <span class="o">=</span> <span class="n">pickle_object</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">tmp_fname</span><span class="p">)</span>
+    <span class="n">multi_func</span> <span class="o">=</span> <span class="n">_wrap_function_with_logger</span><span class="p">(</span>
+        <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">,</span> <span class="n">log_directory</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">multi_func</span><span class="p">,</span> <span class="n">pickle_file</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_serial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Processes tasks serially without any multiprocessing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to repeat multiple times on different sets of arguments.</span>
+<span class="sd">        Must be of the form func(args, i) if `kwargs` is None, or</span>
+<span class="sd">        func(args, kwargs, i) otherwise, where `i` is a member of `iterable`.</span>
+<span class="sd">    args</span>
+<span class="sd">        Anything that should be passed to `func` as the first argument.  The</span>
+<span class="sd">        intended use is such that the output of `func` is</span>
+<span class="sd">        result[i] = f(args[iterable[i]]).</span>
+<span class="sd">    kwargs : None or anything</span>
+<span class="sd">        If set to None, multitask assumes `func` is of the form func(args, i).</span>
+<span class="sd">        Otherwise, multitask assumes `func` is of the form</span>
+<span class="sd">        func(args, kwargs, i).</span>
+<span class="sd">    iterable : iterable</span>
+<span class="sd">        A Python object that can be iterated though such that each member</span>
+<span class="sd">        can be passed to `func` as the final argument.</span>
+<span class="sd">    skip : array_like of bool, optional</span>
+<span class="sd">        Should be of len(`iterable`), where a value of True signifies that</span>
+<span class="sd">        processing should be skipped for that task and omitted from the</span>
+<span class="sd">        final result.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        The final output where result[i] = func(args, iterable[i]).  Will be</span>
+<span class="sd">        of length len(`iterable`) if `skip` is None, otherwise</span>
+<span class="sd">        len(iterable) - sum(skip).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">multi_func</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">wrap_function</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">skip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">thing</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multi_func</span><span class="p">(</span><span class="n">thing</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">skip_it</span><span class="p">,</span> <span class="n">thing</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">skip</span><span class="p">,</span> <span class="n">iterable</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">skip_it</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">multi_func</span><span class="p">(</span><span class="o">+</span><span class="n">thing</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">_parallel</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">force_threading</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force_processes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+              <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">joblib_kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    Process a given list of jobs in parallel.</span>
+
+<span class="sd">    Joblib and the multiprocessing package are currently used to process jobs</span>
+<span class="sd">    in parallel.  Generally, the joblib package appears to produce results</span>
+<span class="sd">    faster than the base Python multiprocessing package but cannot always be</span>
+<span class="sd">    implemented.  The default package will generally be set to joblib unless</span>
+<span class="sd">    multiprocessing has been specifically requested but we :func:`_parallel`</span>
+<span class="sd">    has been started on a non-main thread.</span>
+
+<span class="sd">    Unfortunately, the joblib loky backend will always start new processes</span>
+<span class="sd">    using a fork followed by an exec() which is not safe for certain operating</span>
+<span class="sd">    systems, especially MacOS.  For Python versions &gt; 3.8, the multiprocessing</span>
+<span class="sd">    module starts new processes using the spawn method which is safe for nearly</span>
+<span class="sd">    all platforms, but does introduce additional overhead.  In cases where</span>
+<span class="sd">    multiprocessing is required and the Python version is &lt; 3.8, only serial</span>
+<span class="sd">    reduction will be possible.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    jobs : int</span>
+<span class="sd">        The number of jobs to perform in parallel.</span>
+<span class="sd">    func : function</span>
+<span class="sd">        The function to repeat multiple times on different sets of arguments.</span>
+<span class="sd">        Must be of the form func(args, i) if `kwargs` is None, or</span>
+<span class="sd">        func(args, kwargs, i) otherwise, where `i` is a member of `iterable`.</span>
+<span class="sd">    args</span>
+<span class="sd">        Anything that should be passed to `func` as the first argument.  The</span>
+<span class="sd">        intended use is such that the output of `func` is</span>
+<span class="sd">        result[i] = f(args[iterable[i]]).</span>
+<span class="sd">    kwargs : None or anything</span>
+<span class="sd">        If set to None, multitask assumes `func` is of the form func(args, i).</span>
+<span class="sd">        Otherwise, multitask assumes `func` is of the form</span>
+<span class="sd">        func(args, kwargs, i).</span>
+<span class="sd">    iterable : iterable</span>
+<span class="sd">        A Python object that can be iterated though such that each member</span>
+<span class="sd">        can be passed to `func` as the final argument.</span>
+<span class="sd">    skip : array_like of bool, optional</span>
+<span class="sd">        Should be of len(`iterable`), where a value of True signifies that</span>
+<span class="sd">        processing should be skipped for that task and omitted from the</span>
+<span class="sd">        final result.</span>
+<span class="sd">    force_threading : bool, optional</span>
+<span class="sd">        If `True`, run the jobs in parallel using a thread pool.  This is</span>
+<span class="sd">        preferable for high I/O and low CPU intensive operations or when access</span>
+<span class="sd">        to shared variables is required.  Cannot be used in conjunction with</span>
+<span class="sd">        `force_processes`.</span>
+<span class="sd">    force_processes : bool, optional</span>
+<span class="sd">        If `True`, run the jobs in parallel using multiprocessing.  This is</span>
+<span class="sd">        preferable for computationally expensive tasks but creates copies of</span>
+<span class="sd">        the main process on each CPU, so no ready access to shared variables</span>
+<span class="sd">        exists and startup costs are greater.</span>
+<span class="sd">    package : str, optional</span>
+<span class="sd">        The multiprocessing package to use.  May be one of {&#39;joblib&#39;,</span>
+<span class="sd">        &#39;multiprocessing&#39;, None}.  `None` (the default) will estimate the best</span>
+<span class="sd">        package at runtime.</span>
+<span class="sd">    logger : Logger, optional</span>
+<span class="sd">        The logger with which to emit any messages during `func`.</span>
+<span class="sd">    joblib_kwargs : dict, optional</span>
+<span class="sd">        Optional keyword arguments to pass into :class:`joblib.Parallel` if</span>
+<span class="sd">        applicable.  The `require` and `backend` options will be overwritten</span>
+<span class="sd">        if threading is used.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : list</span>
+<span class="sd">        The final output where result[i] = func(args, iterable[i]).  Will be</span>
+<span class="sd">        of length len(`iterable`) if `skip` is None, otherwise</span>
+<span class="sd">        len(iterable) - sum(skip).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">force_threading</span> <span class="ow">and</span> <span class="n">force_processes</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Can either force threading or processes, not both.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Check if this is just a single job.</span>
+    <span class="k">if</span> <span class="n">jobs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">jobs</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_serial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">skip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">run_args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">run_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">skip</span><span class="p">,</span> <span class="n">iterable</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+
+    <span class="n">required_jobs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">jobs</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">run_args</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">required_jobs</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_serial</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+
+    <span class="c1"># Determine which package to use.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">in_windows_os</span><span class="p">():</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;not installed&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">delayed</span><span class="p">,</span> <span class="n">Parallel</span>
+            <span class="n">have_joblib</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">have_joblib</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">delayed</span> <span class="o">=</span> <span class="n">Parallel</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="n">reason</span> <span class="o">=</span> <span class="s1">&#39;not available on Windows&#39;</span>
+        <span class="n">have_joblib</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">delayed</span> <span class="o">=</span> <span class="n">Parallel</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">requested_package</span> <span class="o">=</span> <span class="n">package</span>
+    <span class="k">if</span> <span class="n">package</span> <span class="o">==</span> <span class="s1">&#39;joblib&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">have_joblib</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot use joblib package: </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">package</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="s1">&#39;joblib&#39;</span> <span class="k">if</span> <span class="n">have_joblib</span> <span class="k">else</span> <span class="s1">&#39;multiprocessing&#39;</span>
+    <span class="k">elif</span> <span class="n">package</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;multiprocessing&#39;</span><span class="p">,</span> <span class="s1">&#39;joblib&#39;</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The </span><span class="si">{</span><span class="n">package</span><span class="si">}</span><span class="s2"> package is not supported.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">force_processes</span><span class="p">:</span>
+        <span class="n">use_threads</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_main_thread</span><span class="p">():</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">if</span> <span class="n">package</span> <span class="o">==</span> <span class="s1">&#39;joblib&#39;</span><span class="p">:</span>
+                <span class="n">package</span> <span class="o">=</span> <span class="s1">&#39;multiprocessing&#39;</span>
+                <span class="k">if</span> <span class="n">requested_package</span> <span class="o">==</span> <span class="s1">&#39;joblib&#39;</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;Cannot use joblib for multiprocessing from &quot;</span>
+                        <span class="s2">&quot;child thread: will use the multiprocessing &quot;</span>
+                        <span class="s2">&quot;package.&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">force_threading</span><span class="p">:</span>
+        <span class="n">use_threads</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">use_threads</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">in_main_thread</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log_directory</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;multitask_temp_log_dir_&#39;</span><span class="p">)</span>
+        <span class="n">run_args</span> <span class="o">=</span> <span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">run_args</span><span class="p">)]</span>
+        <span class="n">initial_log_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log_directory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">initial_log_level</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">multi_func</span><span class="p">,</span> <span class="n">log_pickle_file</span> <span class="o">=</span> <span class="n">wrap_function</span><span class="p">(</span>
+        <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">log_directory</span><span class="o">=</span><span class="n">log_directory</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">package</span> <span class="o">==</span> <span class="s1">&#39;multiprocessing&#39;</span><span class="p">:</span>
+        <span class="n">pool_class</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">pool</span><span class="o">.</span><span class="n">ThreadPool</span> <span class="k">if</span> <span class="n">use_threads</span> <span class="k">else</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span>
+        <span class="k">with</span> <span class="n">pool_class</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">required_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">multi_func</span><span class="p">,</span> <span class="n">run_args</span><span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+        <span class="n">purge_multitask_logs</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="n">log_pickle_file</span><span class="p">,</span> <span class="n">use_logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="c1"># Joblib processing...</span>
+    <span class="n">joblib_kwargs</span><span class="p">[</span><span class="s1">&#39;n_jobs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">required_jobs</span>
+    <span class="k">if</span> <span class="n">use_threads</span><span class="p">:</span>
+        <span class="n">joblib_kwargs</span><span class="p">[</span><span class="s1">&#39;require&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;sharedmem&#39;</span>
+        <span class="n">joblib_kwargs</span><span class="p">[</span><span class="s1">&#39;backend&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;threading&#39;</span>
+
+    <span class="k">if</span> <span class="s1">&#39;mmap_mode&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">joblib_kwargs</span><span class="p">:</span>
+        <span class="n">joblib_kwargs</span><span class="p">[</span><span class="s1">&#39;mmap_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;r&#39;</span>  <span class="c1"># was previously r</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">delayed</span><span class="p">(</span><span class="n">multi_func</span><span class="p">)(</span><span class="n">run_arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">run_arg</span> <span class="ow">in</span> <span class="n">run_args</span><span class="p">]</span>
+
+    <span class="c1"># joblib does not reliably close child processes</span>
+    <span class="c1"># Store current child processes</span>
+    <span class="n">current_process</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">()</span>
+    <span class="n">subprocesses_before</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">current_process</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+
+    <span class="n">executor</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="o">**</span><span class="n">joblib_kwargs</span><span class="p">)</span>
+    <span class="n">processed_result</span> <span class="o">=</span> <span class="n">executor</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">initial_log_level</span><span class="p">)</span>
+
+    <span class="n">purge_multitask_logs</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="n">log_pickle_file</span><span class="p">,</span> <span class="n">use_logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
+
+    <span class="c1"># Terminate new child processes that are still running.</span>
+    <span class="n">subprocesses_after</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">current_process</span><span class="o">.</span><span class="n">children</span><span class="p">(</span><span class="n">recursive</span><span class="o">=</span><span class="kc">True</span><span class="p">)])</span>
+    <span class="n">terminate</span> <span class="o">=</span> <span class="p">(</span><span class="n">subprocesses_after</span> <span class="o">-</span> <span class="n">subprocesses_before</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">in_windows_os</span><span class="p">():</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">for</span> <span class="n">subprocess</span> <span class="ow">in</span> <span class="n">terminate</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">subprocess</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">CTRL_BREAK_EVENT</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ProcessLookupError</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">subprocess</span> <span class="ow">in</span> <span class="n">terminate</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">subprocess</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ProcessLookupError</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">del</span> <span class="n">executor</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">processed_result</span>
+
+
+<div class="viewcode-block" id="pickle_object">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.pickle_object">[docs]</a>
+<span class="k">def</span> <span class="nf">pickle_object</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pickle a object and save to the given filename.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : object</span>
+<span class="sd">        The object to pickle.</span>
+<span class="sd">    filename : str or None</span>
+<span class="sd">        If `filename` points to a writeable on-disk location, `obj` will</span>
+<span class="sd">        be pickled and saved to that location.  If `None`, nothing will</span>
+<span class="sd">        happen.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output : str or object</span>
+<span class="sd">        Either the `filename` if the object was pickled, or `obj` if it</span>
+<span class="sd">        wasn&#39;t.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">cloudpickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filename</span></div>
+
+
+
+<div class="viewcode-block" id="unpickle_file">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.unpickle_file">[docs]</a>
+<span class="k">def</span> <span class="nf">unpickle_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unpickle a string argument if it is a file, and return the result.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : object or str</span>
+<span class="sd">        If the argument is a string and a valid file path, it will be</span>
+<span class="sd">        unpickled and the result will be available in the result.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    obj, pickle_file : object, str</span>
+<span class="sd">        If the argument passed in was not a string or an invalid file,</span>
+<span class="sd">        the resulting output `obj` will be `argument` and `pickle_file` will</span>
+<span class="sd">        be `None`.  If `argument` was a valid file path to a pickle file,</span>
+<span class="sd">        `obj` will be the unpickled result, and `pickle`file` will be</span>
+<span class="sd">        `argument`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pickle file not found: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">pickle_file</span> <span class="o">=</span> <span class="n">filename</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pickle_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">cloudpickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span><span class="p">,</span> <span class="n">pickle_file</span></div>
+
+
+
+<div class="viewcode-block" id="pickle_list">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.pickle_list">[docs]</a>
+<span class="k">def</span> <span class="nf">pickle_list</span><span class="p">(</span><span class="n">object_list</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">naming_attribute</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">class_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pickle a list of objects to a temporary directory.</span>
+
+<span class="sd">    The list will be updated in-place, with each element being replaced</span>
+<span class="sd">    by the on-disk file path to the pickle file in which it is saved.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    object_list : list (object)</span>
+<span class="sd">        A list of things to pickle.</span>
+<span class="sd">    prefix : str, optional</span>
+<span class="sd">        The prefix for the temporary directory in which to store the pickle</span>
+<span class="sd">        files.  See :func:`tempfile.mkdtemp` for further information.</span>
+<span class="sd">    naming_attribute : str, optional</span>
+<span class="sd">        The attribute used to name the pickle file.  If not supplied,</span>
+<span class="sd">        defaults to id(object).</span>
+<span class="sd">    class_type : class, optional</span>
+<span class="sd">        If supplied, only objects of this class type will be pickled.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    temporary_directory : str</span>
+<span class="sd">        The temporary directory in which the objects are saved as pickle</span>
+<span class="sd">        files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">object_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">class_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">class_type</span><span class="p">):</span>
+                <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">naming_attribute</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="n">naming_attribute</span><span class="p">,</span><span class="w"> </span><span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span><span class="si">}</span><span class="s1">.p&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s1">.p&#39;</span>
+        <span class="n">pickle_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pickle_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">cloudpickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">object_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">pickle_file</span>
+    <span class="k">return</span> <span class="n">directory</span></div>
+
+
+
+<div class="viewcode-block" id="unpickle_list">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.unpickle_list">[docs]</a>
+<span class="k">def</span> <span class="nf">unpickle_list</span><span class="p">(</span><span class="n">pickle_files</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Restore pickle files to objects in-place.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pickle_files : list (str)</span>
+<span class="sd">        A list of on-disk pickle files to restore.  The restored objects</span>
+<span class="sd">        will replace the filepath for each element in the list.</span>
+<span class="sd">    delete : bool, optional</span>
+<span class="sd">        If `True`, delete each pickle file once it has been restored.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pickle_files</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pickle_files</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pickle_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pickle_files</span><span class="p">):</span>
+        <span class="n">obj</span><span class="p">,</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">unpickle_file</span><span class="p">(</span><span class="n">pickle_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># not a valid file</span>
+            <span class="k">continue</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="k">if</span> <span class="n">delete</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="in_main_thread">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.in_main_thread">[docs]</a>
+<span class="k">def</span> <span class="nf">in_main_thread</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return whether the process is running in the main thread.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    main_thread: bool</span>
+<span class="sd">        `True` if this process is running in the main thread, and `False` if</span>
+<span class="sd">        it is running in a child process.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="o">==</span> <span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="log_with_multi_handler">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.log_with_multi_handler">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">log_with_multi_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context manager to temporarily log messages for unique processes/threads</span>
+
+<span class="sd">    Temporarily disables all log handlers and outputs the results to a</span>
+<span class="sd">    dictionary of the form {(process, thread): list(records)} where process</span>
+<span class="sd">    is returned by :func:`multiprocessing.current_process()` and thread is</span>
+<span class="sd">    returned by :func:`threading.current_thread()`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    multi_handler : MultitaskHandler</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">original_handlers</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">multi_handler</span> <span class="o">=</span> <span class="n">MultitaskHandler</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">multi_handler</span><span class="p">)</span>
+
+    <span class="n">initial_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">)</span>  <span class="c1"># Need to capture all records</span>
+
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">original_handlers</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="k">yield</span> <span class="n">multi_handler</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">initial_level</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">original_handlers</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">multi_handler</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="log_for_multitask">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.log_for_multitask">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">log_for_multitask</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Context manager to output log messages during multiprocessing.</span>
+
+<span class="sd">    Stores all log messages during multiprocessing, and emits them using</span>
+<span class="sd">    the given logger once complete.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initial_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="k">with</span> <span class="n">log_with_multi_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="k">as</span> <span class="n">multi_handler</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">multi_handler</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">initial_level</span><span class="p">)</span>
+
+    <span class="n">multi_handler</span><span class="o">.</span><span class="n">reorder_records</span><span class="p">()</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">MultitaskHandler</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">multi_handler</span><span class="o">.</span><span class="n">records</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">record</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">handler</span><span class="o">.</span><span class="n">records</span><span class="p">:</span>
+                    <span class="n">handler</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">multi_handler</span><span class="o">.</span><span class="n">records</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="purge_multitask_logs">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.purge_multitask_logs">[docs]</a>
+<span class="k">def</span> <span class="nf">purge_multitask_logs</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="n">log_pickle_file</span><span class="p">,</span> <span class="n">use_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove all temporary logging files/directories and handle log records.</span>
+
+<span class="sd">    The user must supply a `log_directory` containing pickle files of the log</span>
+<span class="sd">    records to handle.  The `log_pickle_file` contains the logger used to</span>
+<span class="sd">    handle these records.  Following completion, both the &#39;log_directory` and</span>
+<span class="sd">    `log_pickle_file` will be deleted from the file system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_directory : str</span>
+<span class="sd">        The directory in which the log records for each run were stored.  This</span>
+<span class="sd">        directory will be removed.</span>
+<span class="sd">    log_pickle_file : str</span>
+<span class="sd">        The pickle file containing the logger for multitask.  This will be</span>
+<span class="sd">        removed.</span>
+<span class="sd">    use_logger : Logger, optional</span>
+<span class="sd">        The logger to handle any log records.  If not supplied, defaults to</span>
+<span class="sd">        that found in the log_pickle_file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log_pickle_file</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span>
+            <span class="n">log_pickle_file</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">log_directory</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">log_pickle_file</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">use_logger</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_pickle_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">cloudpickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">use_logger</span>
+
+    <span class="n">pickle_files</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">log_directory</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">pickle_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">log_pickle_file</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">log_directory</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">id_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;multitask_log_(.*)\.p$&#39;</span><span class="p">)</span>
+    <span class="n">identifiers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">pickle_file</span> <span class="ow">in</span> <span class="n">pickle_files</span><span class="p">:</span>
+        <span class="n">search</span> <span class="o">=</span> <span class="n">id_search</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pickle_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">search</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">identifiers</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">search</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">pickle_file</span>
+
+    <span class="n">job_logs</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_directory</span><span class="p">,</span> <span class="n">identifiers</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">identifiers</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+
+    <span class="n">unpickle_list</span><span class="p">(</span><span class="n">job_logs</span><span class="p">)</span>  <span class="c1"># deletes files and converts to log records</span>
+
+    <span class="k">for</span> <span class="n">job_log</span> <span class="ow">in</span> <span class="n">job_logs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">job_log</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">levelno</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">log_pickle_file</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">log_directory</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="log_records_to_pickle_file">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.log_records_to_pickle_file">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">log_records_to_pickle_file</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">pickle_file</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Store the log records in a pickle file rather than emitting.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+<span class="sd">    pickle_file : str</span>
+<span class="sd">        The path to the pickle file that will contain the log records.</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">initial_level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="k">with</span> <span class="n">log_with_multi_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span> <span class="k">as</span> <span class="n">multi_handler</span><span class="p">:</span>
+        <span class="k">yield</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">initial_level</span><span class="p">)</span>
+    <span class="n">multi_handler</span><span class="o">.</span><span class="n">reorder_records</span><span class="p">()</span>
+    <span class="n">standard_records</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">multi_handler</span><span class="o">.</span><span class="n">records</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pickle_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">cloudpickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">standard_records</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">in_windows_os</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return `True` if running from a Windows OS.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;nt&#39;</span>
+
+
+<div class="viewcode-block" id="MultitaskHandler">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MultitaskHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A log handler for multitask.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a multitask log Handler.</span>
+
+<span class="sd">        The multitask log handler is designed to separately store log messages</span>
+<span class="sd">        for each process or thread in order to retrieve those messages later</span>
+<span class="sd">        for standard logging.  This allows log messages to be output in order</span>
+<span class="sd">        for each process.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">Handler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="MultitaskHandler.emit">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler.emit">[docs]</a>
+    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Emit a log record.</span>
+
+<span class="sd">        Stores the record in the lookup dictionary for the</span>
+<span class="sd">        given process/thread. Each message is stored in the received</span>
+<span class="sd">        order for later retrieval once whatever multiprocessing</span>
+<span class="sd">        job is complete.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        record : logging.LogRecord</span>
+<span class="sd">            The record to emit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">current_process</span><span class="p">()</span>
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
+        <span class="n">emit_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">emit_time</span><span class="p">,</span> <span class="n">process</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">record</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MultitaskHandler.reorder_records">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.multiproc.MultitaskHandler.reorder_records">[docs]</a>
+    <span class="k">def</span> <span class="nf">reorder_records</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Re-order the records in a sensible order.</span>
+
+<span class="sd">        The records are sorted by process and then thread in chronological</span>
+<span class="sd">        order.  I.e., records are grouped by processes, starting with the</span>
+<span class="sd">        first process that appears in the logs and then within that process</span>
+<span class="sd">        group, a similar grouping is performed for each child thread.  Each</span>
+<span class="sd">        process-thread grouping will contain a list of log records in the</span>
+<span class="sd">        order that they where emitted.</span>
+
+<span class="sd">        Note that each record is a tuple of the form (time, process, thread,</span>
+<span class="sd">        log_record).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">records</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># Try to figure out the main and child threads which can be very</span>
+        <span class="c1"># hard since there is no record in the thread objects, and GUIs may</span>
+        <span class="c1"># not always launch processes from the main thread.</span>
+
+        <span class="c1"># Need to separate out logs for separate processes</span>
+        <span class="n">process_logs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">records</span><span class="p">):</span>
+            <span class="n">t</span><span class="p">,</span> <span class="n">process</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">info</span>
+
+            <span class="k">if</span> <span class="n">process</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">process_logs</span><span class="p">:</span>
+                <span class="n">process_logs</span><span class="p">[</span><span class="n">process</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="n">process_log</span> <span class="o">=</span> <span class="n">process_logs</span><span class="p">[</span><span class="n">process</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">process_log</span><span class="p">:</span>
+                <span class="n">process_log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="n">ordered</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">process</span><span class="p">,</span> <span class="n">process_info</span> <span class="ow">in</span> <span class="n">process_logs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ordered_logs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">main_thread</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">thread_logs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">process_info</span><span class="p">:</span>
+                <span class="n">t</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">info</span>
+                <span class="k">if</span> <span class="n">main_thread</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">main_thread</span> <span class="o">=</span> <span class="n">thread</span>
+                <span class="c1"># Note that coverage cannot be determined in threads.</span>
+                <span class="k">if</span> <span class="n">thread</span> <span class="o">==</span> <span class="n">main_thread</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thread_logs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                        <span class="k">for</span> <span class="n">thread_info</span> <span class="ow">in</span> <span class="n">thread_logs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                            <span class="n">ordered_logs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">thread_info</span><span class="p">)</span>
+                        <span class="n">thread_logs</span> <span class="o">=</span> <span class="p">{}</span>
+
+                    <span class="n">ordered_logs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">thread</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">thread_logs</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                    <span class="n">thread_logs</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">thread_log</span> <span class="o">=</span> <span class="n">thread_logs</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span>  <span class="c1"># pragma: no cover</span>
+                <span class="n">thread_log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">thread</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;MainThread&#39;</span>
+                        <span class="ow">or</span> <span class="ow">not</span> <span class="n">thread</span><span class="o">.</span><span class="n">daemon</span><span class="p">):</span>   <span class="c1"># pragma: no cover</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thread_logs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">thread_info</span> <span class="ow">in</span> <span class="n">thread_logs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                            <span class="n">ordered_logs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">thread_info</span><span class="p">)</span>
+                        <span class="n">thread_logs</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">main_thread</span> <span class="o">=</span> <span class="n">thread</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">thread_logs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">for</span> <span class="n">thread_info</span> <span class="ow">in</span> <span class="n">thread_logs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="n">ordered_logs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">thread_info</span><span class="p">)</span>
+
+            <span class="n">ordered</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ordered_logs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">records</span> <span class="o">=</span> <span class="n">ordered</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.multiproc</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

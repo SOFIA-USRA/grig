@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.toolkit.splines.spline &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/plot_directive.css" />
+    <script src="../../../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.splines.spline</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.toolkit.splines.spline</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">grig.toolkit.splines.spline_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">flat_index_mapping</span><span class="p">,</span> <span class="n">build_observation</span><span class="p">,</span>
+    <span class="n">find_knots</span><span class="p">,</span> <span class="n">create_ordering</span><span class="p">,</span> <span class="n">solve_observation</span><span class="p">,</span>
+    <span class="n">add_knot</span><span class="p">,</span> <span class="n">knot_fit</span><span class="p">,</span> <span class="n">calculate_minimum_bandwidth</span><span class="p">,</span> <span class="n">check_input_arrays</span><span class="p">,</span>
+    <span class="n">determine_smoothing_spline</span><span class="p">,</span> <span class="n">perform_fit</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Spline&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Spline">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline">[docs]</a>
+<span class="k">class</span> <span class="nc">Spline</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                 <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knot_estimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+                 <span class="n">fix_knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iteration</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">reduce_degrees</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">solve</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a Spline object.</span>
+
+<span class="sd">        This is a Python implementation of the Fortran fitpack spline based</span>
+<span class="sd">        routines (Diercchx 1993) but is not limited to a maximum of</span>
+<span class="sd">        2-dimensions.  Fast numerical processing is achieved using the `numba`</span>
+<span class="sd">        Python package (Lam et. al., 2015).</span>
+
+<span class="sd">        The actual spline fitting (representation) is performed during</span>
+<span class="sd">        initialization from user supplied data values and coordinates and other</span>
+<span class="sd">        parameters (see below).  Spline evaluations at other coordinates may</span>
+<span class="sd">        then be retrieved using the __call__() method.</span>
+
+<span class="sd">        Spline coefficients and knots are derived iteratively, and will be</span>
+<span class="sd">        deemed acceptable once:</span>
+
+<span class="sd">            abs(sum(residuals^2) - smoothing) &lt;= tolerance * smoothing</span>
+
+<span class="sd">        However, iterations may cease in a variety of scenarios.  Exit</span>
+<span class="sd">        conditions should be examined prior to evaluating the spline and can</span>
+<span class="sd">        be retrieved from the `exit_code` attribute or `exit_message` property.</span>
+
+<span class="sd">        References</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Dierckx, P. Curve and Surface Fitting with Splines (Oxford Univ. Press,</span>
+<span class="sd">            1993).</span>
+<span class="sd">        Lam, S. K., Pitrou, A., &amp; Seibert, S. (2015). Numba: A llvm-based</span>
+<span class="sd">            python jit compiler. In Proceedings of the Second Workshop on</span>
+<span class="sd">            the LLVM Compiler Infrastructure in HPC (pp. 1–6).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        args : n-tuple (numpy.ndarray) or numpy.ndarray</span>
+<span class="sd">            The input arguments of the form (c1, ..., cn, d) or d where c</span>
+<span class="sd">            signifies data coordinates and d are the data values.  If a single</span>
+<span class="sd">            data array is passed in, the coordinates are derived from the data</span>
+<span class="sd">            dimensions.  For example if d is an array of shape (a, b, c), c1</span>
+<span class="sd">            will range from 0 -&gt; a - 1 etc.  If coordinates are specified, the</span>
+<span class="sd">            coordinates for each dimension and the data array should be</span>
+<span class="sd">            one-dimensional.</span>
+<span class="sd">        weights : numpy.ndarray, optional</span>
+<span class="sd">            Optional weights to supply to the spline fit for each data point.</span>
+<span class="sd">            Should be the same shape as the supplied data values.</span>
+<span class="sd">        limits : numpy.ndarray (float), optional</span>
+<span class="sd">            An array of shape (n_dimensions, 2) that may be supplied to set the</span>
+<span class="sd">            minimum and maximum coordinate values used during the spline fit.</span>
+<span class="sd">            For example, limits[1, 0] sets the minimum knot value in the second</span>
+<span class="sd">            dimensions and limits[1, 1] sets the maximum knot value in the</span>
+<span class="sd">            second dimension.  By default this is set to the minimum and</span>
+<span class="sd">            maximum values of the coordinates in each dimension.</span>
+<span class="sd">        degrees : int or numpy.ndarray (int), optional</span>
+<span class="sd">            The degree of spline to fit in each dimension.  Either a scalar can</span>
+<span class="sd">            be supplied pertaining to all dimensions, or an array of shape</span>
+<span class="sd">            (n_dimensions,) can be used.</span>
+<span class="sd">        smoothing : float, optional</span>
+<span class="sd">            Used to specify the smoothing factor.  If set to `None`, the</span>
+<span class="sd">            smoothing will be determined based on user settings or input data.</span>
+<span class="sd">            If `exact` is `True`, smoothing will be disabled (zero).  If</span>
+<span class="sd">            `exact` is `False`, smoothing will be set to n - sqrt(2 * n)</span>
+<span class="sd">            where n is the number of data values.  If supplied, smoothing</span>
+<span class="sd">            must be greater than zero.  See above for further details.  Note</span>
+<span class="sd">            that if smoothing is zero, and the degrees are not equal over</span>
+<span class="sd">            each dimension, smoothing will be set to `eps` due to numerical</span>
+<span class="sd">            instabilities.</span>
+<span class="sd">        knots : list or tuple or numpy.ndarray, optional</span>
+<span class="sd">            A set of starting knot coordinates for each dimension.  If a list</span>
+<span class="sd">            or tuple is supplied it should be of length n_dimensions where</span>
+<span class="sd">            element i is an array of shape (n_knots[i]) for dimension i.</span>
+<span class="sd">            If an array is supplied, it should be of shape</span>
+<span class="sd">            (n_dimension, max(n_knots)). Note that there must be at least</span>
+<span class="sd">            2 * (degree + 1) knots for each dimension.  Unused or invalid</span>
+<span class="sd">            knots may be set to NaN, at the end of each array.  Knot</span>
+<span class="sd">            coordinates must also be monotonically increasing in each</span>
+<span class="sd">            dimension.</span>
+<span class="sd">        knot_estimate : numpy.ndarray (int), optional</span>
+<span class="sd">            The maximum number of knots required for the spline fit in each</span>
+<span class="sd">            dimension and of shape (n_dimensions,).  If not supplied, the knot</span>
+<span class="sd">            estimate will be set to</span>
+<span class="sd">            int((n / n_dimensions) ** n_dimensions^(-1)) or n_knots if</span>
+<span class="sd">            knots were supplied and fixed.</span>
+<span class="sd">        eps : float, optional</span>
+<span class="sd">            A value where 0 &lt; eps &lt; 1.  This defines the magnitude used to</span>
+<span class="sd">            identify singular values in the spline observation matrix (A).  If</span>
+<span class="sd">            any row of A[:, 0] &lt; (eps * max(A[:,0])) it will be considered</span>
+<span class="sd">            singular.</span>
+<span class="sd">        fix_knots : bool, optional</span>
+<span class="sd">            If `True`, do not attempt to modify or add knots to the spline fit.</span>
+<span class="sd">            Only the initial supplied user knots will be used.</span>
+<span class="sd">        tolerance : float, optional</span>
+<span class="sd">            A value in the range 0 &lt; tolerance &lt; 1 used to determine the exit</span>
+<span class="sd">            criteria for the spline fit.  See above for further details.</span>
+<span class="sd">        max_iteration : int, optional</span>
+<span class="sd">            The maximum number of iterations to perform when solving for the</span>
+<span class="sd">            spline fit.</span>
+<span class="sd">        exact : bool, optional</span>
+<span class="sd">            If `True`, the initial knots used will coincide with the actual</span>
+<span class="sd">            input coordinates and smoothing will be set to zero.  No knots</span>
+<span class="sd">            should be supplied by the user in this instance.</span>
+<span class="sd">        reduce_degrees : bool, optional</span>
+<span class="sd">            Only relevant if `exact` is `True`.  If set to `True`, the maximum</span>
+<span class="sd">            allowable degree in each dimension will be limited to</span>
+<span class="sd">            (len(unique(x)) // 2) - 1 where x are the coordinate values in any</span>
+<span class="sd">            dimension.</span>
+<span class="sd">        solve : bool, optional</span>
+<span class="sd">            If `True`, solve for the knots and spline coefficients.  Otherwise,</span>
+<span class="sd">            leave for later processing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float: (n_dimensions, n_data)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float: (n_data,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float: (n_data,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float: (n_dimensions, 2)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knots</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># list (n_dimensions) of float: (knot_size,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_indices</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions, n_data)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_coordinates</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (n_dimensions, knot_estimate)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_weights</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (n_dimensions, knot_estimate)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions, n_panels)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_steps</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_mapping</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions, nk1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_indices</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_data,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">amat</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (max_possible_knots, n_coefficients)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (max_possible_knots,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spline_steps</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions, bandwidth)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_indices</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_data,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_indices</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># int : (n_data,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splines</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (n_dimensions, n_data, max(k1))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># float : (n_coefficients,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension_permutations</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension_order</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permutation</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">change_order</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="mf">0.0</span>  <span class="c1"># absolute tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="mf">1e-3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iteration</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># Return code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># panel dimensions (solution space) (nxx)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nk1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Last valid knot (n_dimensions,)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_panels</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># nreg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_intervals</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># nrint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_sum_square_residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># iband</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitted_knots</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_reduction</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exact</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parse_inputs</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="n">limits</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">smoothing</span><span class="o">=</span><span class="n">smoothing</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="n">knots</span><span class="p">,</span> <span class="n">knot_estimate</span><span class="o">=</span><span class="n">knot_estimate</span><span class="p">,</span>
+            <span class="n">eps</span><span class="o">=</span><span class="n">eps</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">max_iteration</span><span class="o">=</span><span class="n">max_iteration</span><span class="p">,</span>
+            <span class="n">fix_knots</span><span class="o">=</span><span class="n">fix_knots</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="n">exact</span><span class="p">,</span> <span class="n">reduce_degrees</span><span class="o">=</span><span class="n">reduce_degrees</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">solve</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">iterate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">final_reorder</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fitted_knots</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fit_knots</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exit_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns an exit message for the spline fit.  Error codes in the range</span>
+<span class="sd">        -2 -&gt; 0 generally indicate a successful fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        message : str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The spline has a residual sum of squares fp such that &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;abs(fp-s)/s &lt;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The spline is an interpolating spline (fp=0)&quot;</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The spline is a weighted least-squares polynomial of &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;degree </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="si">}</span><span class="s2">. fp gives the upper bound for fp0 &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;for the smoothing factor s = </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="o">-</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Warning.  The coefficients of the spline have been &quot;</span>
+                   <span class="s2">&quot;computed as the minimal norm least-squares solution of &quot;</span>
+                   <span class="s2">&quot;a rank deficient system.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Rank=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="si">}</span><span class="s2"> (full rank)&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rank=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="si">}</span><span class="s2"> (rank deficient &quot;</span>
+                       <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The required storage space exceeds the available storage &quot;</span>
+                   <span class="s2">&quot;space. Probable causes: knot_estimate too small or s is &quot;</span>
+                   <span class="s2">&quot;too small. (fp&gt;s)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A theoretically impossible result when finding a &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;smoothing spline with fp=s.  Probable causes: s too &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;small or badly chosen eps.&quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;(abs(fp-s)/s&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The maximal number of iterations (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iteration</span><span class="si">}</span><span class="s2">) &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;allowed for finding smoothing spline with fp=s has been &quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;reached.  Probable cause: s too small.&quot;</span>
+                   <span class="sa">f</span><span class="s2">&quot;(abs(fp-s)/s&gt;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;No more knots can be added because the number of B-spline&quot;</span>
+                   <span class="s2">&quot;coefficients already exceeds the number of data points m.&quot;</span>
+                   <span class="s2">&quot;Probable causes: either s or m too small. (fp&gt;s)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;No more knots can be added because the additional knot &quot;</span>
+                   <span class="s2">&quot;would coincide with an old one.  Probable cause: s too &quot;</span>
+                   <span class="s2">&quot;small or too large a weight to an inaccurate data point. &quot;</span>
+                   <span class="s2">&quot;(fp&gt;s)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Knots are not initialized.&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;An unknown error occurred.&quot;</span>
+
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the number of values used for the spline fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n : int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">size</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">knot_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the number of knots in each dimension.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n_knots : numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_dimensions,).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># nx, ny</span>
+        <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+            <span class="n">knot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">knot</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">knot</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="k">break</span>
+                <span class="n">n_knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">n_knots</span>
+
+<div class="viewcode-block" id="Spline.parse_inputs">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.parse_inputs">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">limits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                     <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_knots</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">knot_estimate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exact</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduce_degrees</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">max_iteration</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse and apply user inputs to the spline fit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        args : n-tuple (numpy.ndarray) or numpy.ndarray</span>
+<span class="sd">            The input arguments of the form (c1, ..., cn, d) or d where c</span>
+<span class="sd">            signifies data coordinates and d are the data values.  If a single</span>
+<span class="sd">            data array is passed in, the coordinates are derived from the data</span>
+<span class="sd">            dimensions.  For example if d is an array of shape (a, b, c), c1</span>
+<span class="sd">            will range from 0 -&gt; a - 1 etc.  If coordinates are specified, the</span>
+<span class="sd">            coordinates for each dimension and the data array should be</span>
+<span class="sd">            one-dimensional.</span>
+<span class="sd">        weights : numpy.ndarray, optional</span>
+<span class="sd">            Optional weights to supply to the spline fit for each data point.</span>
+<span class="sd">            Should be the same shape as the supplied data values.</span>
+<span class="sd">        limits : numpy.ndarray (float), optional</span>
+<span class="sd">            An array of shape (n_dimensions, 2) that may be supplied to set the</span>
+<span class="sd">            minimum and maximum coordinate values used during the spline fit.</span>
+<span class="sd">            For example, limits[1, 0] sets the minimum knot value in the second</span>
+<span class="sd">            dimensions and limits[1, 1] sets the maximum knot value in the</span>
+<span class="sd">            second dimension.  By default this is set to the minimum and</span>
+<span class="sd">            maximum values of the coordinates in each dimension.</span>
+<span class="sd">        degrees : int or numpy.ndarray (int), optional</span>
+<span class="sd">            The degree of spline to fit in each dimension.  Either a scalar can</span>
+<span class="sd">            be supplied pertaining to all dimensions, or an array of shape</span>
+<span class="sd">            (n_dimensions,) can be used.</span>
+<span class="sd">        smoothing : float, optional</span>
+<span class="sd">            Used to specify the smoothing factor.  If set to `None`, the</span>
+<span class="sd">            smoothing will be determined based on user settings or input data.</span>
+<span class="sd">            If `exact` is `True`, smoothing will be disabled (zero).  If</span>
+<span class="sd">            `exact` is `False`, smoothing will be set to n - sqrt(2 * n)</span>
+<span class="sd">            where n is the number of data values.  If supplied, smoothing</span>
+<span class="sd">            must be greater than zero.  See __init__() for further details.</span>
+<span class="sd">            Note that if smoothing is zero, and the degrees are not equal</span>
+<span class="sd">            over each dimension, smoothing will be set to `eps` due to</span>
+<span class="sd">            numerical instabilities.</span>
+<span class="sd">        knots : list or tuple or numpy.ndarray, optional</span>
+<span class="sd">            A set of starting knot coordinates for each dimension.  If a list</span>
+<span class="sd">            or tuple is supplied it should be of length n_dimensions where</span>
+<span class="sd">            element i is an array of shape (n_knots[i]) for dimension i.  If</span>
+<span class="sd">            an array is supplied, it should be of shape</span>
+<span class="sd">            (n_dimension, max(n_knots)). Note that there must be at least</span>
+<span class="sd">            2 * (degree + 1) knots for each dimension.  Unused or invalid</span>
+<span class="sd">            knots may be set to NaN, at the end of each array.  Knot</span>
+<span class="sd">            coordinates must also be monotonically increasing in each</span>
+<span class="sd">            dimension.</span>
+<span class="sd">        fix_knots : bool, optional</span>
+<span class="sd">            If `True`, do not attempt to modify or add knots to the spline fit.</span>
+<span class="sd">            Only the initial supplied user knots will be used.</span>
+<span class="sd">        knot_estimate : numpy.ndarray (int), optional</span>
+<span class="sd">            The maximum number of knots required for the spline fit in each</span>
+<span class="sd">            dimension and of shape (n_dimensions,).  If not supplied, the knot</span>
+<span class="sd">            estimate will be set to</span>
+<span class="sd">            int((n / n_dimensions) ** n_dimensions^(-1)) or n_knots</span>
+<span class="sd">            if knots were supplied and fixed.</span>
+<span class="sd">        exact : bool, optional</span>
+<span class="sd">            If `True`, the initial knots used will coincide with the actual</span>
+<span class="sd">            input coordinates and smoothing will be set to zero.  No knots</span>
+<span class="sd">            should be supplied by the user in this instance.</span>
+<span class="sd">        reduce_degrees : bool, optional</span>
+<span class="sd">            Only relevant if `exact` is `True`.  If set to `True`, the maximum</span>
+<span class="sd">            allowable degree in each dimension will be limited to</span>
+<span class="sd">            (len(unique(x)) // 2) - 1 where x are the coordinate values in any</span>
+<span class="sd">            dimension.</span>
+<span class="sd">        eps : float, optional</span>
+<span class="sd">            A value where 0 &lt; eps &lt; 1.  This defines the magnitude used to</span>
+<span class="sd">            identify singular values in the spline observation matrix (A).  If</span>
+<span class="sd">            any row of A[:, 0] &lt; (eps * max(A[:,0])) it will be considered</span>
+<span class="sd">            singular.</span>
+<span class="sd">        tolerance : float, optional</span>
+<span class="sd">            A value in the range 0 &lt; tolerance &lt; 1 used to determine the exit</span>
+<span class="sd">            criteria for the spline fit.  See __init__() further details.</span>
+<span class="sd">        max_iteration : int, optional</span>
+<span class="sd">            The maximum number of iterations to perform when solving for the</span>
+<span class="sd">            spline fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Assume a regularly spaced grid of data values</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">indices</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">weights</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">degrees</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">exact</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Cannot use the &#39;exact&#39; option if knots are supplied&quot;</span><span class="p">)</span>
+            <span class="n">knots</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+                <span class="n">knots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[</span><span class="n">dimension</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">smoothing</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exact</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">reduce_degrees</span><span class="p">:</span>
+                <span class="n">n_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">knot_line</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">knot_line</span> <span class="ow">in</span> <span class="n">knots</span><span class="p">])</span>
+                <span class="n">max_degrees</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_knots</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_degrees</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exact</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension_permutations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+            <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_array_inputs</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exact</span> <span class="ow">and</span> <span class="n">reduce_degrees</span><span class="p">:</span>
+            <span class="n">nx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">])</span>
+            <span class="n">max_degrees</span> <span class="o">=</span> <span class="p">(</span><span class="n">nx</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_degrees</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">eps</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;eps not in range (0 &lt; eps &lt; 1): </span><span class="si">{</span><span class="n">eps</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;</span> <span class="n">tolerance</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;tolerance not in range (0 &lt; tolerance &lt; 1): </span><span class="si">{</span><span class="n">tolerance</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Data size &gt;= product(degrees + 1) &quot;</span>
+                             <span class="s2">&quot;not satisfied.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">smoothing</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;smoothing must be &gt;= 0: </span><span class="si">{</span><span class="n">smoothing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">smoothing</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fix_knots</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fix_knots</span> <span class="o">=</span> <span class="n">knots</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">fix_knots</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knots</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">knots</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Knots must be supplied if fixed.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limits</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">min</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">k</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+                     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">knots</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">limits</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;limits must be of shape (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="si">}</span><span class="s2">, 2).&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">knots</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limits</span><span class="p">[</span><span class="n">dimension</span><span class="p">],</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">[</span><span class="n">dimension</span><span class="p">],</span>
+                                         <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+                <span class="n">knot_line</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">],</span>
+                                                 <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">knot_line</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">[</span><span class="n">dimension</span><span class="p">]):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;There must be at least 2 * (degree + 1) knots in &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;dimension </span><span class="si">{</span><span class="n">dimension</span><span class="si">}</span><span class="s2"> for fixed knots. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;knots=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;degree=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">knot_estimate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">knot_estimate</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Knot estimate must be a scalar or have &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;size </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">add</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">+</span> <span class="n">add</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">add</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span> <span class="o">+</span> <span class="n">add</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="p">,</span>
+                                     <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Expand knot arrays if necessary</span>
+        <span class="n">max_k1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">)</span>
+        <span class="n">max_estimate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="p">)</span>
+        <span class="n">max_knot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">)</span>
+        <span class="n">new_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="n">max_estimate</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">dimension</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+            <span class="n">knot_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">]</span>
+            <span class="n">new_knots</span><span class="p">[</span><span class="n">dimension</span><span class="p">,</span> <span class="p">:</span><span class="n">knot_line</span><span class="o">.</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">knot_line</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knots</span> <span class="o">=</span> <span class="n">new_knots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iteration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_iteration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+
+        <span class="c1"># Initialize some work arrays</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_knot</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_knot</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splines</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">max_k1</span><span class="p">),</span>
+                                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Spline.check_array_inputs">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.check_array_inputs">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_array_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove zero weights and invalid data points.</span>
+
+<span class="sd">        Invalid data points are those that contain NaN values, weights, or</span>
+<span class="sd">        coordinates, or zero weights.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="n">check_input_arrays</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">[:,</span> <span class="n">valid</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Spline.initialize_iteration">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.initialize_iteration">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the iteration for the number of current panels.</span>
+
+<span class="sd">        Creates array maps that represents N-dimensional data flattened to</span>
+<span class="sd">        a single dimension for fast access and the ability to pass these</span>
+<span class="sd">        structures to numba JIT compiled functions.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The number of panels in which the approximation domain is divided.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_panels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_intervals</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nk1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">k1</span>  <span class="c1"># last valid knot index</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">))</span>
+
+        <span class="c1"># Find the bandwidth of the observation matrix (amat)</span>
+        <span class="c1"># # Never change</span>
+        <span class="c1"># self.dimension_permutations = self.dimension_permutations[0][None]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">permutation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_order</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">calculate_minimum_bandwidth</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_permutations</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_order</span><span class="p">:</span>
+            <span class="c1"># Reordering dimensions creates the mapping indices.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reorder_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">permutation</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_mapping_indices</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Spline.create_mapping_indices">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.create_mapping_indices">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_mapping_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mapping indices allow 1-D representation of N-D data.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># index mapping</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_steps</span> <span class="o">=</span> <span class="n">flat_index_mapping</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_mapping</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span> <span class="o">=</span> <span class="n">flat_index_mapping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">spline_steps</span> <span class="o">=</span> <span class="n">flat_index_mapping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">)</span>
+
+        <span class="c1"># find the panel and knot indices for the data values.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order_points</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Spline.reorder_dimensions">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.reorder_dimensions">[docs]</a>
+    <span class="k">def</span> <span class="nf">reorder_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Re-order the dimensions in various attributes.</span>
+
+<span class="sd">        Occasionally it is beneficial to re-order the dimensions of the</span>
+<span class="sd">        data structures such that a minimal bandwidth for the observation</span>
+<span class="sd">        matrix is achievable.  This reduces the amount of processing time</span>
+<span class="sd">        required to reach a solution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_dimensions,) indicating the new order of the</span>
+<span class="sd">            dimensions.  E.g., to re-order dimensions [1, 2, 3] to [3, 1, 2],</span>
+<span class="sd">            order should be [1, 2, 0].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">)):</span>
+            <span class="k">return</span>
+
+        <span class="n">old_mapping</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">old_steps</span> <span class="o">=</span> <span class="n">flat_index_mapping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">)</span>
+        <span class="n">new_mapping</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">new_steps</span> <span class="o">=</span> <span class="n">flat_index_mapping</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
+        <span class="n">reverse_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">c_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">new_mapping</span><span class="p">[</span><span class="n">reverse_order</span><span class="p">]</span> <span class="o">*</span> <span class="n">old_steps</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">],</span>
+                         <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># The easy to reorder attributes...</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;limits&#39;</span><span class="p">,</span> <span class="s1">&#39;degrees&#39;</span><span class="p">,</span> <span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="s1">&#39;nk1&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;knots&#39;</span><span class="p">,</span> <span class="s1">&#39;n_knots&#39;</span><span class="p">,</span> <span class="s1">&#39;knot_estimate&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;knot_coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;knot_weights&#39;</span><span class="p">,</span> <span class="s1">&#39;panel_shape&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;splines&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_size</span>
+
+        <span class="c1"># The attributes that are dependent on a specific coefficient order...</span>
+        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;coefficients&#39;</span><span class="p">,</span> <span class="s1">&#39;amat&#39;</span><span class="p">,</span> <span class="s1">&#39;beta&#39;</span><span class="p">]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span> <span class="o">-</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">diff</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">padding</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">*</span> <span class="n">value</span><span class="o">.</span><span class="n">ndim</span>
+                <span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">)</span>
+
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">[</span><span class="n">c_order</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dimension_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dimension_order</span><span class="p">[</span><span class="n">order</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_mapping_indices</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Spline.final_reorder">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.final_reorder">[docs]</a>
+    <span class="k">def</span> <span class="nf">final_reorder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Re-order the dimensions of various arrays to match those of the inputs.</span>
+
+<span class="sd">        The dimensions of the various data structures may have changed during</span>
+<span class="sd">        the course of processing to reduce the bandwidth of the observation</span>
+<span class="sd">        matrix.  This step correctly reorders all dimensions such that they</span>
+<span class="sd">        match those initially provided by the user.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reorder_dimensions</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dimension_order</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Spline.order_points">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.order_points">[docs]</a>
+    <span class="k">def</span> <span class="nf">order_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sort the data points according to which panel they belong to.</span>
+
+<span class="sd">        This is based on the fporde Fortran fitpack routine.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_indices</span> <span class="o">=</span> <span class="n">find_knots</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+            <span class="n">knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">valid_knot_start</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">valid_knot_end</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel_indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knot_indices_to_panel_indices</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">knot_indices</span><span class="p">)</span>
+
+        <span class="n">start_indices</span><span class="p">,</span> <span class="n">next_indices</span> <span class="o">=</span> <span class="n">create_ordering</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">panel_indices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_panels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">start_indices</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_indices</span> <span class="o">=</span> <span class="n">start_indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">next_indices</span> <span class="o">=</span> <span class="n">next_indices</span></div>
+
+
+<div class="viewcode-block" id="Spline.knot_indices_to_panel_indices">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.knot_indices_to_panel_indices">[docs]</a>
+    <span class="k">def</span> <span class="nf">knot_indices_to_panel_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">knot_indices</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert knot indices to flat panel indices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        knot_indices : numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_dimensions, n_knots).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        panel_indices : numpy.ndarray (int)</span>
+<span class="sd">            The flat 1-D panel indices for the knots.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">panel_indices</span> <span class="o">=</span> <span class="n">knot_indices</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="n">panel_indices</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_steps</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">panel_indices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Spline.panel_indices_to_knot_indices">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.panel_indices_to_knot_indices">[docs]</a>
+    <span class="k">def</span> <span class="nf">panel_indices_to_knot_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">panel_indices</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert panel indices to dimensional knot indices.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        panel_indices : numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_knots,).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        panel_indices : numpy.ndarray (int)</span>
+<span class="sd">            knot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">[:,</span> <span class="n">panel_indices</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Spline.iterate">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.iterate">[docs]</a>
+    <span class="k">def</span> <span class="nf">iterate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iteratively determine the spline fit.</span>
+
+<span class="sd">        Calculates the splines and coefficients for the provided data.  If</span>
+<span class="sd">        this cannot be accomplished before reaching the maximum number of</span>
+<span class="sd">        iterations, a smoothing spline will be calculated instead.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">iteration</span> <span class="o">=</span> <span class="n">iteration</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_iteration</span><span class="p">():</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="c1"># This should never happen - but just in case...</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">determine_smoothing_spline</span><span class="p">()</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">determine_smoothing_spline</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Spline.next_iteration">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.next_iteration">[docs]</a>
+    <span class="k">def</span> <span class="nf">next_iteration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a single iteration of the spline fit.</span>
+
+<span class="sd">        During each iteration, the observation matrix is built and solved.  An</span>
+<span class="sd">        exit code will be generated in cases where no further modifications to</span>
+<span class="sd">        the solution are appropriate.  Additional knots will also be added if</span>
+<span class="sd">        required and possible.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        continue_iterations : bool</span>
+<span class="sd">            If `False` no further iterations should occur due to an acceptable</span>
+<span class="sd">            solution being reached or due to a given limitation.  If `True`,</span>
+<span class="sd">            subsequent iterations are deemed appropriate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialize_iteration</span><span class="p">()</span>
+        <span class="n">amat</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">splines</span><span class="p">,</span> <span class="n">ssr</span> <span class="o">=</span> <span class="n">build_observation</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">n_coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span><span class="p">,</span>
+            <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">,</span>
+            <span class="n">degrees</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">start_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_indices</span><span class="p">,</span>
+            <span class="n">next_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">next_indices</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">amat</span> <span class="o">=</span> <span class="n">amat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">splines</span> <span class="o">=</span> <span class="n">splines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">=</span> <span class="n">ssr</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="n">ssr_solve</span> <span class="o">=</span> <span class="n">solve_observation</span><span class="p">(</span>
+            <span class="n">amat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">amat</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">n_coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span><span class="p">,</span>
+            <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">+=</span> <span class="n">ssr_solve</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initial_sum_square_residual</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fix_knots</span><span class="p">:</span>  <span class="c1"># do not find knots</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Test whether the lsq spline is acceptable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rank</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">rank</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Test whether we can accept the choice of knots</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Do smoothing</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Add a new knot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_knots</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="n">add_knot</span><span class="p">(</span>
+            <span class="n">knot_weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_weights</span><span class="p">,</span>
+            <span class="n">knot_coords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_coordinates</span><span class="p">,</span>
+            <span class="n">panel_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">,</span>
+            <span class="n">knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">n_knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">,</span>
+            <span class="n">knot_estimate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="p">,</span>
+            <span class="n">k1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="mi">0</span>  <span class="c1"># False if an error was encountered</span></div>
+
+
+<div class="viewcode-block" id="Spline.fit_knots">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.fit_knots">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_knots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Derive fits at the current knot locations.</span>
+
+<span class="sd">        In addition to finding the value of the function at each knot,</span>
+<span class="sd">        the knot weights and weight normalized coordinates are also determined.</span>
+<span class="sd">        These a subsequently used to decide where a new knot should be placed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitted_knots</span><span class="p">,</span> <span class="n">knot_weights</span><span class="p">,</span> <span class="n">knot_coordinates</span> <span class="o">=</span> <span class="n">knot_fit</span><span class="p">(</span>
+            <span class="n">splines</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splines</span><span class="p">,</span>
+            <span class="n">coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span>
+            <span class="n">start_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_indices</span><span class="p">,</span>
+            <span class="n">next_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">next_indices</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">panel_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">,</span>
+            <span class="n">k1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitted_knots</span> <span class="o">=</span> <span class="n">fitted_knots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_weights</span> <span class="o">=</span> <span class="n">knot_weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">knot_coordinates</span> <span class="o">=</span> <span class="n">knot_coordinates</span></div>
+
+
+<div class="viewcode-block" id="Spline.determine_smoothing_spline">
+<a class="viewcode-back" href="../../../../source/grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline.determine_smoothing_spline">[docs]</a>
+    <span class="k">def</span> <span class="nf">determine_smoothing_spline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Smooth the interpolating spline to the required level.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        smoothing : float, optional</span>
+<span class="sd">            Used to specify the an alternate smoothing factor.  Note that this</span>
+<span class="sd">            should be very close to the original smoothing factor in order to</span>
+<span class="sd">            succeed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">smoothing</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">:</span>
+            <span class="n">change_smoothing</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">change_smoothing</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">change_smoothing</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">change_smoothing</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">smoothing</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;smoothing must be &gt;= 0: </span><span class="si">{</span><span class="n">smoothing</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Calculate this before setting new smoothing...</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">smoothing</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span>
+
+        <span class="n">coefficients</span><span class="p">,</span> <span class="n">sq</span><span class="p">,</span> <span class="n">exit_code</span><span class="p">,</span> <span class="n">fitted_knots</span> <span class="o">=</span> <span class="n">determine_smoothing_spline</span><span class="p">(</span>
+            <span class="n">knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">n_knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">,</span>
+            <span class="n">knot_estimate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_estimate</span><span class="p">,</span>
+            <span class="n">degrees</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">initial_sum_square_residual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_sum_square_residual</span><span class="p">,</span>
+            <span class="n">smoothing</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing</span><span class="p">,</span>
+            <span class="n">smoothing_difference</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">smoothing_difference</span><span class="p">,</span>
+            <span class="n">n_coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_coefficients</span><span class="p">,</span>
+            <span class="n">bandwidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bandwidth</span><span class="p">,</span>
+            <span class="n">amat</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">amat</span><span class="p">,</span>
+            <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span>
+            <span class="n">max_iteration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iteration</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">knot_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_mapping</span><span class="p">,</span>
+            <span class="n">eps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">,</span>
+            <span class="n">splines</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">splines</span><span class="p">,</span>
+            <span class="n">start_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">start_indices</span><span class="p">,</span>
+            <span class="n">next_indices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">next_indices</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span><span class="p">,</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+            <span class="n">values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span>
+            <span class="n">panel_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_shape</span><span class="p">,</span>
+            <span class="n">accuracy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sum_square_residual</span> <span class="o">=</span> <span class="n">sq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exit_code</span> <span class="o">=</span> <span class="n">exit_code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitted_knots</span> <span class="o">=</span> <span class="n">fitted_knots</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the spline at given coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        args : tuple (numpy.ndarray) or numpy.ndarray (float)</span>
+<span class="sd">            The coordinate arguments.  If supplied as a tuple, should be of</span>
+<span class="sd">            length n_dimensions where each element of the tuple defines grid</span>
+<span class="sd">            coordinates along the (x, y, z,...) dimensions.  Arbitrary</span>
+<span class="sd">            coordinates may be supplied as an array of shape (n_dimensions, n)</span>
+<span class="sd">            where n is the number of coordinates.  A singular coordinate may</span>
+<span class="sd">            also be supplied as an array of shape (n_dimensions,).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fit : float or numpy.ndarray (float)</span>
+<span class="sd">            An (x[n], x[n-1], ..., x[0]) shaped array of values if args was</span>
+<span class="sd">            provided in tuple form, or an array of shape (n,) if a</span>
+<span class="sd">            2-dimensional array of arbitrary coordinates were provided.</span>
+<span class="sd">            If a single coordinate was provided, the resulting output will</span>
+<span class="sd">            be a float.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># In cases where an array of coordinates are supplied.</span>
+            <span class="n">fit_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fit_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">fit_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+                        <span class="ow">and</span> <span class="n">fit_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">):</span>
+                    <span class="n">singular</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">fit_coordinates</span> <span class="o">=</span> <span class="n">fit_coordinates</span><span class="o">.</span><span class="n">T</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Coordinate shape[0] does not match &quot;</span>
+                                     <span class="s2">&quot;number of spline dimensions.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">singular</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid_reduction</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_coordinates</span> <span class="o">=</span> <span class="n">fit_coordinates</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="n">fit_coordinates</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_dimensions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of arguments does not match number of &quot;</span>
+                             <span class="s2">&quot;spline dimensions.&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># In cases where grid coordinates are provided</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid_reduction</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                 <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">indexing</span><span class="o">=</span><span class="s1">&#39;ij&#39;</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">out_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+                               <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">args</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">singular</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">out_shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="n">perform_fit</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fit_coordinates</span><span class="p">,</span>
+            <span class="n">knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">coefficients</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">coefficients</span><span class="p">,</span>
+            <span class="n">degrees</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">panel_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">panel_steps</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">nk1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nk1</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">spline_mapping</span><span class="p">,</span>
+            <span class="n">n_knots</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_knots</span><span class="p">)</span>  <span class="c1"># This is ok</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_reduction</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">singular</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">ravel</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.splines.spline</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

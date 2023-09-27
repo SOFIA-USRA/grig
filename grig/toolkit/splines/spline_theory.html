@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Definition &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="The Spline class" href="spline_examples.html" />
+    <link rel="prev" title="Splines (grig.toolkit.splines)" href="index.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spline_examples.html" title="The Spline class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Splines (grig.toolkit.splines)"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Toolkit (<cite>grig.toolkit</cite>)</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" accesskey="U">Splines (<cite>grig.toolkit.splines</cite>)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Definition</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="definition">
+<h1>Definition<a class="headerlink" href="#definition" title="Link to this heading">¶</a></h1>
+<p>A spline function <span class="math notranslate nohighlight">\(s(x)\)</span> of degree <span class="math notranslate nohighlight">\(k &gt; 0\)</span> (order <span class="math notranslate nohighlight">\(k+1\)</span>) is
+defined on the finite interval <span class="math notranslate nohighlight">\([a,b]\)</span> containing monotonically increasing
+knots <span class="math notranslate nohighlight">\(\lambda_j\)</span> where <span class="math notranslate nohighlight">\(j=0,1,\cdots,g+1\)</span>, <span class="math notranslate nohighlight">\(\lambda_0 = a\)</span>,
+and <span class="math notranslate nohighlight">\(\lambda_{g+1}=b\)</span>.  For each knot interval
+<span class="math notranslate nohighlight">\([\lambda_j, \lambda_{j+1}]\)</span> the spline function is given by a polynomial
+of degree <span class="math notranslate nohighlight">\(\leq k\)</span>, and must be continues along with all its derivatives
+up to <span class="math notranslate nohighlight">\(k-1\)</span> on <span class="math notranslate nohighlight">\([a,b]\)</span>.  For further information on the theory
+and computational implementation for univariate and bivariate spline fitting,
+please see Paul Dierckx, Curve and Surface Fitting with Splines, Oxford
+University Press, 1993.</p>
+</section>
+<section id="implementation-spline-representation">
+<h1>Implementation - Spline representation<a class="headerlink" href="#implementation-spline-representation" title="Link to this heading">¶</a></h1>
+<p>Spline coefficients and knots are derived iteratively starting with only two
+knots per dimension by default at <span class="math notranslate nohighlight">\([min(x), max(x)]\)</span>.  At each iteration,
+a new knot will be added until:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\begin{eqnarray}
+\left( \sum_i^n{(d_i - s(x_i))^2} \right) - \alpha \leq
+    \alpha * tolerance
+\end{eqnarray}</div></div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(d_i\)</span> is the sample value at point <span class="math notranslate nohighlight">\(i\)</span> and <span class="math notranslate nohighlight">\(\alpha\)</span>
+is the smoothing factor for the reduction.  When <span class="math notranslate nohighlight">\(\alpha = 0\)</span>, the
+reduction will terminate once the resulting function represents an interpolating
+spline.  The <span class="math notranslate nohighlight">\(tolerance\)</span> parameter is a user defined value, typically of
+the order <span class="math notranslate nohighlight">\(10^{-3}\)</span>.</p>
+<p>During each new reduction, the current knots are used to divide the entire
+sample space into panels.  Each panel is defined as an n-dimensional volume
+with neighbouring knots at each vertex.  Fits are performed to all samples in a
+panel, and the panel with the greatest <span class="math notranslate nohighlight">\(w = \sum{(d - s(x))^2}\)</span> is taken
+as the candidate in which to place a new knot.  If no valid knot can be placed
+at that location, the algorithm moves onto the next greatest panel <span class="math notranslate nohighlight">\(w\)</span>
+and so on.</p>
+<p>Note that in rare circumstances, iterations will halt when the location of the
+new knot coincides with an existing one or the maximum number of knots has been
+reached.  Iterations may also terminate once the maximum number of iterations
+has been reached, the solution no longer converges, or the required storage
+space exceeds a certain limit.</p>
+</section>
+<section id="implementation-spline-evaluation">
+<h1>Implementation - Spline evaluation<a class="headerlink" href="#implementation-spline-evaluation" title="Link to this heading">¶</a></h1>
+<p>Once a spline representation has been derived, it may be evaluated at any
+given coordinate <span class="math notranslate nohighlight">\(x\)</span> in the range <span class="math notranslate nohighlight">\(a \leq x \leq b\)</span>.  B-splines
+are generated for <span class="math notranslate nohighlight">\(x\)</span> in each dimension using the Cox-de Boor recursion
+formula (2007):</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\begin{eqnarray}
+    B_{j,0}(x) &amp; = &amp; \left\{
+        \begin{matrix}
+            1 &amp; \text{if} \quad \lambda_j \leq x &lt; \lambda_{j+1} \\
+            0 &amp; \text{otherwise}
+        \end{matrix} \right\} \\
+    B_{j,k}(x) &amp; = &amp; \frac{x - \lambda_j}
+                      {\lambda_{j+k} - \lambda_j}
+                 B_{j,k-1}(x) +
+                 \frac{\lambda_{j+k+1} - x}
+                      {\lambda_{j+k+1} - \lambda_{j+1}}
+                 B_{j+1,k-1}(x)
+\end{eqnarray}</div></div></blockquote>
+<p>If <span class="math notranslate nohighlight">\(j\)</span> defines the knot interval <span class="math notranslate nohighlight">\(\lambda_j \leq x &lt; \lambda_{j+1}\)</span>,
+a solution at <span class="math notranslate nohighlight">\(x\)</span> is given by:</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\begin{eqnarray}
+    s(x) = \sum_{i=j-k}^{j} c_i B_{i,k}(x)
+\end{eqnarray}</div></div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(c\)</span> are the spline coefficients which are determined during the
+spline representation phase.</p>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Definition</a></li>
+<li><a class="reference internal" href="#implementation-spline-representation">Implementation - Spline representation</a></li>
+<li><a class="reference internal" href="#implementation-spline-evaluation">Implementation - Spline evaluation</a></li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">Splines (<cite>grig.toolkit.splines</cite>)</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="spline_examples.html"
+                          title="next chapter">The Spline class</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/grig/toolkit/splines/spline_theory.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="spline_examples.html" title="The Spline class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Splines (grig.toolkit.splines)"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../index.html" >Toolkit (<cite>grig.toolkit</cite>)</a> &#187;</li>
+          <li class="nav-item nav-item-3"><a href="index.html" >Splines (<cite>grig.toolkit.splines</cite>)</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Definition</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

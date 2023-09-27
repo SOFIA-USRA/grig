@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.resample_kernel_utils &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.resample_kernel_utils</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.resample_kernel_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numba</span> <span class="k">as</span> <span class="nn">nb</span>
+<span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">njit</span>
+<span class="kn">from</span> <span class="nn">grig.toolkit.splines.spline_utils</span> <span class="kn">import</span> <span class="n">perform_fit</span>
+<span class="kn">from</span> <span class="nn">grig.resample_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">update_mask</span><span class="p">,</span> <span class="n">check_edges</span><span class="p">,</span> <span class="n">calculate_fitting_weights</span><span class="p">,</span> <span class="n">array_sum</span><span class="p">,</span>
+    <span class="n">weighted_mean_variance</span><span class="p">,</span> <span class="n">solve_mean_fit</span><span class="p">,</span> <span class="n">offset_variance</span>
+<span class="p">)</span>
+
+<span class="n">_condition_limit</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+<span class="n">_fast_flags</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;nsz&#39;</span><span class="p">,</span> <span class="s1">&#39;nnan&#39;</span><span class="p">,</span> <span class="s1">&#39;ninf&#39;</span><span class="p">}</span>
+<span class="n">_fast_flags_all</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;nnan&#39;</span><span class="p">,</span>  <span class="c1"># no NaNs</span>
+                   <span class="s1">&#39;ninf&#39;</span><span class="p">,</span>  <span class="c1"># no infinities</span>
+                   <span class="s1">&#39;ninf&#39;</span><span class="p">,</span>  <span class="c1"># no signed zeros</span>
+                   <span class="s1">&#39;nsz&#39;</span><span class="p">,</span>  <span class="c1"># no signed zeros</span>
+                   <span class="s1">&#39;arcp&#39;</span><span class="p">,</span>  <span class="c1"># allow reciprocal</span>
+                   <span class="s1">&#39;contract&#39;</span><span class="p">,</span>  <span class="c1"># allow floating-point contraction</span>
+                   <span class="s1">&#39;afn&#39;</span><span class="p">,</span>  <span class="c1"># approximate functions</span>
+                   <span class="s1">&#39;reassoc&#39;</span>  <span class="c1"># allow re association transformations</span>
+                   <span class="p">}</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;solve_kernel_fits&#39;</span><span class="p">,</span> <span class="s1">&#39;solve_kernel_fit&#39;</span><span class="p">,</span> <span class="s1">&#39;calculate_kernel_weights&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;apply_mask_to_kernel_set_arrays&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="solve_kernel_fits">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample_kernel_utils.solve_kernel_fits">[docs]</a>
+<span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">solve_kernel_fits</span><span class="p">(</span><span class="n">sample_indices</span><span class="p">,</span> <span class="n">sample_coordinates</span><span class="p">,</span> <span class="n">sample_data</span><span class="p">,</span>
+                      <span class="n">sample_error</span><span class="p">,</span> <span class="n">sample_mask</span><span class="p">,</span> <span class="n">fit_coordinates</span><span class="p">,</span>
+                      <span class="n">knots</span><span class="p">,</span> <span class="n">coefficients</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">panel_mapping</span><span class="p">,</span> <span class="n">panel_steps</span><span class="p">,</span>
+                      <span class="n">knot_steps</span><span class="p">,</span> <span class="n">nk1</span><span class="p">,</span> <span class="n">spline_mapping</span><span class="p">,</span> <span class="n">n_knots</span><span class="p">,</span>
+                      <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                      <span class="n">error_weighting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">absolute_weight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">edge_algorithm_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                      <span class="n">edge_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">get_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">get_distance_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_rchi2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">get_offset_variance</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve all fits within one intersection block.</span>
+
+<span class="sd">    This function is a wrapper for :func:`solve_kernel_fit` over all data sets</span>
+<span class="sd">    and fit points.  The main computations here involve:</span>
+
+<span class="sd">        1. Creating and populating the output arrays.</span>
+<span class="sd">        2. Selecting the correct samples within the region of each fitting</span>
+<span class="sd">           window.</span>
+<span class="sd">        3. Calculating the full weighting factors for the fits.</span>
+
+<span class="sd">    For further details on the actual fitting, please see</span>
+<span class="sd">    :func:`solve_kernel_fit`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_indices : numba.typed.List</span>
+<span class="sd">        A list of 1-dimensional numpy.ndarray (dtype=int) of length n_fits.</span>
+<span class="sd">        Each list element `sample_indices[i]`, contains the indices of samples</span>
+<span class="sd">        within the &quot;window&quot; region of `fit_indices[i]`.</span>
+<span class="sd">    sample_coordinates : numpy.ndarray (n_dimensions, n_samples)</span>
+<span class="sd">        The independent coordinates for each sample in n_dimensions</span>
+<span class="sd">    sample_data : numpy.ndarray (n_sets, n_samples)</span>
+<span class="sd">        The dependent values of the samples for n_sets, each containing</span>
+<span class="sd">        n_samples.</span>
+<span class="sd">    sample_error : numpy.ndarray (n_sets, n_samples)</span>
+<span class="sd">        The associated 1-sigma error values for each sample in each set.  The</span>
+<span class="sd">        user may also supply an array of shape (n_sets, 1) in which case all</span>
+<span class="sd">        samples in a set will share the same associated error value.  If</span>
+<span class="sd">        the shape is set to (n_sets, 0), this indicates that no error values</span>
+<span class="sd">        are available for the samples.</span>
+<span class="sd">    sample_mask : numpy.ndarray (n_sets, n_samples)</span>
+<span class="sd">        A mask where `False` indicates that the associated sample should be</span>
+<span class="sd">        excluded from all fits.</span>
+<span class="sd">    fit_coordinates : numpy.ndarray (n_dimensions, n_fits)</span>
+<span class="sd">        The independent variables at each fit coordinate in d_dimensions.</span>
+<span class="sd">    knots : list or tuple or numpy.ndarray, optional</span>
+<span class="sd">        A set of starting knot coordinates for each dimension.  If a list or</span>
+<span class="sd">        tuple is supplied it should be of length n_dimensions where element</span>
+<span class="sd">        i is an array of shape (n_knots[i]) for dimension i.  If an array</span>
+<span class="sd">        is supplied, it should be of shape (n_dimension, max(n_knots)).</span>
+<span class="sd">        Note that there must be at least 2 * (degree + 1) knots for each</span>
+<span class="sd">        dimension.  Unused or invalid knots may be set to NaN, at the end</span>
+<span class="sd">        of each array.  Knot coordinates must also be monotonically</span>
+<span class="sd">        increasing in each dimension.</span>
+<span class="sd">    coefficients : numpy.ndarray (float)</span>
+<span class="sd">        The spline coefficients of shape (n_coefficients,).</span>
+<span class="sd">    degrees : numpy.ndarray (int)</span>
+<span class="sd">        The degrees of the spline in each dimension (n_dimensions,).</span>
+<span class="sd">    panel_mapping : numpy.ndarray (int)</span>
+<span class="sd">        An array containing the panel mapping (flat to n-D) indices.  This is</span>
+<span class="sd">        created by passing the panel shape (n_knots - (2 * degrees) - 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.  Should be an array of shape</span>
+<span class="sd">        (n_dimensions, n_panels).</span>
+<span class="sd">    panel_steps : numpy.ndarray (int)</span>
+<span class="sd">        The flat index mapping steps in panel-space of shape (n_dimensions,).</span>
+<span class="sd">        These are returned by passing the shape `Spline.panel_shape` into</span>
+<span class="sd">        :func:`flat_index_mapping`.</span>
+<span class="sd">    knot_steps : numpy.ndarray (int)</span>
+<span class="sd">        The flat index mapping steps in knot-space of shape (n_dimensions,).</span>
+<span class="sd">        These are returned by passing the shape (n_knots - degrees - 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.</span>
+<span class="sd">    nk1 : numpy.ndarray (int)</span>
+<span class="sd">        An array of shape (n_dimensions,) containing the values n_knots - k1</span>
+<span class="sd">        where n_knots are the number of knots in each dimension, and k1 are the</span>
+<span class="sd">        spline degrees + 1 in each dimension.</span>
+<span class="sd">    spline_mapping : numpy.ndarray (int)</span>
+<span class="sd">        An array containing the spline mapping (flat to n-D) indices.  This is</span>
+<span class="sd">        created by passing the spline shape (degrees + 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.  Should be an array of shape</span>
+<span class="sd">        (n_dimensions, n_spline_coefficients).</span>
+<span class="sd">    n_knots : numpy.ndarray (int)</span>
+<span class="sd">        The number of knots in each dimension (n_dimensions,).</span>
+<span class="sd">    is_covar : bool, optional</span>
+<span class="sd">        If `True`, indicates that `sample_data` contains covariance values</span>
+<span class="sd">        that should be propagated through algorithm.</span>
+<span class="sd">    cval : float, optional</span>
+<span class="sd">        In a case that a fit is unable to be calculated at certain location,</span>
+<span class="sd">        `cval` determines the fill value for the output `fit` array at those</span>
+<span class="sd">        locations.</span>
+<span class="sd">    error_weighting : bool, optional</span>
+<span class="sd">        If `True`, weight the samples in the fit by the inverse variance</span>
+<span class="sd">        (1 / sample_error^2) in addition to distance weighting.</span>
+<span class="sd">    absolute_weight : bool, optional</span>
+<span class="sd">        If the kernel weights are negative, can lead to almost zero-like</span>
+<span class="sd">        divisions in many of the algorithms.  If set to `True`, the sum of the</span>
+<span class="sd">        absolute weights are used for normalization.</span>
+<span class="sd">    edge_algorithm_idx : int, optional</span>
+<span class="sd">        Integer specifying the algorithm used to determine whether a fit should</span>
+<span class="sd">        be attempted with respect to the sample distribution.  Please see</span>
+<span class="sd">        :func:`check_edges` for further information.  The default (1), is</span>
+<span class="sd">        always the most robust of the available algorithms.</span>
+<span class="sd">    edge_threshold : numpy.ndarray (n_dimensions,)</span>
+<span class="sd">        A threshold parameter determining how close an edge should be to the</span>
+<span class="sd">        center of the distribution during :func:`check_edges`.  Higher values</span>
+<span class="sd">        result in an edge closer to the sample mean.  A value should be</span>
+<span class="sd">        provided for each dimension.  A zero value in any dimension will result</span>
+<span class="sd">        in an infinite edge for that dimension.</span>
+<span class="sd">    get_error : bool, optional</span>
+<span class="sd">        If `True`, return the error on the fit.</span>
+<span class="sd">    get_counts : bool, optional</span>
+<span class="sd">        If `True`, return the number of samples used when determining the fit</span>
+<span class="sd">        at each fitting point.</span>
+<span class="sd">    get_weights : bool, optional</span>
+<span class="sd">        If `True`, return the sum of all sample weights used in determining the</span>
+<span class="sd">        fit at each point.</span>
+<span class="sd">    get_distance_weights : bool, optional</span>
+<span class="sd">        If `True`, return the sum of only the distance weights used in</span>
+<span class="sd">        determining the fit at each point.</span>
+<span class="sd">    get_rchi2 : bool, optional</span>
+<span class="sd">        If `True`, return the reduced chi-squared statistic for each of the</span>
+<span class="sd">        fitted points.</span>
+<span class="sd">    get_offset_variance : bool optional</span>
+<span class="sd">        If `True`, return the offset of the fitting point from the sample</span>
+<span class="sd">        distribution.  See :func:`offset_variance` for further information.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fit_results : 7-tuple of numpy.ndarray</span>
+<span class="sd">        fit_results[0]: Fitted values.</span>
+<span class="sd">        fit_results[1]: Error on the fit.</span>
+<span class="sd">        fit_results[2]: Number of samples in each fit.</span>
+<span class="sd">        fit_results[3]: Weight sums.</span>
+<span class="sd">        fit_results[4]: Distance weight sums.</span>
+<span class="sd">        fit_results[5]: Reduced chi-squared statistic.</span>
+<span class="sd">        fit_results[6]: Offset variances from the sample distribution center.</span>
+
+<span class="sd">        All arrays have the shape (n_sets, n_fits) or (0, 0) depending on</span>
+<span class="sd">        whether `get_&lt;name&gt;` is `True` or `False` respectively.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_sets</span> <span class="o">=</span> <span class="n">sample_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n_dimensions</span><span class="p">,</span> <span class="n">n_fits</span> <span class="o">=</span> <span class="n">fit_coordinates</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">fit_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_error</span><span class="p">:</span>
+        <span class="n">error_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_counts</span><span class="p">:</span>
+        <span class="n">counts_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">i8</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">counts_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">i8</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
+        <span class="n">weights_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_distance_weights</span><span class="p">:</span>
+        <span class="n">distance_weights_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">distance_weights_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_rchi2</span><span class="p">:</span>
+        <span class="n">rchi2_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rchi2_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_offset_variance</span><span class="p">:</span>
+        <span class="n">offset_variance_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_sets</span><span class="p">,</span> <span class="n">n_fits</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">offset_variance_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_sets</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">n_fits</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">fit_out</span><span class="p">,</span> <span class="n">error_out</span><span class="p">,</span>
+                <span class="n">counts_out</span><span class="p">,</span> <span class="n">weights_out</span><span class="p">,</span> <span class="n">distance_weights_out</span><span class="p">,</span>
+                <span class="n">rchi2_out</span><span class="p">,</span> <span class="n">offset_variance_out</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fit_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sample_indices</span><span class="p">)):</span>
+
+        <span class="n">fit_coordinate</span> <span class="o">=</span> <span class="n">fit_coordinates</span><span class="p">[:,</span> <span class="n">fit_index</span><span class="p">]</span>
+
+        <span class="c1"># Arrays for all datasets within window region</span>
+        <span class="n">window_indices</span> <span class="o">=</span> <span class="n">sample_indices</span><span class="p">[</span><span class="n">fit_index</span><span class="p">]</span>
+        <span class="n">window_coordinates</span> <span class="o">=</span> <span class="n">sample_coordinates</span><span class="p">[:,</span> <span class="n">window_indices</span><span class="p">]</span>
+        <span class="n">window_values</span> <span class="o">=</span> <span class="n">sample_data</span><span class="p">[:,</span> <span class="n">window_indices</span><span class="p">]</span>
+        <span class="n">window_mask</span> <span class="o">=</span> <span class="n">sample_mask</span><span class="p">[:,</span> <span class="n">window_indices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">sample_error</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">window_error</span> <span class="o">=</span> <span class="n">sample_error</span><span class="p">[:,</span> <span class="n">window_indices</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Single values are expanded in apply_mask_to_set_arrays</span>
+            <span class="n">window_error</span> <span class="o">=</span> <span class="n">sample_error</span>
+
+        <span class="c1"># Determine kernel weighting</span>
+        <span class="c1"># The kernel weighting should be calculated here...</span>
+        <span class="n">kernel_weights</span> <span class="o">=</span> <span class="n">calculate_kernel_weights</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="n">window_coordinates</span><span class="p">,</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">fit_coordinate</span><span class="p">,</span>
+            <span class="n">knots</span><span class="o">=</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">n_knots</span><span class="o">=</span><span class="n">n_knots</span><span class="p">,</span>
+            <span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span>
+            <span class="n">degrees</span><span class="o">=</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">panel_steps</span><span class="o">=</span><span class="n">panel_steps</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">nk1</span><span class="o">=</span><span class="n">nk1</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="n">spline_mapping</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">data_set</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sets</span><span class="p">):</span>
+
+            <span class="p">(</span><span class="n">fitted_value</span><span class="p">,</span>
+             <span class="n">fitted_error</span><span class="p">,</span>
+             <span class="n">counts</span><span class="p">,</span>
+             <span class="n">weightsum</span><span class="p">,</span>
+             <span class="n">distance_weight</span><span class="p">,</span>
+             <span class="n">rchi2</span><span class="p">,</span>
+             <span class="n">variance_offset</span>
+             <span class="p">)</span> <span class="o">=</span> <span class="n">solve_kernel_fit</span><span class="p">(</span><span class="n">window_coordinates</span><span class="p">,</span>
+                                  <span class="n">window_values</span><span class="p">[</span><span class="n">data_set</span><span class="p">],</span>
+                                  <span class="n">window_error</span><span class="p">[</span><span class="n">data_set</span><span class="p">],</span>
+                                  <span class="n">window_mask</span><span class="p">[</span><span class="n">data_set</span><span class="p">],</span>
+                                  <span class="n">kernel_weights</span><span class="p">,</span> <span class="n">fit_coordinate</span><span class="p">,</span>
+                                  <span class="n">is_covar</span><span class="o">=</span><span class="n">is_covar</span><span class="p">,</span>
+                                  <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">,</span>
+                                  <span class="n">error_weighting</span><span class="o">=</span><span class="n">error_weighting</span><span class="p">,</span>
+                                  <span class="n">absolute_weight</span><span class="o">=</span><span class="n">absolute_weight</span><span class="p">,</span>
+                                  <span class="n">edge_algorithm_idx</span><span class="o">=</span><span class="n">edge_algorithm_idx</span><span class="p">,</span>
+                                  <span class="n">edge_threshold</span><span class="o">=</span><span class="n">edge_threshold</span><span class="p">,</span>
+                                  <span class="n">get_error</span><span class="o">=</span><span class="n">get_error</span><span class="p">,</span>
+                                  <span class="n">get_weights</span><span class="o">=</span><span class="n">get_weights</span><span class="p">,</span>
+                                  <span class="n">get_distance_weights</span><span class="o">=</span><span class="n">get_distance_weights</span><span class="p">,</span>
+                                  <span class="n">get_rchi2</span><span class="o">=</span><span class="n">get_rchi2</span><span class="p">,</span>
+                                  <span class="n">get_offset_variance</span><span class="o">=</span><span class="n">get_offset_variance</span><span class="p">)</span>
+
+            <span class="n">fit_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">fitted_value</span>
+            <span class="k">if</span> <span class="n">get_error</span><span class="p">:</span>
+                <span class="n">error_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">fitted_error</span>
+
+            <span class="k">if</span> <span class="n">get_counts</span><span class="p">:</span>
+                <span class="n">counts_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span>
+
+            <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
+                <span class="n">weights_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">weightsum</span>
+
+            <span class="k">if</span> <span class="n">get_distance_weights</span><span class="p">:</span>
+                <span class="n">distance_weights_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance_weight</span>
+
+            <span class="k">if</span> <span class="n">get_rchi2</span><span class="p">:</span>
+                <span class="n">rchi2_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">rchi2</span>
+
+            <span class="k">if</span> <span class="n">get_offset_variance</span><span class="p">:</span>
+                <span class="n">offset_variance_out</span><span class="p">[</span><span class="n">data_set</span><span class="p">,</span> <span class="n">fit_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">variance_offset</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">fit_out</span><span class="p">,</span> <span class="n">error_out</span><span class="p">,</span> <span class="n">counts_out</span><span class="p">,</span> <span class="n">weights_out</span><span class="p">,</span> <span class="n">distance_weights_out</span><span class="p">,</span>
+            <span class="n">rchi2_out</span><span class="p">,</span> <span class="n">offset_variance_out</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="solve_kernel_fit">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample_kernel_utils.solve_kernel_fit">[docs]</a>
+<span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">solve_kernel_fit</span><span class="p">(</span><span class="n">window_coordinates</span><span class="p">,</span> <span class="n">window_values</span><span class="p">,</span> <span class="n">window_error</span><span class="p">,</span>
+                     <span class="n">window_mask</span><span class="p">,</span> <span class="n">kernel_weights</span><span class="p">,</span> <span class="n">fit_coordinate</span><span class="p">,</span>
+                     <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">error_weighting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">absolute_weight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edge_algorithm_idx</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">edge_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">get_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">get_distance_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_rchi2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">get_offset_variance</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve for a kernel convolution at a single coordinate.</span>
+
+<span class="sd">    Generally, the kernel convolution value is of the form:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        f(x) = \sum_{j}{d_j k_j} / \sum_{j}{k_j}</span>
+
+<span class="sd">    where :math:`x` is the coordinate at the fit point, :math:`j` are the</span>
+<span class="sd">    indices of all samples within the fitting window, :math:`d` are the sample</span>
+<span class="sd">    values, and :math:`k` are the kernel weights.</span>
+
+<span class="sd">    EDGE CHECKING</span>
+
+<span class="sd">    The first of the on-the-fly calculation is the &quot;edge check&quot;.  Generally,</span>
+<span class="sd">    polynomial fits are not well-defined away from the sample distribution</span>
+<span class="sd">    from which they were derived.  This is especially true for higher order</span>
+<span class="sd">    fits that may fit the sample distribution well, but start to deviate wildly</span>
+<span class="sd">    when evaluated outside of the distribution.  The edge check step defines a</span>
+<span class="sd">    border around the distribution, outside of which the fit will be aborted.</span>
+<span class="sd">    There are a number of algorithms available which vary in robustness and</span>
+<span class="sd">    speed.  Please see :func:`check_edges` for details on available algorithms.</span>
+
+<span class="sd">    FITTING</span>
+
+<span class="sd">    If the above checks pass, a fit can be attempted.  There are two types of</span>
+<span class="sd">    fit that may be performed.  The first is the standard kernel fit described</span>
+<span class="sd">    above.  However, if `is_covar` was set to `True`, the `window_values` are</span>
+<span class="sd">    considered covariances to propagate, and a fit will derived by propagating</span>
+<span class="sd">    a weighted variance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    window_coordinates : numpy.ndarray (n_dimensions, n_samples)</span>
+<span class="sd">        The independent coordinates within the window region of the fitting</span>
+<span class="sd">        coordinate.</span>
+<span class="sd">    window_values : numpy.ndarray (n_samples,)</span>
+<span class="sd">        The dependent values of the samples.</span>
+<span class="sd">    window_error : numpy.ndarray (n_samples,)</span>
+<span class="sd">        The associated 1-sigma error values for each sample in each set.  The</span>
+<span class="sd">        user may also supply an array of shape (1,) in which case all</span>
+<span class="sd">        samples in a set will share the same associated error value.  If the</span>
+<span class="sd">        shape is set to (0,) this indicates that no error values are available</span>
+<span class="sd">        for the samples.</span>
+<span class="sd">    window_mask : numpy.ndarray (n_samples,)</span>
+<span class="sd">        A mask where `False` indicates that the associated sample should be</span>
+<span class="sd">        excluded from the fit.</span>
+<span class="sd">    kernel_weights : numpy.ndarray (n_samples,)</span>
+<span class="sd">        The kernel weighting factors applied to each sample in the fit.</span>
+<span class="sd">    fit_coordinate : numpy.ndarray (n_dimensions,)</span>
+<span class="sd">        The coordinate of the fitting point.</span>
+<span class="sd">    is_covar : bool, optional</span>
+<span class="sd">        If `True`, indicates that `window_values` contains covariance values</span>
+<span class="sd">        that should be propagated through algorithm.  If this is the case,</span>
+<span class="sd">        polynomial fitting is disabled, and a weighted variance is calculated</span>
+<span class="sd">        instead.</span>
+<span class="sd">    cval : float, optional</span>
+<span class="sd">        In a case that a fit is unable to be calculated at certain location,</span>
+<span class="sd">        `cval` determines the returned fit value.</span>
+<span class="sd">    error_weighting : bool, optional</span>
+<span class="sd">        If `True`, weight the samples in the fit by the inverse variance</span>
+<span class="sd">        (1 / window_error^2) in addition to distance weighting.</span>
+<span class="sd">    absolute_weight : bool, optional</span>
+<span class="sd">        If the kernel weights are negative, can lead to almost zero-like</span>
+<span class="sd">        divisions in many of the algorithms.  If set to `True`, the sum of the</span>
+<span class="sd">        absolute weights are used for normalization.</span>
+<span class="sd">    edge_algorithm_idx : int, optional</span>
+<span class="sd">        Integer specifying the algorithm used to determine whether a fit should</span>
+<span class="sd">        be attempted with respect to the sample distribution.  Please see</span>
+<span class="sd">        :func:`check_edges` for further information.  The default (1), is</span>
+<span class="sd">        always the most robust of the available algorithms.</span>
+<span class="sd">    edge_threshold : numpy.ndarray (n_dimensions,)</span>
+<span class="sd">        A threshold parameter determining how close an edge should be to the</span>
+<span class="sd">        center of the distribution during :func:`check_edges`.  Higher values</span>
+<span class="sd">        result in an edge closer to the sample mean.  A value should be</span>
+<span class="sd">        provided for each dimension.  A zero value in any dimension will result</span>
+<span class="sd">        in an infinite edge for that dimension.</span>
+<span class="sd">    get_error : bool, optional</span>
+<span class="sd">        If `True`, return the error on the fit.</span>
+<span class="sd">    get_weights : bool, optional</span>
+<span class="sd">        If `True`, return the sum of all sample weights used in determining the</span>
+<span class="sd">        fit.</span>
+<span class="sd">    get_distance_weights : bool, optional</span>
+<span class="sd">        If `True`, return the sum of only the distance weights used in</span>
+<span class="sd">        determining the fit.</span>
+<span class="sd">    get_rchi2 : bool, optional</span>
+<span class="sd">        If `True`, return the reduced chi-squared statistic for each of</span>
+<span class="sd">        the fits.</span>
+<span class="sd">    get_offset_variance : bool optional</span>
+<span class="sd">        If `True`, return the offset of the fitting point from the sample</span>
+<span class="sd">        distribution.  See :func:`offset_variance` for further information.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fit_result : 7-tuple</span>
+<span class="sd">        fit_result[0]: Fitted value (float).</span>
+<span class="sd">                       Set to `cval` on fit failure.</span>
+<span class="sd">        fit_result[1]: Error on the fit (float).</span>
+<span class="sd">                       Set to NaN on fit failure.</span>
+<span class="sd">        fit_result[2]: Number of samples included in the fit (int).</span>
+<span class="sd">                       Set to 0 on fit failure.</span>
+<span class="sd">        fit_result[3]: Weight sum (float).</span>
+<span class="sd">                       Set to 0.0 on fit failure.</span>
+<span class="sd">        fit_result[4]: Distance weight sum (float).</span>
+<span class="sd">                       Set to 0.0 on fit failure.</span>
+<span class="sd">        fit_result[5]: Reduced chi-squared statistic (float).</span>
+<span class="sd">                       Set to NaN on fit failure.</span>
+<span class="sd">        fit_result[6]: Offset variance from the distribution center (float).</span>
+<span class="sd">                       Set to NaN on fit failure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># need to update mask and counts for zero/bad weights</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">update_mask</span><span class="p">(</span><span class="n">kernel_weights</span><span class="p">,</span> <span class="n">window_mask</span><span class="p">)</span>
+
+    <span class="c1"># The order is: fitted_value, fitted_error, counts,</span>
+    <span class="c1">#               weight, distance_weight, rchi2, offset_variance</span>
+    <span class="n">failure_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">cval</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">counts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">failure_values</span>
+
+    <span class="c1"># Check edges</span>
+    <span class="k">if</span> <span class="n">edge_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">edge_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">edge_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">edge_threshold</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">check_edges</span><span class="p">(</span><span class="n">window_coordinates</span><span class="p">,</span> <span class="n">fit_coordinate</span><span class="p">,</span> <span class="n">window_mask</span><span class="p">,</span>
+                       <span class="n">edge_thresh</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="n">edge_algorithm_idx</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">failure_values</span>
+
+    <span class="c1"># Remove masked values</span>
+    <span class="n">window_values</span><span class="p">,</span> <span class="n">window_error</span><span class="p">,</span> <span class="n">kernel_weights</span> <span class="o">=</span> \
+        <span class="n">apply_mask_to_kernel_set_arrays</span><span class="p">(</span><span class="n">window_mask</span><span class="p">,</span> <span class="n">window_values</span><span class="p">,</span>
+                                        <span class="n">window_error</span><span class="p">,</span> <span class="n">kernel_weights</span><span class="p">,</span>
+                                        <span class="n">counts</span><span class="o">=</span><span class="n">counts</span><span class="p">)</span>
+
+    <span class="c1"># Calculate fitting weights</span>
+    <span class="n">window_full_weights</span> <span class="o">=</span> <span class="n">calculate_fitting_weights</span><span class="p">(</span>
+        <span class="n">window_error</span><span class="p">,</span> <span class="n">kernel_weights</span><span class="p">,</span> <span class="n">error_weighting</span><span class="o">=</span><span class="n">error_weighting</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_weight</span><span class="p">:</span>
+        <span class="n">weightsum</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">window_full_weights</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weightsum</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">window_full_weights</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">weightsum</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">failure_values</span>
+
+    <span class="k">if</span> <span class="n">is_covar</span><span class="p">:</span>
+        <span class="c1"># Propagate variance</span>
+        <span class="n">fitted_value</span> <span class="o">=</span> <span class="n">weighted_mean_variance</span><span class="p">(</span>
+            <span class="n">window_values</span><span class="p">,</span> <span class="n">window_full_weights</span><span class="p">,</span> <span class="n">weightsum</span><span class="o">=</span><span class="n">weightsum</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">get_distance_weights</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_weight</span><span class="p">:</span>
+                <span class="n">total_distance_weights</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">kernel_weights</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">total_distance_weights</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">kernel_weights</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_distance_weights</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="n">get_weights</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">absolute_weight</span><span class="p">:</span>
+                <span class="n">total_weights</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">window_full_weights</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">total_weights</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">window_full_weights</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">total_weights</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">fitted_value</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>  <span class="c1"># error</span>
+                <span class="n">counts</span><span class="p">,</span>
+                <span class="n">total_weights</span><span class="p">,</span>
+                <span class="n">total_distance_weights</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>  <span class="c1"># rchi2</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># offset_variance</span>
+                <span class="p">)</span>
+
+    <span class="n">fitted_value</span><span class="p">,</span> <span class="n">fitted_variance</span><span class="p">,</span> <span class="n">rchi2</span> <span class="o">=</span> <span class="n">solve_mean_fit</span><span class="p">(</span>
+        <span class="n">window_values</span><span class="p">,</span> <span class="n">window_error</span><span class="p">,</span> <span class="n">window_full_weights</span><span class="p">,</span>
+        <span class="n">weightsum</span><span class="o">=</span><span class="n">weightsum</span><span class="p">,</span>
+        <span class="n">calculate_variance</span><span class="o">=</span><span class="n">get_error</span><span class="p">,</span>
+        <span class="n">calculate_rchi2</span><span class="o">=</span><span class="n">get_rchi2</span><span class="p">)</span>
+
+    <span class="n">fitted_error</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">fitted_variance</span><span class="p">)</span> <span class="k">if</span> <span class="n">get_error</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">if</span> <span class="n">get_distance_weights</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">absolute_weight</span><span class="p">:</span>
+            <span class="n">distance_weight</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">kernel_weights</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">distance_weight</span> <span class="o">=</span> <span class="n">array_sum</span><span class="p">(</span><span class="n">kernel_weights</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">distance_weight</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">if</span> <span class="n">get_offset_variance</span><span class="p">:</span>
+        <span class="n">variance_offset</span> <span class="o">=</span> <span class="n">offset_variance</span><span class="p">(</span>
+            <span class="n">window_coordinates</span><span class="p">,</span> <span class="n">fit_coordinate</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">window_mask</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">variance_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">fitted_value</span><span class="p">,</span>
+            <span class="n">fitted_error</span><span class="p">,</span>
+            <span class="n">counts</span><span class="p">,</span>
+            <span class="n">weightsum</span><span class="p">,</span>
+            <span class="n">distance_weight</span><span class="p">,</span>
+            <span class="n">rchi2</span><span class="p">,</span>
+            <span class="n">variance_offset</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="calculate_kernel_weights">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample_kernel_utils.calculate_kernel_weights">[docs]</a>
+<span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">calculate_kernel_weights</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">knots</span><span class="p">,</span> <span class="n">n_knots</span><span class="p">,</span>
+                             <span class="n">coefficients</span><span class="p">,</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">panel_mapping</span><span class="p">,</span> <span class="n">panel_steps</span><span class="p">,</span>
+                             <span class="n">knot_steps</span><span class="p">,</span> <span class="n">nk1</span><span class="p">,</span> <span class="n">spline_mapping</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
+                             <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate values of a kernel centered on a reference for given coordinates.</span>
+
+<span class="sd">    The kernel must have been transformed into a spline representation.  A</span>
+<span class="sd">    value of zero on the spline knots represents the center of the kernel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coordinates : numpy.ndarray (float)</span>
+<span class="sd">        The coordinates for which to calculate weights of shape</span>
+<span class="sd">        (n_dimensions, n).</span>
+<span class="sd">    reference : numpy.ndarray (float)</span>
+<span class="sd">        The location of the kernel center of shape (n_dimensions,).</span>
+<span class="sd">    knots : numpy.ndarray (float)</span>
+<span class="sd">        The kernel spline knots of shape (n_dimensions, &gt;max(n_knots)).</span>
+<span class="sd">    n_knots : numpy.ndarray (int)</span>
+<span class="sd">        The number of spline knots in each dimension of shape (n_dimensions,).</span>
+<span class="sd">    coefficients : numpy.ndarray (float)</span>
+<span class="sd">        The spline coefficients of shape (n_coefficients,).</span>
+<span class="sd">    degrees : numpy.ndarray (int)</span>
+<span class="sd">        The spline degrees in each dimension of shape (n_dimensions,).</span>
+<span class="sd">    panel_mapping : numpy.ndarray (int)</span>
+<span class="sd">        An array containing the panel mapping (flat to n-D) indices.  This is</span>
+<span class="sd">        created by passing the panel shape (n_knots - (2 * degrees) - 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.  Should be an array of shape</span>
+<span class="sd">        (n_dimensions, n_panels).</span>
+<span class="sd">    panel_steps : numpy.ndarray (int)</span>
+<span class="sd">        The flat index mapping steps in panel-space of shape (n_dimensions,).</span>
+<span class="sd">        These are returned by passing the shape `Spline.panel_shape` into</span>
+<span class="sd">        :func:`flat_index_mapping`.</span>
+<span class="sd">    knot_steps : numpy.ndarray (int)</span>
+<span class="sd">        The flat index mapping steps in knot-space of shape (n_dimensions,).</span>
+<span class="sd">        These are returned by passing the shape (n_knots - degrees - 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.</span>
+<span class="sd">    nk1 : numpy.ndarray (int)</span>
+<span class="sd">        An array of shape (n_dimensions,) containing the values n_knots - k1</span>
+<span class="sd">        where n_knots are the number of knots in each dimension, and k1 are the</span>
+<span class="sd">        spline degrees + 1 in each dimension.</span>
+<span class="sd">    spline_mapping : numpy.ndarray (int)</span>
+<span class="sd">        An array containing the spline mapping (flat to n-D) indices.  This is</span>
+<span class="sd">        created by passing the spline shape (degrees + 1) into</span>
+<span class="sd">        :func:`flat_index_mapping`.  Should be an array of shape</span>
+<span class="sd">        (n_dimensions, n_spline_coefficients).</span>
+<span class="sd">    eps : float, optional</span>
+<span class="sd">        Due to rounding errors, sometimes a value is flagged as invalid if it</span>
+<span class="sd">        is exactly on the edge of the kernel.  This value allows a certain</span>
+<span class="sd">        tolerance to those incorrect results.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    weights : numpy.ndarray (float)</span>
+<span class="sd">        The interpolated weights of shape (n,).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">kernel_extent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">ndim</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+        <span class="n">kernel_extent</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">knots</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">eps</span>
+        <span class="n">kernel_extent</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">knots</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="n">n_knots</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">eps</span>
+
+    <span class="n">relative_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">ndim</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">n_valid</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">coordinates</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">reference</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">kernel_extent</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">diff</span> <span class="o">&lt;=</span> <span class="n">kernel_extent</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+                <span class="n">relative_position</span><span class="p">[</span><span class="n">dim</span><span class="p">,</span> <span class="n">n_valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">diff</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">valid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">valid</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">n_valid</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">n_valid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">perform_fit</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="o">=</span><span class="n">relative_position</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n_valid</span><span class="p">],</span>
+            <span class="n">knots</span><span class="o">=</span><span class="n">knots</span><span class="p">,</span>
+            <span class="n">coefficients</span><span class="o">=</span><span class="n">coefficients</span><span class="p">,</span>
+            <span class="n">degrees</span><span class="o">=</span><span class="n">degrees</span><span class="p">,</span>
+            <span class="n">panel_mapping</span><span class="o">=</span><span class="n">panel_mapping</span><span class="p">,</span>
+            <span class="n">panel_steps</span><span class="o">=</span><span class="n">panel_steps</span><span class="p">,</span>
+            <span class="n">knot_steps</span><span class="o">=</span><span class="n">knot_steps</span><span class="p">,</span>
+            <span class="n">nk1</span><span class="o">=</span><span class="n">nk1</span><span class="p">,</span>
+            <span class="n">spline_mapping</span><span class="o">=</span><span class="n">spline_mapping</span><span class="p">,</span>
+            <span class="n">n_knots</span><span class="o">=</span><span class="n">n_knots</span><span class="p">)</span>
+        <span class="n">n_valid</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">valid</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">fit</span><span class="p">[</span><span class="n">n_valid</span><span class="p">]</span>
+                <span class="n">n_valid</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+
+
+<div class="viewcode-block" id="apply_mask_to_kernel_set_arrays">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample_kernel_utils.apply_mask_to_kernel_set_arrays">[docs]</a>
+<span class="nd">@njit</span><span class="p">(</span><span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nogil</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">apply_mask_to_kernel_set_arrays</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">counts</span><span class="o">=</span><span class="kc">None</span>
+                                    <span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set certain arrays to a fixed size based on a mask array.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask : numpy.ndarray of bool (N,)</span>
+<span class="sd">        Mask where `True` values indicate the associated element should be</span>
+<span class="sd">        kept, and `False` will result in exclusion from the output arrays.</span>
+<span class="sd">    data : numpy.ndarray (N,)</span>
+<span class="sd">        The data array.</span>
+<span class="sd">    error : numpy.ndarray</span>
+<span class="sd">        An array of shape (1,) or (N,).  If an array of size 1 is supplied,</span>
+<span class="sd">        it will be expanded to an array of `counts` size.</span>
+<span class="sd">    weights : numpy.ndarray</span>
+<span class="sd">        An array of shape (1,) or (N,).  If an array of size 1 is supplied,</span>
+<span class="sd">        it will be expanded to an array of `counts` size.</span>
+<span class="sd">    counts : int, optional</span>
+<span class="sd">        The number of `True` values in the mask, optionally passed in for</span>
+<span class="sd">        speed.  Determines the output size of all arrays.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    data_out, error_out, weight_out : 3-tuple of numpy.ndarray.</span>
+<span class="sd">       Resized arrays in which the last axis is of size `counts`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">size</span><span class="p">):</span>
+            <span class="n">counts</span> <span class="o">+=</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">n_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">data_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">weight_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">single_weight</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span>
+
+    <span class="n">valid_error</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">valid_error</span><span class="p">:</span>
+        <span class="n">single_error</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="n">error_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">error_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">nb</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">single_error</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">data_out</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">valid_error</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">single_error</span><span class="p">:</span>
+                    <span class="n">error_out</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">error_out</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">error</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">single_weight</span><span class="p">:</span>
+                <span class="n">weight_out</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weight_out</span><span class="p">[</span><span class="n">counter</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">counter</span> <span class="o">==</span> <span class="n">counts</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">data_out</span><span class="p">,</span> <span class="n">error_out</span><span class="p">,</span> <span class="n">weight_out</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.resample_kernel_utils</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.toolkit.func &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.func</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.toolkit.func</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">bottleneck</span> <span class="k">as</span> <span class="nn">bn</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">describe</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;slicer&#39;</span><span class="p">,</span> <span class="s1">&#39;taylor&#39;</span><span class="p">,</span> <span class="s1">&#39;julia_fractal&#39;</span><span class="p">,</span>
+           <span class="s1">&#39;byte_size_of_object&#39;</span><span class="p">,</span> <span class="s1">&#39;robust_mask&#39;</span><span class="p">,</span> <span class="s1">&#39;moments&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="slicer">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.slicer">[docs]</a>
+<span class="k">def</span> <span class="nf">slicer</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">ind</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a slice of an array in arbitrary dimension.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array : numpy.ndarray</span>
+<span class="sd">        array to slice</span>
+<span class="sd">    axis : int or array_like</span>
+<span class="sd">        axis to slice on</span>
+<span class="sd">    index : int or array_like of int</span>
+<span class="sd">        index retrieved</span>
+<span class="sd">    ind : bool, optional</span>
+<span class="sd">        If True, return the slices rather than sliced array</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray or tuple of slice</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="n">axis</span>
+        <span class="n">idx</span> <span class="o">+=</span> <span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">idx</span> <span class="o">+=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">-</span> <span class="n">axis</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">idx</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ind</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">idx</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">array</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="taylor">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.taylor">[docs]</a>
+<span class="k">def</span> <span class="nf">taylor</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Taylor expansion generator for Polynomial exponents</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Order of Polynomial</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of variables to solve for</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    n-tuple of int</span>
+<span class="sd">        The next polynomial exponent</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="p">()</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">taylor</span><span class="p">(</span><span class="n">order</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="p">(</span><span class="n">i</span><span class="p">,)</span> <span class="o">+</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="julia_fractal">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.julia_fractal">[docs]</a>
+<span class="k">def</span> <span class="nf">julia_fractal</span><span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">c0</span><span class="o">=-</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">c1</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+                  <span class="n">xrange</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">yrange</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a 2-D Julia fractal image</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sy : int</span>
+<span class="sd">        y dimension size.</span>
+<span class="sd">    sx : int</span>
+<span class="sd">        x dimension size.</span>
+<span class="sd">    c0 : float, optional</span>
+<span class="sd">        The c0 coefficient.</span>
+<span class="sd">    c1 : float, optional</span>
+<span class="sd">        The c1 coefficient.</span>
+<span class="sd">    iterations : int, optional</span>
+<span class="sd">        The number of steps.</span>
+<span class="sd">    xrange : array_like of int or float, optional</span>
+<span class="sd">        The range of x values.</span>
+<span class="sd">    yrange : array_like of int or float, optional</span>
+<span class="sd">        The range of y values.</span>
+<span class="sd">    normalize : bool, optional</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">xrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sx</span><span class="p">)[</span><span class="kc">None</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">yrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">yrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sy</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">sy</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sx</span><span class="p">))</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">c0</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">c1</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="n">sy</span><span class="p">,</span> <span class="n">sx</span><span class="p">),</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sy</span><span class="p">,</span> <span class="n">sx</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">*=</span> <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+        <span class="n">z</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">+=</span> <span class="n">c</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">result</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">/=</span> <span class="n">result</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+
+<div class="viewcode-block" id="byte_size_of_object">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.byte_size_of_object">[docs]</a>
+<span class="k">def</span> <span class="nf">byte_size_of_object</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return the size of a Python object in bytes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : object</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    byte_size : int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">marked</span> <span class="o">=</span> <span class="p">{</span><span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)}</span>
+    <span class="n">obj_q</span> <span class="o">=</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span>
+    <span class="n">sz</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">obj_q</span><span class="p">:</span>
+        <span class="n">sz</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">,</span> <span class="n">obj_q</span><span class="p">))</span>
+
+        <span class="c1"># Lookup all the object referred to by the object in obj_q.</span>
+        <span class="c1"># See: https://docs.python.org/3.7/library/gc.html#gc.get_referents</span>
+        <span class="n">all_refr</span> <span class="o">=</span> <span class="p">((</span><span class="nb">id</span><span class="p">(</span><span class="n">o</span><span class="p">),</span> <span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">gc</span><span class="o">.</span><span class="n">get_referents</span><span class="p">(</span><span class="o">*</span><span class="n">obj_q</span><span class="p">))</span>
+
+        <span class="c1"># Filter object that are already marked.</span>
+        <span class="c1"># Using dict notation will prevent repeated objects.</span>
+        <span class="n">new_refr</span> <span class="o">=</span> <span class="p">{</span><span class="n">o_id</span><span class="p">:</span> <span class="n">o</span> <span class="k">for</span> <span class="n">o_id</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">all_refr</span>
+                    <span class="k">if</span> <span class="n">o_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">marked</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="nb">type</span><span class="p">)}</span>
+
+        <span class="c1"># The new obj_q will be the ones that were not marked,</span>
+        <span class="c1"># and we will update marked with their ids so we will</span>
+        <span class="c1"># not traverse them again.</span>
+        <span class="n">obj_q</span> <span class="o">=</span> <span class="n">new_refr</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">marked</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_refr</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">sz</span></div>
+
+
+
+<div class="viewcode-block" id="robust_mask">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.robust_mask">[docs]</a>
+<span class="k">def</span> <span class="nf">robust_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes a mask derived from data Median Absolute Deviation (MAD).</span>
+
+<span class="sd">    Calculates a robust mask based on the input data and optional input mask.</span>
+<span class="sd">    If :math:`threshold &gt; 0`, the dataset is searched for outliers.  Outliers</span>
+<span class="sd">    are identified for point :math:`i` if</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\frac{|y_i - median[y]|}{MAD} &gt; threshold</span>
+
+<span class="sd">    where :math:`MAD` is the Median Absolute Deviation defined as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        MAD = 1.482 * median[|y_i - median[y]|]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array_like of float</span>
+<span class="sd">        The data on which to derive a robust mask.</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        Threshold as described above.</span>
+<span class="sd">    mask : array_like of bool, optional</span>
+<span class="sd">        If supplied, must be the same shape as `data`.  Any masked (`False`)</span>
+<span class="sd">        `data` values will not be included in the :math:`MAD` calculation.</span>
+<span class="sd">        Additionally, masked elements will also be masked (`False`) in the</span>
+<span class="sd">        output mask.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis over which to calculate the :math:`MAD`.  The default (`None`)</span>
+<span class="sd">        derives the :math:`MAD` from the entire set of `data`.</span>
+<span class="sd">    mask_data : bool, optional</span>
+<span class="sd">        If `True`, return a copy of `data` with masked values replaced by</span>
+<span class="sd">        `cval` in addition to the output mask.  The default is `False`.</span>
+<span class="sd">        Note that the output type will</span>
+<span class="sd">    cval : int or float, optional</span>
+<span class="sd">        if `mask_data` is set to `True`, masked values will be replaced by</span>
+<span class="sd">        `cval`.  The default is `numpy.nan`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray of bool, [numpy.ndarray of numpy.float64]</span>
+<span class="sd">        The output mask where `False` indicates a masked value, while `True`</span>
+<span class="sd">        indicates that associated data deviation is below the `threshold`</span>
+<span class="sd">        limit.  If `mask_data` was `True`, also returns a copy of `data`</span>
+<span class="sd">        with masked values replaced by `cval`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data and mask shape mismatch&quot;</span><span class="p">)</span>
+        <span class="n">valid</span> <span class="o">&amp;=</span> <span class="n">mask</span>
+
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">threshold</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="o">~</span><span class="n">valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">med</span> <span class="o">=</span> <span class="n">bn</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+                <span class="n">mad</span> <span class="o">=</span> <span class="mf">1.482</span> <span class="o">*</span> <span class="n">bn</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">med</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">med</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">),</span> <span class="n">axis</span><span class="p">)</span>
+                <span class="n">mad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+                    <span class="mf">1.482</span> <span class="o">*</span> <span class="n">bn</span><span class="o">.</span><span class="n">nanmedian</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">med</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">),</span> <span class="n">axis</span><span class="p">)</span>
+
+            <span class="n">ratio</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">med</span><span class="p">)</span> <span class="o">/</span> <span class="n">mad</span>
+            <span class="n">valid</span> <span class="o">&amp;=</span> <span class="n">ratio</span> <span class="o">&lt;=</span> <span class="n">threshold</span>
+
+    <span class="k">if</span> <span class="n">mask_data</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="o">~</span><span class="n">valid</span><span class="p">]</span> <span class="o">=</span> <span class="n">cval</span>
+        <span class="k">return</span> <span class="n">valid</span><span class="p">,</span> <span class="n">d</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">valid</span></div>
+
+
+
+<div class="viewcode-block" id="moments">
+<a class="viewcode-back" href="../../../source/grig.toolkit.html#grig.toolkit.func.moments">[docs]</a>
+<span class="k">def</span> <span class="nf">moments</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">get_mask</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes statistics on a data set avoiding deviant points if requested</span>
+
+<span class="sd">    Moments are calculated for a given set of data.  If a value is passed</span>
+<span class="sd">    to threshold, then the dataset is searched for outliers.  A data point</span>
+<span class="sd">    is identified as an outlier if abs(x_i - x_med)/MAD &gt; threshold, where</span>
+<span class="sd">    x_med is the median, MAD is the median absolute deviation defined as</span>
+<span class="sd">    1.482 * median(abs(x_i - x_med)).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array_like of float</span>
+<span class="sd">        (shape1) Data on which to calculate moments</span>
+<span class="sd">    mask : array_like of bool</span>
+<span class="sd">        (shape1) Mask to apply to data</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        Sigma threshold over which values are identified as outliers</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis over which to calculate statistics</span>
+<span class="sd">    get_mask : bool, optional</span>
+<span class="sd">        If True, only return the output mask</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict or numpy.ndarray</span>
+<span class="sd">        If `get_mask` is False, returns a dictionary containing the</span>
+<span class="sd">        following statistics: mean, var, stddev, skew, kurt, stderr,</span>
+<span class="sd">        mask.  Otherwise, returns the output mask.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">valid</span> <span class="o">=</span> <span class="n">robust_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span>
+                        <span class="n">mask_data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">get_mask</span><span class="p">),</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">get_mask</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">valid</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">valid</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">valid</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="n">describe</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">nan_policy</span><span class="o">=</span><span class="s1">&#39;omit&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;mask&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">valid</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;var&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="s1">&#39;variance&#39;</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;stddev&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;var&#39;</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;skewness&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="s1">&#39;skewness&#39;</span><span class="p">)</span>
+    <span class="n">result</span><span class="p">[</span><span class="s1">&#39;kurtosis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stats</span><span class="p">,</span> <span class="s1">&#39;kurtosis&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">data</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit.func</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.resample_polynomial &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.resample_polynomial</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.resample_polynomial</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">import</span> <span class="nn">numba</span> <span class="k">as</span> <span class="nn">nb</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+
+<span class="kn">from</span> <span class="nn">grig.resample_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">scale_coordinates</span><span class="p">,</span>
+    <span class="n">shaped_adaptive_weight_matrices</span><span class="p">,</span>
+    <span class="n">scaled_adaptive_weight_matrices</span><span class="p">,</span>
+    <span class="n">relative_density</span><span class="p">,</span> <span class="n">solve_fits</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">grig.resample_base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ResampleBase</span><span class="p">,</span> <span class="n">_global_resampling_values</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">grig.toolkit.multiproc</span> <span class="kn">import</span> <span class="n">unpickle_file</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ResamplePolynomial&#39;</span><span class="p">,</span> <span class="s1">&#39;resamp&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ResamplePolynomial">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial">[docs]</a>
+<span class="k">class</span> <span class="nc">ResamplePolynomial</span><span class="p">(</span><span class="n">ResampleBase</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+                 <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">robust</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">window_estimate_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                 <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                 <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                 <span class="n">leaf_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                 <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">large_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">check_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">memory_buffer</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Class to resample data using local polynomial fits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : array_like of float</span>
+<span class="sd">            (n_features, n_samples) array of independent values.  A local</span>
+<span class="sd">            internal copy will be created if it is not a numpy.float64</span>
+<span class="sd">            type.</span>
+<span class="sd">        data : array_like of float</span>
+<span class="sd">            (n_sets, n_samples) or (n_samples,) array of dependent values.</span>
+<span class="sd">            multiple (n_sets) sets of data are supplied, then n_sets solutions</span>
+<span class="sd">            will be calculated at each resampling point.</span>
+<span class="sd">        error : array_like of float, optional</span>
+<span class="sd">            (n_sets, n_samples) or (n_samples,) array of error (1-sigma) values</span>
+<span class="sd">            associated with the `data` array.  `error` will be used to</span>
+<span class="sd">            weight fits, and be propagated to the output error values.  If not</span>
+<span class="sd">            supplied, the error may still be calculated from residuals to the</span>
+<span class="sd">            fit during :func:`ResamplePolynomial.__call__`.</span>
+<span class="sd">        mask : array_like of bool, optional</span>
+<span class="sd">            (n_sets, n_data) or (n_data,) array of bool where `True`</span>
+<span class="sd">            indicates a valid data point that can be included the fitting</span>
+<span class="sd">            and `False` indicates data points that should be excluded from</span>
+<span class="sd">            the fit.  Masked points will be reflected in the output counts</span>
+<span class="sd">            array.  If not supplied, all samples are considered valid.</span>
+<span class="sd">        window : array_like or float or int, optional</span>
+<span class="sd">            (n_features,) array or single value specifying the maximum</span>
+<span class="sd">            distance (distance definition is handled by `distance_kwargs`) of a</span>
+<span class="sd">            data sample from a resampling point such that it can be included in</span>
+<span class="sd">            a local fit.  `window` may be declared for each feature.  For</span>
+<span class="sd">            example, when fitting 2-dimensional (x, y) data, a window of 1.0</span>
+<span class="sd">            would create a circular fitting window around each resampling</span>
+<span class="sd">            point, whereas a window of (1.0, 0.5) would create an elliptical</span>
+<span class="sd">            fitting window with a semi-major axis of 1.0 in x and semi-minor</span>
+<span class="sd">            axis of 0.5 in y.  If not supplied, `window` is estimated via</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        order : array_like or int, optional</span>
+<span class="sd">            (n_features,) array or single integer value specifying the</span>
+<span class="sd">            polynomial fit order for each feature.</span>
+<span class="sd">        fix_order : bool, optional</span>
+<span class="sd">            In order for local polynomial fitting to occur, the basic</span>
+<span class="sd">            requirement is that n_samples &gt;= (order + 1) ** n_features,</span>
+<span class="sd">            where n_samples is the number of data samples within `window`.</span>
+<span class="sd">            If `fix_order` is True and this condition is not met, then</span>
+<span class="sd">            local fitting will be aborted for that point, and a value of</span>
+<span class="sd">            `cval` will be returned instead.  If `fix_order` is False,</span>
+<span class="sd">            then `order` will be reduced to the maximum value where this</span>
+<span class="sd">            condition can be met.  NOTE: this is only available if</span>
+<span class="sd">            `order` is symmetrical. i.e. it was passed in as a single</span>
+<span class="sd">            integer to be applied across all features.  Otherwise, it is</span>
+<span class="sd">            unclear as to which feature order should be reduced to meet</span>
+<span class="sd">            the condition.</span>
+<span class="sd">        robust : float, optional</span>
+<span class="sd">            Specifies an outlier rejection threshold for `data`. A data point</span>
+<span class="sd">            is identified as an outlier if abs(x_i - x_med)/MAD &gt; robust, where</span>
+<span class="sd">            x_med is the median, and MAD is the Median Absolute Deviation</span>
+<span class="sd">            defined as 1.482 * median(abs(x_i - x_med)).</span>
+<span class="sd">        negthresh : float, optional</span>
+<span class="sd">            Specifies a negative value rejection threshold such that</span>
+<span class="sd">            data &lt; (-stddev(data) * negthresh) will be excluded from the fit.</span>
+<span class="sd">        window_estimate_bins : int, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        window_estimate_percentile : int or float, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        window_estimate_oversample : int or float, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        leaf_size : int, optional</span>
+<span class="sd">            Number of points at which to switch to brute-force during the</span>
+<span class="sd">            ball tree query algorithm.  See `sklearn.neighbours.BallTree`</span>
+<span class="sd">            for further details.</span>
+<span class="sd">        large_data : bool, optional</span>
+<span class="sd">            If `True`, indicates that this resampling algorithm will run on</span>
+<span class="sd">            a large set of data, and the ball tree should be created on</span>
+<span class="sd">            subsets of the data.</span>
+<span class="sd">        check_memory : bool, optional</span>
+<span class="sd">            If `True`, check the memory requirements for resampling the</span>
+<span class="sd">            supplied data.</span>
+<span class="sd">        memory_buffer : float, optional</span>
+<span class="sd">            A fraction (positive or negative) with which to modify the memory</span>
+<span class="sd">            estimates for the process memory requirements.  Memory estimates</span>
+<span class="sd">            are scaled by the factor 1 + memory_buffer.</span>
+<span class="sd">        distance_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments passed into</span>
+<span class="sd">            :func:`sklearn.neighbors.DistanceMetric`.  The default is to use</span>
+<span class="sd">            the &quot;minkowski&quot; definition with `p=2`, i.e., the Euclidean</span>
+<span class="sd">            definition.  This is important in determining which samples lie</span>
+<span class="sd">            inside the window region of a resampling point, and when deriving</span>
+<span class="sd">            distance weighting factors.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError : Invalid inputs to __init__ or __call__</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fix_order</span> <span class="o">=</span> <span class="n">fix_order</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
+                         <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="n">negthresh</span><span class="p">,</span>
+                         <span class="n">window_estimate_bins</span><span class="o">=</span><span class="n">window_estimate_bins</span><span class="p">,</span>
+                         <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="n">window_estimate_percentile</span><span class="p">,</span>
+                         <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="n">window_estimate_oversample</span><span class="p">,</span>
+                         <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">,</span> <span class="n">large_data</span><span class="o">=</span><span class="n">large_data</span><span class="p">,</span>
+                         <span class="n">check_memory</span><span class="o">=</span><span class="n">check_memory</span><span class="p">,</span>
+                         <span class="n">memory_buffer</span><span class="o">=</span><span class="n">memory_buffer</span><span class="p">,</span> <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the order of polynomial fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        order : int or numpy.ndarray (int)</span>
+<span class="sd">            A symmetrical order, or the order for each feature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">fit_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the fitting tree representative of points to fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PolynomialTree</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">fit_tree</span>
+
+<div class="viewcode-block" id="ResamplePolynomial.set_sample_tree">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.set_sample_tree">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_sample_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span>
+                        <span class="n">radius</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">window_estimate_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                        <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                        <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+                        <span class="n">leaf_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                        <span class="n">large_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">check_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">memory_buffer</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+                        <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build the sample tree from input coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : numpy.ndarray (float)</span>
+<span class="sd">            The input coordinates of shape (n_features, n_samples).</span>
+<span class="sd">        radius :  float or sequence (float), optional</span>
+<span class="sd">            The radius of the window around each fitting point used to</span>
+<span class="sd">            determine sample selection for fit.  If not supplied, will be</span>
+<span class="sd">            estimated using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        window_estimate_bins : int, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        window_estimate_percentile : int or float, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        window_estimate_oversample : int or float, optional</span>
+<span class="sd">            Used to estimate the `window` if not supplied using</span>
+<span class="sd">            :func:`ResamplePolynomial.estimate_feature_windows`.</span>
+<span class="sd">        leaf_size : int, optional</span>
+<span class="sd">            Number of points at which to switch to brute-force during the</span>
+<span class="sd">            ball tree query algorithm.  See `sklearn.neighbours.BallTree`</span>
+<span class="sd">            for further details.</span>
+<span class="sd">        large_data : bool, optional</span>
+<span class="sd">            If `True`, indicates that this resampling algorithm will run on</span>
+<span class="sd">            a large set of data, and the ball tree should be created on</span>
+<span class="sd">            subsets of the data.</span>
+<span class="sd">        check_memory : bool, optional</span>
+<span class="sd">            If `True`, check the memory requirements for resampling the</span>
+<span class="sd">            supplied data.</span>
+<span class="sd">        memory_buffer : float, optional</span>
+<span class="sd">            A fraction (positive or negative) with which to modify the memory</span>
+<span class="sd">            estimates for the process memory requirements.  Memory estimates</span>
+<span class="sd">            are scaled by the factor 1 + memory_buffer.</span>
+<span class="sd">        distance_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments passed into</span>
+<span class="sd">            :func:`sklearn.neighbors.DistanceMetric`.  The default is to use</span>
+<span class="sd">            the &quot;minkowski&quot; definition with `p=2`, i.e., the Euclidean</span>
+<span class="sd">            definition.  This is important in determining which samples lie</span>
+<span class="sd">            inside the window region of a resampling point, and when deriving</span>
+<span class="sd">            distance weighting factors.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_features</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">_n_samples</span><span class="p">)</span>
+
+        <span class="n">memory_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">}</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_sample_tree</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="p">,</span>
+            <span class="n">radius</span><span class="o">=</span><span class="n">radius</span><span class="p">,</span>
+            <span class="n">window_estimate_bins</span><span class="o">=</span><span class="n">window_estimate_bins</span><span class="p">,</span>
+            <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="n">window_estimate_percentile</span><span class="p">,</span>
+            <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="n">window_estimate_oversample</span><span class="p">,</span>
+            <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">,</span> <span class="n">large_data</span><span class="o">=</span><span class="n">large_data</span><span class="p">,</span>
+            <span class="n">check_memory</span><span class="o">=</span><span class="n">check_memory</span><span class="p">,</span>
+            <span class="n">memory_buffer</span><span class="o">=</span><span class="n">memory_buffer</span><span class="p">,</span>
+            <span class="n">memory_kwargs</span><span class="o">=</span><span class="n">memory_kwargs</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">set_order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_fix_order</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">precalculate_phi_terms</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.check_order">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.check_order">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">check_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">n_features</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check the order is of correct format and enough samples exist.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : int or array_like of int (n_features,)</span>
+<span class="sd">            The polynomial order to fit, either supplied as an integer to be</span>
+<span class="sd">            applied over all dimensions, or as an array to give the order</span>
+<span class="sd">            in each dimension.</span>
+<span class="sd">        n_features : int</span>
+<span class="sd">            The number of features (dimensions) of the sample coordinates.</span>
+<span class="sd">        n_samples : int</span>
+<span class="sd">            The number of samples.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        order : int or numpy.ndarray of int (n_features,)</span>
+<span class="sd">            The formatted polynomial order.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If there are too few samples for the desired order, or `order` is</span>
+<span class="sd">            not formatted correctly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Order should be a scalar or 1-D array&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">order</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">n_features</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Order vector does not match number of features&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">min_points</span> <span class="o">=</span> <span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">n_features</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">min_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_samples</span> <span class="o">&lt;</span> <span class="n">min_points</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Too few data samples for order&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">order</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.calculate_minimum_points">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.calculate_minimum_points">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_minimum_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the minimum number of points for a polynomial fit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        minimum_points : int</span>
+<span class="sd">            The minimum number of points for a polynomial fit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">o</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">o</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.reduction_settings">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.reduction_settings">[docs]</a>
+    <span class="k">def</span> <span class="nf">reduction_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">relative_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">adaptive_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">adaptive_algorithm</span><span class="o">=</span><span class="s1">&#39;scaled&#39;</span><span class="p">,</span> <span class="n">error_weighting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                           <span class="n">fit_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+                           <span class="n">edge_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">edge_algorithm</span><span class="o">=</span><span class="s1">&#39;distribution&#39;</span><span class="p">,</span>
+                           <span class="n">order_algorithm</span><span class="o">=</span><span class="s1">&#39;bounded&#39;</span><span class="p">,</span> <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">estimate_covariance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">adaptive_region_coordinates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">use_threading</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">use_processes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define a set of reduction instructions based on user input.</span>
+
+<span class="sd">        This method is responsible for determining, formatting, and checking</span>
+<span class="sd">        a number variables required for the resampling algorithm based on</span>
+<span class="sd">        user input.  For detailed descriptions of user options, please see</span>
+<span class="sd">        :func:`ResamplePolynomial.__call__`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        smoothing : float or array_like (n_features,), optional</span>
+<span class="sd">        relative_smooth : bool, optional</span>
+<span class="sd">        adaptive_threshold : float or array_like (n_features,), optional</span>
+<span class="sd">        adaptive_algorithm : str, optional</span>
+<span class="sd">        error_weighting : bool, optional</span>
+<span class="sd">        fit_threshold : float, optional</span>
+<span class="sd">        cval : float, optional</span>
+<span class="sd">        edge_threshold : float or array_like (n_features,), optional</span>
+<span class="sd">        edge_algorithm : str, optional</span>
+<span class="sd">        order_algorithm : str, optional</span>
+<span class="sd">        is_covar : bool, optional</span>
+<span class="sd">        estimate_covariance : bool, optional</span>
+<span class="sd">        jobs : int, optional</span>
+<span class="sd">        adaptive_region_coordinates : array_like, optional</span>
+<span class="sd">        use_threading : bool, optional</span>
+<span class="sd">            If `True`, force use of threads during multiprocessing.</span>
+<span class="sd">        use_processes : bool, optional</span>
+<span class="sd">            If `True`, force use of sub-processes during multiprocessing.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            The reduction settings.  Also, stored as</span>
+<span class="sd">            :func:`ResamplePolynomial.fit_settings`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reduction_settings</span><span class="p">(</span>
+            <span class="n">error_weighting</span><span class="o">=</span><span class="n">error_weighting</span><span class="p">,</span>
+            <span class="n">fit_threshold</span><span class="o">=</span><span class="n">fit_threshold</span><span class="p">,</span>
+            <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">,</span>
+            <span class="n">edge_threshold</span><span class="o">=</span><span class="n">edge_threshold</span><span class="p">,</span>
+            <span class="n">edge_algorithm</span><span class="o">=</span><span class="n">edge_algorithm</span><span class="p">,</span>
+            <span class="n">jobs</span><span class="o">=</span><span class="n">jobs</span><span class="p">,</span>
+            <span class="n">use_threading</span><span class="o">=</span><span class="n">use_threading</span><span class="p">,</span>
+            <span class="n">use_processes</span><span class="o">=</span><span class="n">use_processes</span><span class="p">)</span>
+
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;estimate_covariance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">estimate_covariance</span>
+
+        <span class="n">adaptive_algorithm</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">adaptive_algorithm</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">adaptive_algorithm</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span>
+                <span class="ow">and</span> <span class="n">adaptive_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">adaptive_threshold</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">error_weighting</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Error weighting must be enabled for &quot;</span>
+                                 <span class="s2">&quot;adaptive smoothing&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Adaptive smoothing cannot be applied for &quot;</span>
+                                 <span class="s2">&quot;polynomial fit of zero order.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">adaptive</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">adaptive_algorithm</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">adaptive_algorithm</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">adaptive_algorithm</span> <span class="o">==</span> <span class="s1">&#39;shaped&#39;</span><span class="p">:</span>
+                    <span class="c1"># only relevant in 2+ dimensions</span>
+                    <span class="n">shaped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">&gt;</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">adaptive_algorithm</span> <span class="o">==</span> <span class="s1">&#39;scaled&#39;</span><span class="p">:</span>
+                    <span class="n">shaped</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Adaptive algorithm must be one of &quot;</span>
+                                     <span class="s2">&quot;{None, &#39;shaped&#39;, &#39;scaled&#39;}.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">adaptive</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">shaped</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">adaptive_threshold</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="n">distance_weighting</span> <span class="o">=</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">adaptive</span>
+        <span class="n">error_weighting</span> <span class="o">=</span> <span class="n">adaptive</span> <span class="ow">or</span> <span class="n">error_weighting</span>
+        <span class="k">if</span> <span class="n">adaptive</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_valid</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Errors must be provided for adaptive smoothing&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">error_weighting</span> <span class="o">&amp;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_error_valid</span>
+
+        <span class="k">if</span> <span class="n">distance_weighting</span><span class="p">:</span>
+
+            <span class="c1"># In the case that adaptive smoothing is set, but no distance</span>
+            <span class="c1"># weighting is selected.  Smoothing of 1/3 is reasonable.</span>
+            <span class="k">if</span> <span class="n">smoothing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">smoothing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">relative_smooth</span>
+                                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">smoothing</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">alpha</span><span class="o">.</span><span class="n">size</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Smoothing size does not match number of features&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">adaptive</span><span class="p">:</span>
+                <span class="n">adaptive_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">adaptive_threshold</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">alpha</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">adaptive_threshold</span><span class="o">.</span><span class="n">size</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">]:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Adaptive smoothing size does not &quot;</span>
+                                     <span class="s2">&quot;match number of features&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">adaptive_threshold</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+                    <span class="n">adaptive_threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">adaptive_threshold</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">relative_smooth</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">alpha</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>  <span class="c1"># alpha size = 1</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">adaptive</span><span class="p">:</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">alpha</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span>  <span class="c1"># sigma in terms of window</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">adaptive</span> <span class="ow">and</span> <span class="n">alpha</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Symmetrical across dimensions - use single value</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="mf">0.0</span><span class="p">])</span>
+
+        <span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order</span>
+        <span class="n">order_varies</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order_varies</span>
+        <span class="n">order_symmetry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">order_symmetry</span>
+        <span class="n">order_algorithm</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">order_algorithm</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">order_func_lookup</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;bounded&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;extrapolate&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s1">&#39;counts&#39;</span><span class="p">:</span> <span class="mi">3</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">order_algorithm</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order_func_lookup</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown order algorithm: </span><span class="si">{</span><span class="n">order_algorithm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">order_algorithm_idx</span> <span class="o">=</span> <span class="n">order_func_lookup</span><span class="p">[</span><span class="n">order_algorithm</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">order_symmetry</span><span class="p">:</span>
+            <span class="n">order_minimum_points</span> <span class="o">=</span> <span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">order_minimum_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_covar</span><span class="p">:</span>
+            <span class="n">mean_fit</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mean_fit</span> <span class="o">=</span> <span class="n">order_symmetry</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">adaptive</span><span class="p">:</span>
+            <span class="n">region_coordinates</span> <span class="o">=</span> <span class="n">adaptive_region_coordinates</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">region_coordinates</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;distance_weighting&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">distance_weighting</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_threshold&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adaptive_threshold</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;shaped&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shaped</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_varies&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_varies</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_algorithm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_algorithm</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_algorithm_idx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_algorithm_idx</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_symmetry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_symmetry</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_minimum_points&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_minimum_points</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;is_covar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_covar</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;mean_fit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_fit</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;relative_smooth&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relative_smooth</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_region_coordinates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">region_coordinates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="k">return</span> <span class="n">settings</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.calculate_adaptive_smoothing">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.calculate_adaptive_smoothing">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_adaptive_smoothing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the adaptive distance weighting kernel.</span>
+
+<span class="sd">        Calculates a weighting kernel for each sample in the reduction.  i.e,</span>
+<span class="sd">        each sample will have a different weighting factor based on its</span>
+<span class="sd">        distance (and optionally, direction) from each point at which a fit</span>
+<span class="sd">        is required.  This is done by performing a fit centered on each sample,</span>
+<span class="sd">        and measuring how that fit deviates from the actual observed sample</span>
+<span class="sd">        value.  The first step is to decide upon the distance weighting factor</span>
+<span class="sd">        used to perform the initial fit.</span>
+
+<span class="sd">        It is assumed that the coordinate error is known (or approximately</span>
+<span class="sd">        known), and supplied as a :math:`1 \sigma` error as the &#39;alpha&#39;</span>
+<span class="sd">        keyword in `settings`.  For example, the error in astronomical</span>
+<span class="sd">        observations taken using a Gaussian beam with known FWHM is:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \sigma = \frac{\text{FWHM}}{2 \sqrt{2 \ln{2}}}</span>
+
+<span class="sd">        However, adaptive weighting may be calculated over select dimensions,</span>
+<span class="sd">        leaving some fixed.  In this case, the `alpha` keyword will always</span>
+<span class="sd">        apply a weighting factor in a &quot;fixed&quot; dimension :math:`k` as:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            w_k = exp \left(</span>
+<span class="sd">                  \frac{-\Delta x_k^2}{\alpha_{fixed, k} \Omega_k^2}</span>
+<span class="sd">                  \right)</span>
+
+<span class="sd">        where :math:`\Delta x_k` is the distance from the resampling point to</span>
+<span class="sd">        the sample in question, and :math:`\Omega_k` is the window principle</span>
+<span class="sd">        axis in dimension :math:`k`.  Note that in the weighting function,</span>
+<span class="sd">        :math:`\sigma` is related to :math:`\alpha` by:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \alpha_k = 2 \sigma_k^2</span>
+
+<span class="sd">        and weighting is applied using the definition of :math:`w_k` above.  To</span>
+<span class="sd">        signify that :math:`\alpha_{fixed, k}` should be used instead of</span>
+<span class="sd">        :math:`\sigma` for dimension :math:`k`, the &quot;adaptive_threshold&quot; array</span>
+<span class="sd">        in `settings` should be set to zero for the corresponding dimension.</span>
+<span class="sd">        For example, if we had::</span>
+
+<span class="sd">            settings[&#39;alpha&#39;] = [0.3, 0.3]</span>
+<span class="sd">            settings[&#39;adaptive_threshold&#39;] = [1, 0]</span>
+
+<span class="sd">        the first dimension would have :math:`\alpha_0=0.18`</span>
+<span class="sd">        (:math:`2 \times 0.3^2`), and the second would have</span>
+<span class="sd">        :math:`\alpha_1=0.3`.  In this example, :math:`\alpha_0` would be</span>
+<span class="sd">        allowed to vary per sample, while :math:`\alpha_1` would be fixed for</span>
+<span class="sd">        each sample at 0.3.  An initial fit is then performed at each sample</span>
+<span class="sd">        coordinate using a test distance weighting parameter:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \sigma_{test, k} = \frac{\pi \sigma_k}{\sqrt{2 ln{2}}}</span>
+
+<span class="sd">            \alpha_{test, k} = 2 \sigma_{test, k}^2</span>
+
+<span class="sd">        Using this initial weighting parameter, the adaptive kernels are</span>
+<span class="sd">        derived using either</span>
+<span class="sd">        :func:`resample_utils.shaped_adaptive_weight_matrix` or</span>
+<span class="sd">        :func:`resample_utils.scaled_adaptive_weight_matrix` depending on</span>
+<span class="sd">        whether the &quot;shaped&quot; keyword in `settings` is set to `True` or `False`</span>
+<span class="sd">        respectively.</span>
+
+<span class="sd">        The weighting kernels are stored in the &quot;adaptive_alpha&quot; keyword value</span>
+<span class="sd">        in `settings`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Reduction settings, as returned by</span>
+<span class="sd">            :func:`ResamplePolynomial.reduction_settings`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">adaptive</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_threshold&#39;</span><span class="p">]</span>
+        <span class="n">do_adaptive</span> <span class="o">=</span> <span class="n">adaptive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">do_adaptive</span><span class="p">:</span>
+            <span class="n">adaptive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">adaptive</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">adaptive</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">adaptive</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">do_adaptive</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">do_adaptive</span><span class="p">:</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_threshold&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="k">return</span>
+
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sigma</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">:</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">sigma</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">fixed</span> <span class="o">=</span> <span class="n">adaptive</span> <span class="o">==</span> <span class="mi">0</span>
+
+        <span class="n">nyquist</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="n">test_sigma</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">nyquist</span>
+        <span class="n">test_sigma</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="n">scaled_test_sigma</span> <span class="o">=</span> <span class="n">test_sigma</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">scaled_test_sigma</span><span class="p">[</span><span class="o">~</span><span class="n">fixed</span><span class="p">]</span> <span class="o">*=</span> <span class="n">adaptive</span><span class="p">[</span><span class="o">~</span><span class="n">fixed</span><span class="p">]</span>
+
+        <span class="n">scaled_test_alpha</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">scaled_test_sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;relative_smooth&#39;</span><span class="p">]:</span>
+            <span class="n">scaled_test_alpha</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scaled_test_alpha</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma</span><span class="p">[</span><span class="n">fixed</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">shaped</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;shaped&#39;</span><span class="p">]</span>
+
+        <span class="n">test_reduction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span>
+            <span class="n">scale_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">coordinates</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">_radius</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale_offsets</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="n">smoothing</span><span class="o">=</span><span class="n">scaled_test_alpha</span><span class="p">,</span>
+            <span class="n">relative_smooth</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">adaptive_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">fit_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># No fit checking</span>
+            <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>  <span class="c1"># NaN on failure</span>
+            <span class="n">edge_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>  <span class="c1"># No edge checking</span>
+            <span class="n">error_weighting</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;error_weighting&#39;</span><span class="p">],</span>
+            <span class="n">order_algorithm</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_algorithm&#39;</span><span class="p">],</span>
+            <span class="n">estimate_covariance</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;estimate_covariance&#39;</span><span class="p">],</span>
+            <span class="n">get_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">get_counts</span><span class="o">=</span><span class="n">shaped</span><span class="p">,</span>
+            <span class="n">get_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">get_distance_weights</span><span class="o">=</span><span class="n">shaped</span><span class="p">,</span>
+            <span class="n">get_rchi2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="n">shaped</span><span class="p">,</span>
+            <span class="n">get_offset_variance</span><span class="o">=</span><span class="n">shaped</span><span class="p">,</span>
+            <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">jobs</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;jobs&#39;</span><span class="p">],</span>
+            <span class="n">adaptive_region_coordinates</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span>
+                <span class="s1">&#39;adaptive_region_coordinates&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">shaped</span><span class="p">:</span>
+            <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">test_reduction</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">distance_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">test_reduction</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">rchi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">test_reduction</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="n">gradient_mscp</span> <span class="o">=</span> <span class="n">test_reduction</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">distribution_offset_variance</span> <span class="o">=</span> <span class="n">test_reduction</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">gradient_mscp</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">gradient_mscp</span> <span class="o">=</span> <span class="n">gradient_mscp</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+            <span class="n">rho</span> <span class="o">=</span> <span class="n">relative_density</span><span class="p">(</span><span class="n">scaled_test_sigma</span><span class="p">,</span> <span class="n">counts</span><span class="p">,</span> <span class="n">distance_weights</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rchi2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">test_reduction</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">gradient_mscp</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">rho</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">distribution_offset_variance</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Here the Nyquist level sigma is used, thereby implementing the</span>
+        <span class="c1"># requested scaling &quot;adaptive&quot; factor.</span>
+        <span class="k">if</span> <span class="n">shaped</span><span class="p">:</span>
+            <span class="n">gmat</span> <span class="o">=</span> <span class="n">shaped_adaptive_weight_matrices</span><span class="p">(</span>
+                <span class="n">test_sigma</span><span class="p">,</span> <span class="n">rchi2</span><span class="p">,</span> <span class="n">gradient_mscp</span><span class="p">,</span>
+                <span class="n">density</span><span class="o">=</span><span class="n">rho</span><span class="p">,</span>
+                <span class="n">variance_offsets</span><span class="o">=</span><span class="n">distribution_offset_variance</span><span class="p">,</span>
+                <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gmat</span> <span class="o">=</span> <span class="n">scaled_adaptive_weight_matrices</span><span class="p">(</span>
+                <span class="n">test_sigma</span><span class="p">,</span> <span class="n">rchi2</span><span class="p">,</span> <span class="n">fixed</span><span class="o">=</span><span class="n">fixed</span><span class="p">)</span>
+
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_alpha&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">gmat</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_settings</span> <span class="o">=</span> <span class="n">settings</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.pre_fit">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.pre_fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">pre_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">adaptive_region_coordinates</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform pre-fitting steps and build the fitting tree.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        settings : dict</span>
+<span class="sd">            Settings calculated via `reduction_settings` to be applied</span>
+<span class="sd">            if necessary.</span>
+<span class="sd">        args : n-tuple</span>
+<span class="sd">            The call input arguments.</span>
+<span class="sd">        adaptive_region_coordinates : numpy.ndarray (float), optional</span>
+<span class="sd">            The coordinates determined from a previous adaptive smoothing</span>
+<span class="sd">            algorithm.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_region_coordinates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_adaptive_smoothing</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">pre_fit</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">adaptive_region_coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">region_grid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_class</span><span class="p">(</span>
+                <span class="o">*</span><span class="n">adaptive_region_coordinates</span><span class="p">,</span>
+                <span class="n">tree_shape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">build_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_radius</span><span class="p">,</span>
+                <span class="n">scale_offset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale_offsets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="n">skip_blocks</span> <span class="o">=</span> <span class="n">region_grid</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">hood_population</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fit_tree</span><span class="o">.</span><span class="n">block_population</span><span class="p">[</span><span class="n">skip_blocks</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_symmetry&#39;</span><span class="p">]:</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_tree</span><span class="o">.</span><span class="n">set_order</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="ow">not</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_varies&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_tree</span><span class="o">.</span><span class="n">precalculate_phi_terms</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ResamplePolynomial.process_block">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.ResamplePolynomial.process_block">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">process_block</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">block</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run :func:`solve_fits` on each block.</span>
+
+<span class="sd">        Utility function that parses the settings and tree objects to something</span>
+<span class="sd">        usable by the numba JIT compiled resampling functions.  This is not</span>
+<span class="sd">        meant to be called directly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        args : 2-tuple</span>
+<span class="sd">            A tuple of form (filename, iteration) where the filename is a</span>
+<span class="sd">            string pointing towards a previously saved pickle file containing</span>
+<span class="sd">            the relevant information for the reduction if required.  If set to</span>
+<span class="sd">            `None`, the arguments are retrieved from the</span>
+<span class="sd">            `_global_resampling_values` global parameter.</span>
+<span class="sd">        block : int</span>
+<span class="sd">            The block index to process.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        results : 9-tuple of numpy.ndarray</span>
+<span class="sd">            The first element contains the fit point indices to be fit.  For</span>
+<span class="sd">            the remaining elements, please see :func:`solve_fits` return</span>
+<span class="sd">            values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">iteration</span> <span class="o">=</span> <span class="n">args</span>
+
+        <span class="c1"># Loading cannot be covered in tests as it occurs on other CPUs.</span>
+        <span class="n">load_args</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">block_memory</span> <span class="o">=</span> <span class="n">_global_resampling_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;block_memory_usage&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sufficient_memory_for</span><span class="p">(</span><span class="n">block_memory</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="ne">MemoryError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Insufficient memory to process block </span><span class="si">{</span><span class="n">block</span><span class="si">}</span><span class="s2">. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Estimated: </span><span class="si">{</span><span class="n">block_memory</span><span class="si">}</span><span class="s2"> bytes. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Available: </span><span class="si">{</span><span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">available</span><span class="si">}</span><span class="s2"> bytes.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">if</span> <span class="s1">&#39;args&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_global_resampling_values</span><span class="p">:</span>
+                <span class="n">load_args</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="s1">&#39;iteration&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_global_resampling_values</span><span class="p">:</span>
+                <span class="n">load_args</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">iteration</span> <span class="o">!=</span> <span class="n">_global_resampling_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iteration&#39;</span><span class="p">):</span>
+                <span class="n">load_args</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">filename</span> <span class="o">!=</span> <span class="n">_global_resampling_values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filename&#39;</span><span class="p">):</span>
+                <span class="n">load_args</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">load_args</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">_global_resampling_values</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">unpickle_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">_global_resampling_values</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">iteration</span>
+            <span class="n">_global_resampling_values</span><span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filename</span>
+
+        <span class="p">(</span><span class="n">sample_values</span><span class="p">,</span> <span class="n">sample_error</span><span class="p">,</span> <span class="n">sample_mask</span><span class="p">,</span> <span class="n">fit_tree</span><span class="p">,</span> <span class="n">sample_tree</span><span class="p">,</span>
+         <span class="n">get_error</span><span class="p">,</span> <span class="n">get_counts</span><span class="p">,</span> <span class="n">get_weights</span><span class="p">,</span>
+         <span class="n">get_distance_weights</span><span class="p">,</span> <span class="n">get_rchi2</span><span class="p">,</span> <span class="n">get_cross_derivatives</span><span class="p">,</span>
+         <span class="n">get_offset_variance</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span> <span class="o">=</span> <span class="n">_global_resampling_values</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">load_args</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">block_memory</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;block_memory_usage&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sufficient_memory_for</span><span class="p">(</span><span class="n">block_memory</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">MemoryError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Insufficient memory to process </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Estimated: </span><span class="si">{</span><span class="n">block_memory</span><span class="si">}</span><span class="s2"> bytes. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Available: </span><span class="si">{</span><span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span><span class="o">.</span><span class="n">available</span><span class="si">}</span><span class="s2"> bytes.&quot;</span><span class="p">)</span>
+
+        <span class="n">fit_indices</span><span class="p">,</span> <span class="n">fit_coordinates</span><span class="p">,</span> <span class="n">fit_phi_terms</span> <span class="o">=</span> \
+            <span class="n">fit_tree</span><span class="o">.</span><span class="n">block_members</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">get_locations</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">get_terms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">sample_indices</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">typed</span><span class="o">.</span><span class="n">List</span><span class="p">(</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">query_radius</span><span class="p">(</span>
+            <span class="n">fit_coordinates</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block</span><span class="p">,</span> <span class="n">return_distance</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">large_data</span><span class="p">:</span>
+            <span class="n">sample_phi_terms</span> <span class="o">=</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">phi_terms</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phi_indices</span> <span class="o">=</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">create_phi_terms_for</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+            <span class="n">n_coeffs</span> <span class="o">=</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">exponents</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">n_members</span>
+            <span class="n">sample_phi_terms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_coeffs</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">sample_phi_terms</span><span class="p">[:,</span> <span class="n">phi_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">phi_terms</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">fit_indices</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">solve_fits</span><span class="p">(</span>
+                    <span class="n">sample_indices</span><span class="p">,</span> <span class="n">sample_tree</span><span class="o">.</span><span class="n">coordinates</span><span class="p">,</span>
+                    <span class="n">sample_phi_terms</span><span class="p">,</span>
+                    <span class="n">sample_values</span><span class="p">,</span> <span class="n">sample_error</span><span class="p">,</span> <span class="n">sample_mask</span><span class="p">,</span>
+                    <span class="n">fit_coordinates</span><span class="p">,</span> <span class="n">fit_phi_terms</span><span class="p">,</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">],</span>
+                    <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;alpha&#39;</span><span class="p">],</span> <span class="n">settings</span><span class="p">[</span><span class="s1">&#39;adaptive_alpha&#39;</span><span class="p">],</span>
+                    <span class="n">is_covar</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;is_covar&#39;</span><span class="p">],</span>
+                    <span class="n">mean_fit</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;mean_fit&#39;</span><span class="p">],</span>
+                    <span class="n">cval</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;cval&#39;</span><span class="p">],</span>
+                    <span class="n">fit_threshold</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;fit_threshold&#39;</span><span class="p">],</span>
+                    <span class="n">error_weighting</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;error_weighting&#39;</span><span class="p">],</span>
+                    <span class="n">estimate_covariance</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;estimate_covariance&#39;</span><span class="p">],</span>
+                    <span class="n">order_algorithm_idx</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_algorithm_idx&#39;</span><span class="p">],</span>
+                    <span class="n">order_term_indices</span><span class="o">=</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">term_indices</span><span class="p">,</span>
+                    <span class="n">derivative_term_map</span><span class="o">=</span><span class="n">sample_tree</span><span class="o">.</span><span class="n">derivative_term_map</span><span class="p">,</span>
+                    <span class="n">edge_algorithm_idx</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;edge_algorithm_idx&#39;</span><span class="p">],</span>
+                    <span class="n">edge_threshold</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;edge_threshold&#39;</span><span class="p">],</span>
+                    <span class="n">minimum_points</span><span class="o">=</span><span class="n">settings</span><span class="p">[</span><span class="s1">&#39;order_minimum_points&#39;</span><span class="p">],</span>
+                    <span class="n">get_error</span><span class="o">=</span><span class="n">get_error</span><span class="p">,</span> <span class="n">get_counts</span><span class="o">=</span><span class="n">get_counts</span><span class="p">,</span>
+                    <span class="n">get_weights</span><span class="o">=</span><span class="n">get_weights</span><span class="p">,</span>
+                    <span class="n">get_distance_weights</span><span class="o">=</span><span class="n">get_distance_weights</span><span class="p">,</span>
+                    <span class="n">get_rchi2</span><span class="o">=</span><span class="n">get_rchi2</span><span class="p">,</span>
+                    <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="n">get_cross_derivatives</span><span class="p">,</span>
+                    <span class="n">get_offset_variance</span><span class="o">=</span><span class="n">get_offset_variance</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">relative_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">adaptive_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">adaptive_algorithm</span><span class="o">=</span><span class="s1">&#39;scaled&#39;</span><span class="p">,</span>
+                 <span class="n">fit_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                 <span class="n">edge_algorithm</span><span class="o">=</span><span class="s1">&#39;distribution&#39;</span><span class="p">,</span> <span class="n">order_algorithm</span><span class="o">=</span><span class="s1">&#39;bounded&#39;</span><span class="p">,</span>
+                 <span class="n">error_weighting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">estimate_covariance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_threading</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">use_processes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">adaptive_region_coordinates</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">get_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_counts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">get_distance_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_rchi2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_offset_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resample data defined during initialization to new coordinates.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        args : array_like or n-tuple of array_like</span>
+<span class="sd">            args can take one of the following formats:</span>
+
+<span class="sd">                - grid : n-tuple of array_like</span>
+<span class="sd">                  Here `n` is the number of dimensions and each array should</span>
+<span class="sd">                  be of shape (n_data,).  This indicates that resampling</span>
+<span class="sd">                  should occur on a grid where the first argument</span>
+<span class="sd">                  corresponds to the coordinates along the first dimension.</span>
+<span class="sd">                - single point : n-tuple of float</span>
+<span class="sd">                  `n` is the number of dimensions.  The coordinate to</span>
+<span class="sd">                  resample onto.</span>
+<span class="sd">                - irregular : array_like</span>
+<span class="sd">                  An array of shape (n_dimensions, n_ndata) defining a</span>
+<span class="sd">                  set of coordinates onto which to resample.</span>
+
+<span class="sd">        smoothing : float or array_like of float, optional</span>
+<span class="sd">            If set, weights the polynomial fitting by distance from the</span>
+<span class="sd">            resampling coordinate to the sample coordinate.  The weighting</span>
+<span class="sd">            factor applied is exp(-dx^2 / `smoothing`).  A value may be</span>
+<span class="sd">            defined for each dimension by providing `smoothing` as an array of</span>
+<span class="sd">            shape (n_dimensions,).  However, if `adaptive_threshold` &gt; 0 for a</span>
+<span class="sd">            certain feature, the corresponding smoothing element has a</span>
+<span class="sd">            different meaning.  In this case, it gives the 1-sigma uncertainty</span>
+<span class="sd">            in the coordinate position for that feature.  As a reference, for</span>
+<span class="sd">            astronomical observations using a Gaussian beam with known FWHM,</span>
+<span class="sd">            `smoothing` should be set to `FWHM / (2 * sqrt(2 * log(2)))`</span>
+<span class="sd">            so long as adaptive weighting is enabled.</span>
+<span class="sd">        relative_smooth : bool, optional</span>
+<span class="sd">            If `True`, the supplied `smoothing` value is defined in units</span>
+<span class="sd">            of `window`.  Otherwise, `smoothing` is in the same units as the</span>
+<span class="sd">            supplied coordinates.</span>
+<span class="sd">        adaptive_threshold : float or array_like (n_features,)</span>
+<span class="sd">            If a single value is supplied, each feature will use this value.</span>
+<span class="sd">            Otherwise, each feature should specify an adaptive threshold</span>
+<span class="sd">            as an element of `adaptive_threshold`.  If a non-zero value is</span>
+<span class="sd">            supplied, adaptive weighting will be enabled for that feature.</span>
+<span class="sd">            These values define the size of the initial weighting kernel</span>
+<span class="sd">            used during fitting.  The nominal value is 1.</span>
+<span class="sd">        adaptive_algorithm : str, optional</span>
+<span class="sd">            May be one of {&#39;scaled&#39;, &#39;shaped&#39;, None}. `None` disables adaptive</span>
+<span class="sd">            weighting.  The &quot;scaled&quot; algorithm allows the weighting kernel</span>
+<span class="sd">            to change in size only.  The &quot;shaped&quot; algorithm allows the kernel</span>
+<span class="sd">            to change in size, rotate, and stretch each primary axis.  Please</span>
+<span class="sd">            see :func:`resample_utils.scaled_adaptive_weight_matrix` and</span>
+<span class="sd">            :func:`resample_utils.shaped_adaptive_weight_matrix` for further</span>
+<span class="sd">            details.</span>
+<span class="sd">        fit_threshold : float, optional</span>
+<span class="sd">            If nonzero, rejects a polynomial fit if it deviates by</span>
+<span class="sd">            `|fit_threshold|` * the RMS of the samples.  If it is rejected,</span>
+<span class="sd">            that value will be replaced by the mean (error weighted if set),</span>
+<span class="sd">            if `fit_threshold &gt; 0` or NaN if `fit_threshold &lt; 0`.</span>
+<span class="sd">        cval : float, optional</span>
+<span class="sd">            During fitting, any fit that does not meet the `order_algorithm`</span>
+<span class="sd">            requirement will be set to this value. This will be NaN by default.</span>
+<span class="sd">        edge_threshold : float or array_like or float</span>
+<span class="sd">            If set to a value &gt; 0, edges of the fit will be masked out</span>
+<span class="sd">            according to `edge_algorithm`. Values close to zero will result in</span>
+<span class="sd">            a low degree of edge clipping, while values close to 1 clip edges</span>
+<span class="sd">            to a greater extent.  The exact definition of `edge_threshold`</span>
+<span class="sd">            depends on the algorithm.  For further details, please see</span>
+<span class="sd">            :func:`resampling.resample_utils.check_edges`.</span>
+<span class="sd">        edge_algorithm : str, optional</span>
+<span class="sd">            Describes how to clip edges if edge_threshold is non-zero. The</span>
+<span class="sd">            available algorithms are:</span>
+
+<span class="sd">                - &#39;distribution&#39; (default): Statistics on sample distributions</span>
+<span class="sd">                  are calculated, and if the resampling point is &gt; 1/threshold</span>
+<span class="sd">                  standard deviations away from the sample mean, it will be</span>
+<span class="sd">                  clipped.</span>
+<span class="sd">                - &#39;ellipsoid&#39;: If the samples used to fit a</span>
+<span class="sd">                  resampling point deviate from the resampling point</span>
+<span class="sd">                  location by more than this amount, it will be clipped.</span>
+<span class="sd">                - &#39;box&#39;: If the flattened 1-dimensional distribution</span>
+<span class="sd">                  of samples center-of-mass deviates from the resampling</span>
+<span class="sd">                  point location in any dimension, it will be clipped.</span>
+<span class="sd">                - &#39;range&#39;: Over each dimension, check the distribution of</span>
+<span class="sd">                  points is greater than edge_threshold to the &quot;left&quot; and</span>
+<span class="sd">                  &quot;right&quot; of the resampling point.</span>
+
+<span class="sd">        order_algorithm : str, optional</span>
+<span class="sd">            The type of check to perform on whether the sample distribution</span>
+<span class="sd">            for each resampling point is adequate to derive a polynomial fit.</span>
+<span class="sd">            Depending on `order` and `fix_order`, if the distribution does</span>
+<span class="sd">            not meet the criteria for `order_algorithm`, either the fit will</span>
+<span class="sd">            be aborted, returning a value of `cval`, or the fit order will be</span>
+<span class="sd">            reduced.  Available algorithms are:</span>
+
+<span class="sd">                - &#39;bounded&#39;: Require that there are `order` samples in both</span>
+<span class="sd">                  the negative and positive directions of each feature</span>
+<span class="sd">                  from the resampling point.</span>
+<span class="sd">                - &#39;counts&#39;: Require that there are (order + 1) ** n_features</span>
+<span class="sd">                  samples within the `window` of each resampling point.</span>
+<span class="sd">                - &#39;extrapolate&#39;: Attempt to fit regardless of the sample</span>
+<span class="sd">                  distribution.</span>
+
+<span class="sd">            Note that &#39;bounded&#39; is the most robust mode as it ensures</span>
+<span class="sd">            that no singular values will be encountered during the</span>
+<span class="sd">            least-squares fitting of polynomial coefficients.</span>
+<span class="sd">        error_weighting : bool, optional</span>
+<span class="sd">            If `True` (default), weight polynomial fitting by the `error`</span>
+<span class="sd">            values of each sample.</span>
+<span class="sd">        estimate_covariance : bool, optional</span>
+<span class="sd">            If `True`, calculate errors on the fit using</span>
+<span class="sd">            :func:`resample_utils.estimated_covariance_matrix_inverse`.</span>
+<span class="sd">            Otherwise, use :func:`resample_utils.covariance_matrix_inverse`.</span>
+<span class="sd">        is_covar : bool, optional</span>
+<span class="sd">            If True, the input data is treated as a covariance instead of</span>
+<span class="sd">            a flux, and is propagated as if through a weighted mean.</span>
+<span class="sd">        jobs : int, optional</span>
+<span class="sd">            Specifies the maximum number of concurrently running jobs.  An</span>
+<span class="sd">            attempt will be made to parallel process using a thread-pool if</span>
+<span class="sd">            available, but will otherwise revert to the &quot;loky&quot; backend.</span>
+<span class="sd">            Values of 0 or 1 will result in serial processing.  A negative</span>
+<span class="sd">            value sets jobs to `n_cpus + 1 + jobs` such that -1 would use</span>
+<span class="sd">            all cpus, and -2 would use all but one cpu.</span>
+<span class="sd">        use_threading : bool, optional</span>
+<span class="sd">            If `True`, force use of threads during multiprocessing.</span>
+<span class="sd">        use_processes : bool, optional</span>
+<span class="sd">            If `True`, force use of sub-processes during multiprocessing.</span>
+<span class="sd">        get_error : bool, optional</span>
+<span class="sd">            If `True`, If True returns the error which is given as the weighted</span>
+<span class="sd">            RMS of the samples used for each resampling point.</span>
+<span class="sd">        get_counts : bool, optional</span>
+<span class="sd">            If `True` returns the number of samples used to fit each resampling</span>
+<span class="sd">            point.</span>
+<span class="sd">        get_weights : bool, optional</span>
+<span class="sd">            If `True`, returns the sum of all sample weights (error and</span>
+<span class="sd">            distance) used in the fit at each resampling point.</span>
+<span class="sd">        get_distance_weights : bool, optional</span>
+<span class="sd">            If `True`, returns the sum of all sample distance weights (not</span>
+<span class="sd">            including error) used in the fit at each resampling point.</span>
+<span class="sd">        get_rchi2 : bool, optional</span>
+<span class="sd">            If `True`, returns the reduced chi-squared statistic of the fit</span>
+<span class="sd">            at each resampling point.  Note that this is only valid if errors</span>
+<span class="sd">            were supplied during :func:`ResamplePolynomial.__init__`.</span>
+<span class="sd">        get_cross_derivatives : bool, optional</span>
+<span class="sd">            If `True`, returns the derivative mean-squared-cross-product of</span>
+<span class="sd">            the fit derivatives at each resampling point.</span>
+<span class="sd">        get_offset_variance : bool, optional</span>
+<span class="sd">            If `True`, returns the offset of the resampling point from the</span>
+<span class="sd">            center of the sample distribution used to generate the fit as</span>
+<span class="sd">            a variance.  i.e., a return value of 9 indicates a 3-sigma</span>
+<span class="sd">            deviation of the resampling point from the sample distribution.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        fit_data, [fit_error], [fit_counts]</span>
+<span class="sd">            The data fit at `args` and optionally, the error associated with</span>
+<span class="sd">            the fit, and the number of samples used to generate each point.</span>
+<span class="sd">            Will be of a shape determined by `args`.  `fit_data` and</span>
+<span class="sd">            `fit_error` will be of type np.float64, and `fit_counts` will</span>
+<span class="sd">            be of type np.int64.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+            <span class="n">smoothing</span><span class="o">=</span><span class="n">smoothing</span><span class="p">,</span>
+            <span class="n">relative_smooth</span><span class="o">=</span><span class="n">relative_smooth</span><span class="p">,</span>
+            <span class="n">adaptive_threshold</span><span class="o">=</span><span class="n">adaptive_threshold</span><span class="p">,</span>
+            <span class="n">adaptive_algorithm</span><span class="o">=</span><span class="n">adaptive_algorithm</span><span class="p">,</span>
+            <span class="n">fit_threshold</span><span class="o">=</span><span class="n">fit_threshold</span><span class="p">,</span>
+            <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">,</span>
+            <span class="n">edge_threshold</span><span class="o">=</span><span class="n">edge_threshold</span><span class="p">,</span>
+            <span class="n">edge_algorithm</span><span class="o">=</span><span class="n">edge_algorithm</span><span class="p">,</span>
+            <span class="n">order_algorithm</span><span class="o">=</span><span class="n">order_algorithm</span><span class="p">,</span>
+            <span class="n">error_weighting</span><span class="o">=</span><span class="n">error_weighting</span><span class="p">,</span>
+            <span class="n">estimate_covariance</span><span class="o">=</span><span class="n">estimate_covariance</span><span class="p">,</span>
+            <span class="n">is_covar</span><span class="o">=</span><span class="n">is_covar</span><span class="p">,</span>
+            <span class="n">jobs</span><span class="o">=</span><span class="n">jobs</span><span class="p">,</span>
+            <span class="n">adaptive_region_coordinates</span><span class="o">=</span><span class="n">adaptive_region_coordinates</span><span class="p">,</span>
+            <span class="n">use_threading</span><span class="o">=</span><span class="n">use_threading</span><span class="p">,</span>
+            <span class="n">use_processes</span><span class="o">=</span><span class="n">use_processes</span><span class="p">,</span>
+            <span class="n">get_error</span><span class="o">=</span><span class="n">get_error</span><span class="p">,</span>
+            <span class="n">get_counts</span><span class="o">=</span><span class="n">get_counts</span><span class="p">,</span>
+            <span class="n">get_weights</span><span class="o">=</span><span class="n">get_weights</span><span class="p">,</span>
+            <span class="n">get_distance_weights</span><span class="o">=</span><span class="n">get_distance_weights</span><span class="p">,</span>
+            <span class="n">get_rchi2</span><span class="o">=</span><span class="n">get_rchi2</span><span class="p">,</span>
+            <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="n">get_cross_derivatives</span><span class="p">,</span>
+            <span class="n">get_offset_variance</span><span class="o">=</span><span class="n">get_offset_variance</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="resamp">
+<a class="viewcode-back" href="../../source/grig.html#grig.resample.resamp">[docs]</a>
+<span class="k">def</span> <span class="nf">resamp</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">locations</span><span class="p">,</span>
+           <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+           <span class="n">robust</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">window_estimate_bins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+           <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+           <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
+           <span class="n">leaf_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+           <span class="n">large_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">relative_smooth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">adaptive_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">adaptive_algorithm</span><span class="o">=</span><span class="s1">&#39;scaled&#39;</span><span class="p">,</span>
+           <span class="n">fit_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">cval</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">edge_threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+           <span class="n">edge_algorithm</span><span class="o">=</span><span class="s1">&#39;distribution&#39;</span><span class="p">,</span> <span class="n">order_algorithm</span><span class="o">=</span><span class="s1">&#39;bounded&#39;</span><span class="p">,</span>
+           <span class="n">error_weighting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">estimate_covariance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">is_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">get_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_counts</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">get_distance_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_rchi2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_offset_variance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    ResamplePolynomial data using local polynomial fitting.</span>
+
+<span class="sd">    Initializes and then calls the :class:`ResamplePolynomial` class.  For</span>
+<span class="sd">    further details on all available parameters, please see</span>
+<span class="sd">    :func:`ResamplePolynomial.__init__` and</span>
+<span class="sd">    :func:`ResamplePolynomial.__call__`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coordinates</span>
+<span class="sd">    data</span>
+<span class="sd">    locations</span>
+<span class="sd">    error</span>
+<span class="sd">    mask</span>
+<span class="sd">    window</span>
+<span class="sd">    order</span>
+<span class="sd">    fix_order</span>
+<span class="sd">    robust</span>
+<span class="sd">    negthresh</span>
+<span class="sd">    window_estimate_bins</span>
+<span class="sd">    window_estimate_percentile</span>
+<span class="sd">    window_estimate_oversample</span>
+<span class="sd">    leaf_size</span>
+<span class="sd">    large_data</span>
+<span class="sd">    smoothing</span>
+<span class="sd">    relative_smooth</span>
+<span class="sd">    adaptive_threshold</span>
+<span class="sd">    adaptive_algorithm</span>
+<span class="sd">    fit_threshold</span>
+<span class="sd">    cval</span>
+<span class="sd">    edge_threshold</span>
+<span class="sd">    edge_algorithm</span>
+<span class="sd">    order_algorithm</span>
+<span class="sd">    error_weighting</span>
+<span class="sd">    estimate_covariance</span>
+<span class="sd">    is_covar</span>
+<span class="sd">    jobs</span>
+<span class="sd">    get_error</span>
+<span class="sd">    get_counts</span>
+<span class="sd">    get_weights</span>
+<span class="sd">    get_distance_weights</span>
+<span class="sd">    get_rchi2</span>
+<span class="sd">    get_cross_derivatives</span>
+<span class="sd">    get_offset_variance</span>
+<span class="sd">    distance_kwargs</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    results : float or numpy.ndarray or n-tuple of (float or numpy.ndarray)</span>
+<span class="sd">        If a fit is performed at a single location, the output will consist</span>
+<span class="sd">        of int or float scalar values.  Multiple fits result in numpy arrays.</span>
+<span class="sd">        The exact output shape depends on the number of data sets, number of</span>
+<span class="sd">        fitted points, dimensions of the fit locations.  Assuming that all</span>
+<span class="sd">        get_* keywords are set to `True`, the output order is:</span>
+
+<span class="sd">            results[0] = fitted values</span>
+<span class="sd">            results[1] = error on the fit</span>
+<span class="sd">            results[2] = sample counts for each fit</span>
+<span class="sd">            results[3] = total weight of all samples in fit</span>
+<span class="sd">            results[4] = total distance weight sum of all samples in fit</span>
+<span class="sd">            results[5] = reduced chi-squared statistic of the fit</span>
+<span class="sd">            results[6] = derivative mean squared cross products</span>
+<span class="sd">            results[7] = offset variance of fit from sample distribution</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">resampler</span> <span class="o">=</span> <span class="n">ResamplePolynomial</span><span class="p">(</span>
+        <span class="n">coordinates</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
+        <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+        <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="n">fix_order</span><span class="p">,</span>
+        <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="n">negthresh</span><span class="p">,</span>
+        <span class="n">window_estimate_bins</span><span class="o">=</span><span class="n">window_estimate_bins</span><span class="p">,</span>
+        <span class="n">window_estimate_percentile</span><span class="o">=</span><span class="n">window_estimate_percentile</span><span class="p">,</span>
+        <span class="n">window_estimate_oversample</span><span class="o">=</span><span class="n">window_estimate_oversample</span><span class="p">,</span>
+        <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">,</span> <span class="n">large_data</span><span class="o">=</span><span class="n">large_data</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">resampler</span><span class="p">(</span><span class="o">*</span><span class="n">locations</span><span class="p">,</span>
+                     <span class="n">smoothing</span><span class="o">=</span><span class="n">smoothing</span><span class="p">,</span>
+                     <span class="n">relative_smooth</span><span class="o">=</span><span class="n">relative_smooth</span><span class="p">,</span>
+                     <span class="n">adaptive_threshold</span><span class="o">=</span><span class="n">adaptive_threshold</span><span class="p">,</span>
+                     <span class="n">adaptive_algorithm</span><span class="o">=</span><span class="n">adaptive_algorithm</span><span class="p">,</span>
+                     <span class="n">fit_threshold</span><span class="o">=</span><span class="n">fit_threshold</span><span class="p">,</span>
+                     <span class="n">cval</span><span class="o">=</span><span class="n">cval</span><span class="p">,</span>
+                     <span class="n">edge_threshold</span><span class="o">=</span><span class="n">edge_threshold</span><span class="p">,</span>
+                     <span class="n">edge_algorithm</span><span class="o">=</span><span class="n">edge_algorithm</span><span class="p">,</span>
+                     <span class="n">order_algorithm</span><span class="o">=</span><span class="n">order_algorithm</span><span class="p">,</span>
+                     <span class="n">error_weighting</span><span class="o">=</span><span class="n">error_weighting</span><span class="p">,</span>
+                     <span class="n">estimate_covariance</span><span class="o">=</span><span class="n">estimate_covariance</span><span class="p">,</span>
+                     <span class="n">is_covar</span><span class="o">=</span><span class="n">is_covar</span><span class="p">,</span>
+                     <span class="n">jobs</span><span class="o">=</span><span class="n">jobs</span><span class="p">,</span>
+                     <span class="n">get_error</span><span class="o">=</span><span class="n">get_error</span><span class="p">,</span>
+                     <span class="n">get_counts</span><span class="o">=</span><span class="n">get_counts</span><span class="p">,</span>
+                     <span class="n">get_weights</span><span class="o">=</span><span class="n">get_weights</span><span class="p">,</span>
+                     <span class="n">get_distance_weights</span><span class="o">=</span><span class="n">get_distance_weights</span><span class="p">,</span>
+                     <span class="n">get_rchi2</span><span class="o">=</span><span class="n">get_rchi2</span><span class="p">,</span>
+                     <span class="n">get_cross_derivatives</span><span class="o">=</span><span class="n">get_cross_derivatives</span><span class="p">,</span>
+                     <span class="n">get_offset_variance</span><span class="o">=</span><span class="n">get_offset_variance</span><span class="p">)</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.resample_polynomial</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

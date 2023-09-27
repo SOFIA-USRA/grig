@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>grig.toolkit package &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="grig.toolkit.splines package" href="grig.toolkit.splines.html" />
+    <link rel="prev" title="grig.grid package" href="grig.grid.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.splines.html" title="grig.toolkit.splines package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grig.grid.html" title="grig.grid package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" accesskey="U">grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grig-toolkit-package">
+<h1>grig.toolkit package<a class="headerlink" href="#grig-toolkit-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="grig.toolkit.splines.html">grig.toolkit.splines package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="grig.toolkit.splines.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="grig.toolkit.splines.html#module-grig.toolkit.splines.spline">grig.toolkit.splines.spline module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline.Spline"><code class="docutils literal notranslate"><span class="pre">Spline</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="grig.toolkit.splines.html#module-grig.toolkit.splines.spline_utils">grig.toolkit.splines.spline_utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.add_knot"><code class="docutils literal notranslate"><span class="pre">add_knot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.back_substitute"><code class="docutils literal notranslate"><span class="pre">back_substitute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.build_observation"><code class="docutils literal notranslate"><span class="pre">build_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.calculate_minimum_bandwidth"><code class="docutils literal notranslate"><span class="pre">calculate_minimum_bandwidth()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.check_input_arrays"><code class="docutils literal notranslate"><span class="pre">check_input_arrays()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.create_ordering"><code class="docutils literal notranslate"><span class="pre">create_ordering()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.determine_smoothing_spline"><code class="docutils literal notranslate"><span class="pre">determine_smoothing_spline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.discontinuity_jumps"><code class="docutils literal notranslate"><span class="pre">discontinuity_jumps()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.evaluate_bspline"><code class="docutils literal notranslate"><span class="pre">evaluate_bspline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.find_knot"><code class="docutils literal notranslate"><span class="pre">find_knot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.find_knots"><code class="docutils literal notranslate"><span class="pre">find_knots()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.fit_point"><code class="docutils literal notranslate"><span class="pre">fit_point()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.flat_index_mapping"><code class="docutils literal notranslate"><span class="pre">flat_index_mapping()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.givens_parameters"><code class="docutils literal notranslate"><span class="pre">givens_parameters()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.givens_rotate"><code class="docutils literal notranslate"><span class="pre">givens_rotate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.knot_fit"><code class="docutils literal notranslate"><span class="pre">knot_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.perform_fit"><code class="docutils literal notranslate"><span class="pre">perform_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.rational_interp_zero"><code class="docutils literal notranslate"><span class="pre">rational_interp_zero()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.single_fit"><code class="docutils literal notranslate"><span class="pre">single_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.solve_observation"><code class="docutils literal notranslate"><span class="pre">solve_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="grig.toolkit.splines.html#grig.toolkit.splines.spline_utils.solve_rank_deficiency"><code class="docutils literal notranslate"><span class="pre">solve_rank_deficiency()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<section id="module-grig.toolkit.func">
+<span id="grig-toolkit-func-module"></span><h3>grig.toolkit.func module<a class="headerlink" href="#module-grig.toolkit.func" title="Link to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.byte_size_of_object">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">byte_size_of_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#byte_size_of_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.byte_size_of_object" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of a Python object in bytes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obj</strong><span class="classifier">object</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>byte_size</strong><span class="classifier">int</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.julia_fractal">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">julia_fractal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">256</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yrange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-1,</span> <span class="pre">1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#julia_fractal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.julia_fractal" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a 2-D Julia fractal image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>sy</strong><span class="classifier">int</span></dt><dd><p>y dimension size.</p>
+</dd>
+<dt><strong>sx</strong><span class="classifier">int</span></dt><dd><p>x dimension size.</p>
+</dd>
+<dt><strong>c0</strong><span class="classifier">float, optional</span></dt><dd><p>The c0 coefficient.</p>
+</dd>
+<dt><strong>c1</strong><span class="classifier">float, optional</span></dt><dd><p>The c1 coefficient.</p>
+</dd>
+<dt><strong>iterations</strong><span class="classifier">int, optional</span></dt><dd><p>The number of steps.</p>
+</dd>
+<dt><strong>xrange</strong><span class="classifier">array_like of int or float, optional</span></dt><dd><p>The range of x values.</p>
+</dd>
+<dt><strong>yrange</strong><span class="classifier">array_like of int or float, optional</span></dt><dd><p>The range of y values.</p>
+</dd>
+<dt><strong>normalize</strong><span class="classifier">bool, optional</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"></dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.moments">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#moments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.moments" title="Link to this definition">¶</a></dt>
+<dd><p>Computes statistics on a data set avoiding deviant points if requested</p>
+<p>Moments are calculated for a given set of data.  If a value is passed
+to threshold, then the dataset is searched for outliers.  A data point
+is identified as an outlier if abs(x_i - x_med)/MAD &gt; threshold, where
+x_med is the median, MAD is the median absolute deviation defined as
+1.482 * median(abs(x_i - x_med)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array_like of float</span></dt><dd><p>(shape1) Data on which to calculate moments</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">array_like of bool</span></dt><dd><p>(shape1) Mask to apply to data</p>
+</dd>
+<dt><strong>threshold</strong><span class="classifier">float, optional</span></dt><dd><p>Sigma threshold over which values are identified as outliers</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">int, optional</span></dt><dd><p>Axis over which to calculate statistics</p>
+</dd>
+<dt><strong>get_mask</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, only return the output mask</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>dict or numpy.ndarray</dt><dd><p>If <cite>get_mask</cite> is False, returns a dictionary containing the
+following statistics: mean, var, stddev, skew, kurt, stderr,
+mask.  Otherwise, returns the output mask.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.robust_mask">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">robust_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#robust_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.robust_mask" title="Link to this definition">¶</a></dt>
+<dd><p>Computes a mask derived from data Median Absolute Deviation (MAD).</p>
+<p>Calculates a robust mask based on the input data and optional input mask.
+If <span class="math notranslate nohighlight">\(threshold &gt; 0\)</span>, the dataset is searched for outliers.  Outliers
+are identified for point <span class="math notranslate nohighlight">\(i\)</span> if</p>
+<div class="math notranslate nohighlight">
+\[\frac{|y_i - median[y]|}{MAD} &gt; threshold\]</div>
+<p>where <span class="math notranslate nohighlight">\(MAD\)</span> is the Median Absolute Deviation defined as</p>
+<div class="math notranslate nohighlight">
+\[MAD = 1.482 * median[|y_i - median[y]|]\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">array_like of float</span></dt><dd><p>The data on which to derive a robust mask.</p>
+</dd>
+<dt><strong>threshold</strong><span class="classifier">float</span></dt><dd><p>Threshold as described above.</p>
+</dd>
+<dt><strong>mask</strong><span class="classifier">array_like of bool, optional</span></dt><dd><p>If supplied, must be the same shape as <cite>data</cite>.  Any masked (<cite>False</cite>)
+<cite>data</cite> values will not be included in the <span class="math notranslate nohighlight">\(MAD\)</span> calculation.
+Additionally, masked elements will also be masked (<cite>False</cite>) in the
+output mask.</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">int, optional</span></dt><dd><p>Axis over which to calculate the <span class="math notranslate nohighlight">\(MAD\)</span>.  The default (<cite>None</cite>)
+derives the <span class="math notranslate nohighlight">\(MAD\)</span> from the entire set of <cite>data</cite>.</p>
+</dd>
+<dt><strong>mask_data</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return a copy of <cite>data</cite> with masked values replaced by
+<cite>cval</cite> in addition to the output mask.  The default is <cite>False</cite>.
+Note that the output type will</p>
+</dd>
+<dt><strong>cval</strong><span class="classifier">int or float, optional</span></dt><dd><p>if <cite>mask_data</cite> is set to <cite>True</cite>, masked values will be replaced by
+<cite>cval</cite>.  The default is <cite>numpy.nan</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray of bool, [numpy.ndarray of numpy.float64]</dt><dd><p>The output mask where <cite>False</cite> indicates a masked value, while <cite>True</cite>
+indicates that associated data deviation is below the <cite>threshold</cite>
+limit.  If <cite>mask_data</cite> was <cite>True</cite>, also returns a copy of <cite>data</cite>
+with masked values replaced by <cite>cval</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.slicer">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">slicer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#slicer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.slicer" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a slice of an array in arbitrary dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>array</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>array to slice</p>
+</dd>
+<dt><strong>axis</strong><span class="classifier">int or array_like</span></dt><dd><p>axis to slice on</p>
+</dd>
+<dt><strong>index</strong><span class="classifier">int or array_like of int</span></dt><dd><p>index retrieved</p>
+</dd>
+<dt><strong>ind</strong><span class="classifier">bool, optional</span></dt><dd><p>If True, return the slices rather than sliced array</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>numpy.ndarray or tuple of slice</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.func.taylor">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.func.</span></span><span class="sig-name descname"><span class="pre">taylor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/func.html#taylor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.func.taylor" title="Link to this definition">¶</a></dt>
+<dd><p>Taylor expansion generator for Polynomial exponents</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">int</span></dt><dd><p>Order of Polynomial</p>
+</dd>
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>Number of variables to solve for</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>n-tuple of int</dt><dd><p>The next polynomial exponent</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-grig.toolkit.multiproc">
+<span id="grig-toolkit-multiproc-module"></span><h3>grig.toolkit.multiproc module<a class="headerlink" href="#module-grig.toolkit.multiproc" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.MultitaskHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">MultitaskHandler</span></span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#MultitaskHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.MultitaskHandler" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Handler</span></code></p>
+<p>A log handler for multitask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">acquire</span></code>()</p></td>
+<td><p>Acquire the I/O thread lock.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">addFilter</span></code>(filter)</p></td>
+<td><p>Add the specified filter to this handler.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code>()</p></td>
+<td><p>Tidy up any resources used by the handler.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">createLock</span></code>()</p></td>
+<td><p>Acquire a thread lock for serializing access to the underlying I/O.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.multiproc.MultitaskHandler.emit" title="grig.toolkit.multiproc.MultitaskHandler.emit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">emit</span></code></a>(record)</p></td>
+<td><p>Emit a log record.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code>(record)</p></td>
+<td><p>Determine if a record is loggable by consulting all the filters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">flush</span></code>()</p></td>
+<td><p>Ensure all logging output has been flushed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">format</span></code>(record)</p></td>
+<td><p>Format the specified record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">handle</span></code>(record)</p></td>
+<td><p>Conditionally emit the specified logging record.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">handleError</span></code>(record)</p></td>
+<td><p>Handle errors which occur during an emit() call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">release</span></code>()</p></td>
+<td><p>Release the I/O thread lock.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">removeFilter</span></code>(filter)</p></td>
+<td><p>Remove the specified filter from this handler.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.toolkit.multiproc.MultitaskHandler.reorder_records" title="grig.toolkit.multiproc.MultitaskHandler.reorder_records"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reorder_records</span></code></a>()</p></td>
+<td><p>Re-order the records in a sensible order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setFormatter</span></code>(fmt)</p></td>
+<td><p>Set the formatter for this handler.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setLevel</span></code>(level)</p></td>
+<td><p>Set the logging level of this handler.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>get_name</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_name</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.MultitaskHandler.emit">
+<span class="sig-name descname"><span class="pre">emit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#MultitaskHandler.emit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.MultitaskHandler.emit" title="Link to this definition">¶</a></dt>
+<dd><p>Emit a log record.</p>
+<p>Stores the record in the lookup dictionary for the
+given process/thread. Each message is stored in the received
+order for later retrieval once whatever multiprocessing
+job is complete.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>record</strong><span class="classifier">logging.LogRecord</span></dt><dd><p>The record to emit.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.MultitaskHandler.reorder_records">
+<span class="sig-name descname"><span class="pre">reorder_records</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#MultitaskHandler.reorder_records"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.MultitaskHandler.reorder_records" title="Link to this definition">¶</a></dt>
+<dd><p>Re-order the records in a sensible order.</p>
+<p>The records are sorted by process and then thread in chronological
+order.  I.e., records are grouped by processes, starting with the
+first process that appears in the logs and then within that process
+group, a similar grouping is performed for each child thread.  Each
+process-thread grouping will contain a list of log records in the
+order that they where emitted.</p>
+<p>Note that each record is a tuple of the form (time, process, thread,
+log_record).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.get_core_number">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">get_core_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#get_core_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.get_core_number" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the maximum number of CPU cores available</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>cores</strong><span class="classifier">bool or int, optional</span></dt><dd><p>If False, returns 1.  If True, returns the maximum number
+of cores available.  An integer specifies an upper limit
+on the maximum number of cores to return</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>cores</strong><span class="classifier">int</span></dt><dd><p>The maximum number of cores to use for parallel processing</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.in_main_thread">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">in_main_thread</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#in_main_thread"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.in_main_thread" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the process is running in the main thread.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>main_thread: bool</dt><dd><p><cite>True</cite> if this process is running in the main thread, and <cite>False</cite> if
+it is running in a child process.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.log_for_multitask">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">log_for_multitask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#log_for_multitask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.log_for_multitask" title="Link to this definition">¶</a></dt>
+<dd><p>Context manager to output log messages during multiprocessing.</p>
+<p>Stores all log messages during multiprocessing, and emits them using
+the given logger once complete.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>logger</strong><span class="classifier">logging.Logger</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.log_records_to_pickle_file">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">log_records_to_pickle_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pickle_file</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#log_records_to_pickle_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.log_records_to_pickle_file" title="Link to this definition">¶</a></dt>
+<dd><p>Store the log records in a pickle file rather than emitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>logger</strong><span class="classifier">logging.Logger</span></dt><dd></dd>
+<dt><strong>pickle_file</strong><span class="classifier">str</span></dt><dd><p>The path to the pickle file that will contain the log records.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.log_with_multi_handler">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">log_with_multi_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#log_with_multi_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.log_with_multi_handler" title="Link to this definition">¶</a></dt>
+<dd><p>Context manager to temporarily log messages for unique processes/threads</p>
+<p>Temporarily disables all log handlers and outputs the results to a
+dictionary of the form {(process, thread): list(records)} where process
+is returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">multiprocessing.current_process()</span></code> and thread is
+returned by <code class="xref py py-func docutils literal notranslate"><span class="pre">threading.current_thread()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>logger</strong><span class="classifier">logging.Logger</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Yields<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>multi_handler</strong><span class="classifier">MultitaskHandler</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.multitask">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">multitask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jobs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nbytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'1M'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_threading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#multitask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.multitask" title="Link to this definition">¶</a></dt>
+<dd><p>Process a series of tasks in serial, or in parallel using joblib.</p>
+<p><cite>multitask</cite> is used to run a function multiple times on a series of
+arguments.  Tasks may be run in series (default), or in parallel using
+multi-processing via the joblib package.</p>
+<p>If an error is encountered while attempting to process in parallel with
+joblib, an attempt will be made to process the tasks in series.</p>
+<p>The function to process multiple times (<cite>func</cite>) must take one of the
+following forms:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mf">1.</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">iterable</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="mf">2.</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">iterable</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Here, the above “args” is the same as the <cite>args</cite> argument.  i.e., the
+full argument list.  Setting the argument <cite>kwargs</cite> to <cite>None</cite> implies
+that <cite>func</cite> takes form 1, while anything else sets multitask to assume
+the function is of form 2.</p>
+<p>Since this is a non-standard method of specifying a function, it is highly
+likely the user will have to define their own <cite>func</cite>.  For example, to
+use multitask to add ten to a series of numbers:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">grig.toolkit.multiproc</span> <span class="kn">import</span> <span class="n">multitask</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numbers</span>
+<span class="go">[0, 1, 2, 3, 4]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">add_ten</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">args</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">10</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">multitask</span><span class="p">(</span><span class="n">add_ten</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)),</span> <span class="n">numbers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">[10, 11, 12, 13, 14]</span>
+</pre></div>
+</div>
+<p>In the above example, <cite>iterable</cite> has been set to range(len(numbers))
+indicating that multitask should supply <cite>i</cite> to <cite>add_ten</cite> multiple times
+(0, 1, 2, 3, 4).  Note that <cite>kwargs</cite> is explicitly set to None indicating
+that <cite>add_ten</cite> is of form 1.  While multitask may seem like overkill in
+this example, it can be highly adaptable for complex procedures.</p>
+<p>The <cite>skip</cite> parameter can be used to skip processing of certain tasks.
+For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">skip</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">skip</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">multitask</span><span class="p">(</span><span class="n">add_ten</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)),</span> <span class="n">numbers</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span>
+<span class="go">[10, 11, 13, 14]</span>
+</pre></div>
+</div>
+<p>By default, parallelization is managed with the loky backend.  If
+calling code is known to perform better with the threading backend,
+it should be called within the joblib parallel_backend context manager:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">parallel_backend</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">parallel_backend</span><span class="p">(</span><span class="s1">&#39;threading&#39;</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="n">multitask</span><span class="p">(</span><span class="n">add_ten</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numbers</span><span class="p">)),</span> <span class="n">numbers</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="go">[10, 11, 12, 13, 14]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>func</strong><span class="classifier">function</span></dt><dd><p>The function to repeat multiple times on different sets of arguments.
+Must be of the form func(args, i) if <cite>kwargs</cite> is None, or
+func(args, kwargs, i) otherwise, where <cite>i</cite> is a member of <cite>iterable</cite>.</p>
+</dd>
+<dt><strong>iterable</strong><span class="classifier">iterable</span></dt><dd><p>A Python object that can be iterated though such that each member
+can be passed to <cite>func</cite> as the final argument.</p>
+</dd>
+<dt><strong>args</strong></dt><dd><p>Anything that should be passed to <cite>func</cite> as the first argument.  The
+intended use is such that the output of <cite>func</cite> is
+result[i] = f(args[iterable[i]]).</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">None or anything</span></dt><dd><p>If set to None, multitask assumes <cite>func</cite> is of the form func(args, i).
+Otherwise, multitask assumes <cite>func</cite> is of the form
+func(args, kwargs, i).</p>
+</dd>
+<dt><strong>jobs</strong><span class="classifier">int, optional</span></dt><dd><p>If set to a positive integer, processes tasks in parallel using
+<cite>jobs</cite> threads.  If negative, sets the number of threads to the
+number of CPUs - jobs + 1.  i.e., if jobs = -1, multitask will use
+all available CPUs.</p>
+</dd>
+<dt><strong>skip</strong><span class="classifier">array_like of bool, optional</span></dt><dd><p>Should be of len(<cite>iterable</cite>), where a value of True signifies that
+processing should be skipped for that task and omitted from the
+final result.</p>
+</dd>
+<dt><strong>max_nbytes</strong><span class="classifier">int or str or None, optional</span></dt><dd><p>Threshold on the size of arrays passed to the workers that triggers
+automated memory mapping in temp_folder. Can be an int in Bytes, or a
+human-readable string, e.g., ‘1M’ for 1 megabyte. Use None to disable
+memmapping of large arrays. Only active when backend=”loky” or
+“multiprocessing”.  The default is currently set to ‘1M’ for
+consistency with the joblib library.  Note that memmapping disallows
+in-place modification of data, so if this functionality is required set
+<cite>max_nbytes</cite> to <cite>None</cite>.</p>
+</dd>
+<dt><strong>force_threading</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, force joblib to run parrallel jobs using threads so that
+shared memory can be used.  Otherwise, threading will only occur
+when parallel processing is spawned from a child process of the main
+thread.</p>
+</dd>
+<dt><strong>force_processes</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, force joblib to run parallel jobs using CPUs rather than
+threads.  This can sometimes lead to unexpected outcomes when the
+multiprocessing is launched from a non-main thread.  Pickling arguments
+prior and return values during processing is recommended in this case.</p>
+</dd>
+<dt><strong>logger</strong><span class="classifier">logging.Logger, optional</span></dt><dd><p>If supplied, will attempt to produce sensibly ordered logs for the
+multiprocessing tasks for all handlers.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>result</strong><span class="classifier">list</span></dt><dd><p>The final output where result[i] = func(args, iterable[i]).  Will be
+of length len(<cite>iterable</cite>) if <cite>skip</cite> is None, otherwise
+len(iterable) - sum(skip).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.pickle_list">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">pickle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">object_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naming_attribute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#pickle_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.pickle_list" title="Link to this definition">¶</a></dt>
+<dd><p>Pickle a list of objects to a temporary directory.</p>
+<p>The list will be updated in-place, with each element being replaced
+by the on-disk file path to the pickle file in which it is saved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>object_list</strong><span class="classifier">list (object)</span></dt><dd><p>A list of things to pickle.</p>
+</dd>
+<dt><strong>prefix</strong><span class="classifier">str, optional</span></dt><dd><p>The prefix for the temporary directory in which to store the pickle
+files.  See <code class="xref py py-func docutils literal notranslate"><span class="pre">tempfile.mkdtemp()</span></code> for further information.</p>
+</dd>
+<dt><strong>naming_attribute</strong><span class="classifier">str, optional</span></dt><dd><p>The attribute used to name the pickle file.  If not supplied,
+defaults to id(object).</p>
+</dd>
+<dt><strong>class_type</strong><span class="classifier">class, optional</span></dt><dd><p>If supplied, only objects of this class type will be pickled.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>temporary_directory</strong><span class="classifier">str</span></dt><dd><p>The temporary directory in which the objects are saved as pickle
+files.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.pickle_object">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">pickle_object</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#pickle_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.pickle_object" title="Link to this definition">¶</a></dt>
+<dd><p>Pickle a object and save to the given filename.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>obj</strong><span class="classifier">object</span></dt><dd><p>The object to pickle.</p>
+</dd>
+<dt><strong>filename</strong><span class="classifier">str or None</span></dt><dd><p>If <cite>filename</cite> points to a writeable on-disk location, <cite>obj</cite> will
+be pickled and saved to that location.  If <cite>None</cite>, nothing will
+happen.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>output</strong><span class="classifier">str or object</span></dt><dd><p>Either the <cite>filename</cite> if the object was pickled, or <cite>obj</cite> if it
+wasn’t.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.purge_multitask_logs">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">purge_multitask_logs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_pickle_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#purge_multitask_logs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.purge_multitask_logs" title="Link to this definition">¶</a></dt>
+<dd><p>Remove all temporary logging files/directories and handle log records.</p>
+<p>The user must supply a <cite>log_directory</cite> containing pickle files of the log
+records to handle.  The <cite>log_pickle_file</cite> contains the logger used to
+handle these records.  Following completion, both the ‘log_directory` and
+<cite>log_pickle_file</cite> will be deleted from the file system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>log_directory</strong><span class="classifier">str</span></dt><dd><p>The directory in which the log records for each run were stored.  This
+directory will be removed.</p>
+</dd>
+<dt><strong>log_pickle_file</strong><span class="classifier">str</span></dt><dd><p>The pickle file containing the logger for multitask.  This will be
+removed.</p>
+</dd>
+<dt><strong>use_logger</strong><span class="classifier">Logger, optional</span></dt><dd><p>The logger to handle any log records.  If not supplied, defaults to
+that found in the log_pickle_file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.relative_cores">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">relative_cores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#relative_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.relative_cores" title="Link to this definition">¶</a></dt>
+<dd><p>Return the actual number of cores to use for a given number of jobs.</p>
+<p>Returns 1 in cases where jobs is None or 0.  If jobs is less than zero,
+the returned value will be max_available_cores + jobs + 1.  i.e., -1 will
+use all available cores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>jobs</strong><span class="classifier">int or float or None</span></dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>n_cores</strong><span class="classifier">int</span></dt><dd><p>The number of cores to use which will always be in the range 1 -&gt;
+max_available_cores.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.unpickle_file">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">unpickle_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#unpickle_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.unpickle_file" title="Link to this definition">¶</a></dt>
+<dd><p>Unpickle a string argument if it is a file, and return the result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>filename</strong><span class="classifier">object or str</span></dt><dd><p>If the argument is a string and a valid file path, it will be
+unpickled and the result will be available in the result.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>obj, pickle_file</strong><span class="classifier">object, str</span></dt><dd><p>If the argument passed in was not a string or an invalid file,
+the resulting output <cite>obj</cite> will be <cite>argument</cite> and <cite>pickle_file</cite> will
+be <cite>None</cite>.  If <cite>argument</cite> was a valid file path to a pickle file,
+<cite>obj</cite> will be the unpickled result, and <cite>pickle`file</cite> will be
+<cite>argument</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.unpickle_list">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">unpickle_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#unpickle_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.unpickle_list" title="Link to this definition">¶</a></dt>
+<dd><p>Restore pickle files to objects in-place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>pickle_files</strong><span class="classifier">list (str)</span></dt><dd><p>A list of on-disk pickle files to restore.  The restored objects
+will replace the filepath for each element in the list.</p>
+</dd>
+<dt><strong>delete</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, delete each pickle file once it has been restored.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.valid_relative_jobs">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">valid_relative_jobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jobs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#valid_relative_jobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.valid_relative_jobs" title="Link to this definition">¶</a></dt>
+<dd><p>Return a valid number of jobs in the range 1 &lt;= jobs &lt;= max_cores.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>jobs</strong><span class="classifier">int</span></dt><dd><p>An positive or negative integer.  Negative values are processed as
+max_cores - jobs + 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>valid_jobs</strong><span class="classifier">int</span></dt><dd><p>The number of jobs available to process.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.wrap_function">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">wrap_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#wrap_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.wrap_function" title="Link to this definition">¶</a></dt>
+<dd><p>Wrap a function for use with <a class="reference internal" href="#grig.toolkit.multiproc.multitask" title="grig.toolkit.multiproc.multitask"><code class="xref py py-func docutils literal notranslate"><span class="pre">multitask()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>func</strong><span class="classifier">function</span></dt><dd><p>The function to wrap.</p>
+</dd>
+<dt><strong>args</strong><span class="classifier">tuple</span></dt><dd><p>The function arguments.</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Any function keyword arguments.</p>
+</dd>
+<dt><strong>logger</strong><span class="classifier">logging.Logger or str, optional</span></dt><dd><p>A logger used to output any log messages once complete.  If supplied,
+a valid <cite>log_directory</cite> must also be supplied.  A path to a pickle file
+containing the logger may also be supplied.</p>
+</dd>
+<dt><strong>log_directory</strong><span class="classifier">str, optional</span></dt><dd><p>If supplied together with a <cite>logger</cite>, will store all log records to
+a pickle file in the given directory.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>wrapped_function, log_pickle_file</strong><span class="classifier">function, str</span></dt><dd><p>The wrapped function and the file location of the pickle file for any
+supplied logger.  If no logger was supplied, this value will be <cite>None</cite>.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="grig.toolkit.multiproc.wrapped_with_logger">
+<span class="sig-prename descclassname"><span class="pre">grig.toolkit.multiproc.</span></span><span class="sig-name descname"><span class="pre">wrapped_with_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger_pickle_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_arg_and_identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/toolkit/multiproc.html#wrapped_with_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.toolkit.multiproc.wrapped_with_logger" title="Link to this definition">¶</a></dt>
+<dd><p>Return the results of the function in multitask and save log records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>func</strong><span class="classifier">function</span></dt><dd><p>The function to wrap.</p>
+</dd>
+<dt><strong>logger_pickle_file</strong><span class="classifier">str</span></dt><dd><p>The file path to the pickled logger (<code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Logger</span></code>).</p>
+</dd>
+<dt><strong>log_directory</strong><span class="classifier">str</span></dt><dd><p>The directory in which to store the log records for each run.</p>
+</dd>
+<dt><strong>run_arg_and_identifier</strong><span class="classifier">2-tuple</span></dt><dd><p>Any run time argument that the wrapped function returned by
+<code class="xref py py-func docutils literal notranslate"><span class="pre">_wrap_function()</span></code> requires (object), and an integer identifier
+signifying it’s position in a list of run arguments.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>results</strong><span class="classifier">object</span></dt><dd><p>The results of running <cite>func</cite> on a given run time argument.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">grig.toolkit package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li><a class="reference internal" href="#module-grig.toolkit.func">grig.toolkit.func module</a><ul>
+<li><a class="reference internal" href="#grig.toolkit.func.byte_size_of_object"><code class="docutils literal notranslate"><span class="pre">byte_size_of_object()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.func.julia_fractal"><code class="docutils literal notranslate"><span class="pre">julia_fractal()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.func.moments"><code class="docutils literal notranslate"><span class="pre">moments()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.func.robust_mask"><code class="docutils literal notranslate"><span class="pre">robust_mask()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.func.slicer"><code class="docutils literal notranslate"><span class="pre">slicer()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.func.taylor"><code class="docutils literal notranslate"><span class="pre">taylor()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.toolkit.multiproc">grig.toolkit.multiproc module</a><ul>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.MultitaskHandler"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler</span></code></a><ul>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.MultitaskHandler.emit"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler.emit()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.MultitaskHandler.reorder_records"><code class="docutils literal notranslate"><span class="pre">MultitaskHandler.reorder_records()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.get_core_number"><code class="docutils literal notranslate"><span class="pre">get_core_number()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.in_main_thread"><code class="docutils literal notranslate"><span class="pre">in_main_thread()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.log_for_multitask"><code class="docutils literal notranslate"><span class="pre">log_for_multitask()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.log_records_to_pickle_file"><code class="docutils literal notranslate"><span class="pre">log_records_to_pickle_file()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.log_with_multi_handler"><code class="docutils literal notranslate"><span class="pre">log_with_multi_handler()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.multitask"><code class="docutils literal notranslate"><span class="pre">multitask()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.pickle_list"><code class="docutils literal notranslate"><span class="pre">pickle_list()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.pickle_object"><code class="docutils literal notranslate"><span class="pre">pickle_object()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.purge_multitask_logs"><code class="docutils literal notranslate"><span class="pre">purge_multitask_logs()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.relative_cores"><code class="docutils literal notranslate"><span class="pre">relative_cores()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.unpickle_file"><code class="docutils literal notranslate"><span class="pre">unpickle_file()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.unpickle_list"><code class="docutils literal notranslate"><span class="pre">unpickle_list()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.valid_relative_jobs"><code class="docutils literal notranslate"><span class="pre">valid_relative_jobs()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.wrap_function"><code class="docutils literal notranslate"><span class="pre">wrap_function()</span></code></a></li>
+<li><a class="reference internal" href="#grig.toolkit.multiproc.wrapped_with_logger"><code class="docutils literal notranslate"><span class="pre">wrapped_with_logger()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="grig.grid.html"
+                          title="previous chapter">grig.grid package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="grig.toolkit.splines.html"
+                          title="next chapter">grig.toolkit.splines package</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/grig.toolkit.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.splines.html" title="grig.toolkit.splines package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grig.grid.html" title="grig.grid package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" >grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.toolkit package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

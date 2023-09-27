@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>grig.tree package &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Full Changelog" href="../changelog.html" />
+    <link rel="prev" title="grig.toolkit.splines package" href="grig.toolkit.splines.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../changelog.html" title="Full Changelog"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.splines.html" title="grig.toolkit.splines package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" accesskey="U">grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.tree package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grig-tree-package">
+<h1>grig.tree package<a class="headerlink" href="#grig-tree-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<section id="module-grig.tree.base_tree">
+<span id="grig-tree-base-tree-module"></span><h3>grig.tree.base_tree module<a class="headerlink" href="#module-grig.tree.base_tree" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.tree.base_tree.</span></span><span class="sig-name descname"><span class="pre">BaseTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">distance_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.balltree_initialized" title="grig.tree.base_tree.BaseTree.balltree_initialized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">balltree_initialized</span></code></a></dt><dd><p>Return <cite>True</cite> if the BallTree has been initialized.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.features" title="grig.tree.base_tree.BaseTree.features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></a></dt><dd><p>Returns the number of features (dimensions) in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.hood_initialized" title="grig.tree.base_tree.BaseTree.hood_initialized"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_initialized</span></code></a></dt><dd><p>Return <cite>True</cite> if the neighbourhood tree has been initialized.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.n_blocks" title="grig.tree.base_tree.BaseTree.n_blocks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_blocks</span></code></a></dt><dd><p>Return the total number of blocks in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.n_members" title="grig.tree.base_tree.BaseTree.n_members"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_members</span></code></a></dt><dd><p>Return the total number of coordinates stored in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.search" title="grig.tree.base_tree.BaseTree.search"><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></a></dt><dd><p>Return a search array used to identify neighbouring blocks.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.base_tree.BaseTree.shape" title="grig.tree.base_tree.BaseTree.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></dt><dd><p>Return the shape of the coordinate bins of the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x[, reverse])</p></td>
+<td><p>Returns the block index of a coordinate</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.block_members" title="grig.tree.base_tree.BaseTree.block_members"><code class="xref py py-obj docutils literal notranslate"><span class="pre">block_members</span></code></a>(block[, get_locations])</p></td>
+<td><p>Get block members from the neighborhood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.build_ball_tree_for_block" title="grig.tree.base_tree.BaseTree.build_ball_tree_for_block"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_ball_tree_for_block</span></code></a>(block)</p></td>
+<td><p>Build a ball tree for a neighborhood around a single block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.build_tree" title="grig.tree.base_tree.BaseTree.build_tree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_tree</span></code></a>(coordinates[, shape, method, ...])</p></td>
+<td><p>Create the ball and hood tree structures from coordinates.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes" title="grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_ball_tree_bytes</span></code></a>(coordinates[, ...])</p></td>
+<td><p>Estimate the maximum number of bytes used to construct the ball-tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes" title="grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_hood_tree_bytes</span></code></a>(coordinates[, window])</p></td>
+<td><p>Estimate the maximum byte size for the neighborhood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_max_bytes" title="grig.tree.base_tree.BaseTree.estimate_max_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_max_bytes</span></code></a>(coordinates[, window, ...])</p></td>
+<td><p>Estimate the maximum number of bytes required by the tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_n_bins" title="grig.tree.base_tree.BaseTree.estimate_n_bins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_n_bins</span></code></a>(coordinates[, window])</p></td>
+<td><p>Estimate the number of bins in the hood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_split_tree_bytes" title="grig.tree.base_tree.BaseTree.estimate_split_tree_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_split_tree_bytes</span></code></a>(coordinates[, ...])</p></td>
+<td><p>Return the size of a ball tree for a single neighborhood.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.from_index" title="grig.tree.base_tree.BaseTree.from_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_index</span></code></a>(index)</p></td>
+<td><p>Find the lower corner coordinate for a tree block index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.get_class_for" title="grig.tree.base_tree.BaseTree.get_class_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code></a>(thing)</p></td>
+<td><p>Return a Tree class specific to a given grid, resampler, or name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.get_class_for_name" title="grig.tree.base_tree.BaseTree.get_class_for_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code></a>(name)</p></td>
+<td><p>Return a Tree class of the given name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.hood_members" title="grig.tree.base_tree.BaseTree.hood_members"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_members</span></code></a>(center_block[, get_locations])</p></td>
+<td><p>Find all members within the neighborhood of a single block.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.neighborhood" title="grig.tree.base_tree.BaseTree.neighborhood"><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighborhood</span></code></a>(index[, cull, valid_neighbors])</p></td>
+<td><p>Make a neighborhood from an input index.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.query_radius" title="grig.tree.base_tree.BaseTree.query_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_radius</span></code></a>(coordinates[, radius, block])</p></td>
+<td><p>Return all tree members within a certain distance of given points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.base_tree.BaseTree.to_index" title="grig.tree.base_tree.BaseTree.to_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_index</span></code></a>(coordinates)</p></td>
+<td><p>Find the tree block indices of a coordinate or set of coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.balltree_initialized">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">balltree_initialized</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.balltree_initialized" title="Link to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if the BallTree has been initialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.block_members">
+<span class="sig-name descname"><span class="pre">block_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.block_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.block_members" title="Link to this definition">¶</a></dt>
+<dd><p>Get block members from the neighborhood tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>block</strong><span class="classifier">np.ndarray of int</span></dt><dd><p>Block locations.</p>
+</dd>
+<dt><strong>get_locations</strong><span class="classifier">bool, optional</span></dt><dd><p>If set, locations of members are also returned.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>members</strong><span class="classifier">np.ndarray</span></dt><dd><p>Members of the block.</p>
+</dd>
+<dt><strong>locations</strong><span class="classifier">np.ndarray, optional</span></dt><dd><p>Locations of the members.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.build_ball_tree_for_block">
+<span class="sig-name descname"><span class="pre">build_ball_tree_for_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.build_ball_tree_for_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.build_ball_tree_for_block" title="Link to this definition">¶</a></dt>
+<dd><p>Build a ball tree for a neighborhood around a single block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>block</strong><span class="classifier">int</span></dt><dd><p>The center block of the neighborhood.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.build_tree">
+<span class="sig-name descname"><span class="pre">build_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">distance_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.build_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.build_tree" title="Link to this definition">¶</a></dt>
+<dd><p>Create the ball and hood tree structures from coordinates.</p>
+<p>Populates the tree with coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (n_features, n_coordinates)</span></dt><dd><p>The coordinates from which to build the trees.</p>
+</dd>
+<dt><strong>shape</strong><span class="classifier">n-tuple of int, optional</span></dt><dd><p>The shape of the tree.  If not supplied it is calculated as
+floor(max(coordinate[k])) + 1 for the feature k.</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str, optional</span></dt><dd><p>Specifies the trees to build.  Available options are {‘hood’,
+‘balltree’, ‘all’, None}.  The default (‘all’) builds both
+the balltree and hood tree.</p>
+</dd>
+<dt><strong>leaf_size</strong><span class="classifier">int, optional</span></dt><dd><p>An specifies the point at which the ball tree switches over to
+the brute force method.  See <code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.neighbors.BallTree()</span></code>
+for further information.</p>
+</dd>
+<dt><strong>distance_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Optional keyword arguments passed into
+<code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.neighbors.DistanceMetric()</span></code>.  The default is to use
+the “minkowski” definition with <cite>p=2</cite>, i.e., the Euclidean
+definition.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_ball_tree_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.estimate_ball_tree_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the maximum number of bytes used to construct the ball-tree.</p>
+<p>According to sklearn documentation, the memory needed to store the
+tree scales as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">floor</span><span class="p">(</span><span class="n">log2</span><span class="p">((</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">leaf_size</span><span class="p">)))</span> <span class="o">-</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>However, empirically the data also scale as (ndim+1) * leaf_size.</p>
+<p>The estimated number of elements is given as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">ndim</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">leaf_size</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="n">floor</span><span class="p">(</span><span class="n">log2</span><span class="p">((</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">leaf_size</span><span class="p">)))</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is then scaled by the number of bytes in a float (typically 8).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates of shape (n_dimensions, n)</p>
+</dd>
+<dt><strong>leaf_size</strong><span class="classifier">int</span></dt><dd><p>The number of leaves used to construct the ball-tree</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>max_size</strong><span class="classifier">int</span></dt><dd><p>The maximum number of bytes used to construct the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_hood_tree_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.estimate_hood_tree_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the maximum byte size for the neighborhood tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates of shape (n_dimensions, n).</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">int or float or numpy.ndarray, optional</span></dt><dd><p>The window binning size.  If a numpy array is supplied, it should
+be of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>bytes</strong><span class="classifier">int</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.estimate_max_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_max_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.estimate_max_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.estimate_max_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the maximum number of bytes required by the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates for the tree of shape (n_dimensions, n)</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">int or float, optional</span></dt><dd><p>The size of the tree windows</p>
+</dd>
+<dt><strong>leaf_size</strong><span class="classifier">int, optional</span></dt><dd><p>The number of leaves used to construct the ball-tree</p>
+</dd>
+<dt><strong>full_tree</strong><span class="classifier">bool, optional</span></dt><dd><p>Calculate the maximum number of bytes if the full ball-tree is
+pre-calculated.  Otherwise, calculates the size of a single
+neighborhood sized ball-tree.</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Additional keyword arguments to pass that may be used by subclasses
+of the BaseTree.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>max_size</strong><span class="classifier">int</span></dt><dd><p>The maximum number of bytes used to construct the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.estimate_n_bins">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_n_bins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.estimate_n_bins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.estimate_n_bins" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the number of bins in the hood tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates of shape (n_dimensions, n).</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">int or float or numpy.ndarray, optional</span></dt><dd><p>The window binning size.  If a numpy array is supplied, it should
+be of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>bytes</strong><span class="classifier">int</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.estimate_split_tree_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_split_tree_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.estimate_split_tree_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.estimate_split_tree_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Return the size of a ball tree for a single neighborhood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates of shape (n_dimensions, n)</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">int or float or numpy.ndarray, optional</span></dt><dd><p>The window binning size.  If a numpy array is supplied, it should
+be of shape (n_dimensions,).</p>
+</dd>
+<dt><strong>leaf_size</strong><span class="classifier">int</span></dt><dd><p>The number of leaves used to construct the ball-tree</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>max_size</strong><span class="classifier">int</span></dt><dd><p>The maximum number of bytes used to construct the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.features">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.features" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of features (dimensions) in the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.from_index">
+<span class="sig-name descname"><span class="pre">from_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.from_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.from_index" title="Link to this definition">¶</a></dt>
+<dd><p>Find the lower corner coordinate for a tree block index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">int or numpy.ndarray (n_indices,)</span></dt><dd><p>The indices for which to return the lower corner coordinate(s).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>lower_corner_coordinates</strong><span class="classifier">numpy.ndarray of int</span></dt><dd><p>An array of shape (n_features,) or (n_features, n_indices)
+containing the lower corner coordinates of supplied tree block
+indices.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>The lower corner coordinate in a tree block is given as the floored
+values of all coordinates that exist inside the block.  For example,
+the index 15 in a tree of shape (5, 6) corresponds to coordinates in
+the range x = (2-&gt;3), y = (3-&gt;4).  Therefore, the lower coordinate is
+(2, 3).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.get_class_for">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_class_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.get_class_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.get_class_for" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Tree class specific to a given grid, resampler, or name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>thing</strong><span class="classifier">BaseGrid or ResampleBase or str</span></dt><dd><p>Either a sub-class of a BaseGrid, ResampleBase, or a string.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>BaseTree subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.get_class_for_name">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_class_for_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.get_class_for_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.get_class_for_name" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Tree class of the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the tree.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>BaseTree subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.hood_initialized">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hood_initialized</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.hood_initialized" title="Link to this definition">¶</a></dt>
+<dd><p>Return <cite>True</cite> if the neighbourhood tree has been initialized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.hood_members">
+<span class="sig-name descname"><span class="pre">hood_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.hood_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.hood_members" title="Link to this definition">¶</a></dt>
+<dd><p>Find all members within the neighborhood of a single block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>center_block</strong><span class="classifier">int</span></dt><dd><p>The index of the block at the center of the neighborhood.</p>
+</dd>
+<dt><strong>get_locations</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return the coordinates of the hood members.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>members, [coordinates]</dt><dd><p>members is a numpy.ndarray of int and shape (found_members,).
+If <cite>get_locations</cite> was set to <cite>True,</cite> coordinates is of shape
+(n_features, found_members).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.n_blocks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_blocks</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.n_blocks" title="Link to this definition">¶</a></dt>
+<dd><p>Return the total number of blocks in the tree.</p>
+<p>The total number of blocks is simply the number of available coordinate
+bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.n_members">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_members</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.n_members" title="Link to this definition">¶</a></dt>
+<dd><p>Return the total number of coordinates stored in the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.neighborhood">
+<span class="sig-name descname"><span class="pre">neighborhood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cull</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_neighbors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.neighborhood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.neighborhood" title="Link to this definition">¶</a></dt>
+<dd><p>Make a neighborhood from an input index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>index</strong><span class="classifier">int</span></dt><dd><p>The center index for the neighborhood.</p>
+</dd>
+<dt><strong>cull</strong><span class="classifier">bool, optional</span></dt><dd><p>If set, bad indices are dropped.</p>
+</dd>
+<dt><strong>valid_neighbors</strong><span class="classifier">bool, optional</span></dt><dd><p>If set, returns good locations as well as the neighborhood..</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>hood</strong><span class="classifier">np.ndarray of int</span></dt><dd><p>The tree block indices for the neighborhood.</p>
+</dd>
+<dt><strong>keep</strong><span class="classifier">np.ndarray of bool, optional</span></dt><dd><p>Good indices in the neighborhood.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.query_radius">
+<span class="sig-name descname"><span class="pre">query_radius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.query_radius"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.query_radius" title="Link to this definition">¶</a></dt>
+<dd><p>Return all tree members within a certain distance of given points.</p>
+<p>Quickly retrieves all members of the tree population within the radius
+of some defined coordinate(s).  The default distance definition is
+“minkowski” with p=2, which is equivalent to the “euclidean”
+definition. For a list of available distance metric please see
+<cite>sklearn.neighbors.BallTree.valid_metrics</cite>.  The distance metric may
+be defined during PolynomialTree initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>An (n_features, n_coordinates) or (n_features,) array containing
+coordinates around which to determine tree members within a
+certain radius.</p>
+</dd>
+<dt><strong>radius</strong><span class="classifier">float, optional</span></dt><dd><p>The search radius around each coordinate.</p>
+</dd>
+<dt><strong>block</strong><span class="classifier">int, optional</span></dt><dd><p>Used to create a temporary ball tree for the given block when
+operating on large data.</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Keywords for <code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.neighbors.BallTree.query_radius()</span></code>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>indices</strong><span class="classifier">numpy.ndarray of object (n_coordinates,)</span></dt><dd><p>Each element is a numpy integer array containing the indices of
+tree members within <cite>radius</cite>.  This return value may change
+depending on the options in <cite>kwargs</cite>.  Please see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">sklearn.neighbors.BallTree.query_radius()</span></code> for further
+information.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.search">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">search</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.search" title="Link to this definition">¶</a></dt>
+<dd><p>Return a search array used to identify neighbouring blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>search_array</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An (n_features, n_permutations) containing values {-1, 0, 1} where
+each permutation gives a block offset in relation to a central
+block.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#grig.tree.base_tree.BaseTree.shape" title="Link to this definition">¶</a></dt>
+<dd><p>Return the shape of the coordinate bins of the tree.</p>
+<p>The coordinate bins divide coordinates into bins where all values
+between 2 &lt;= x_i &lt; 3 for coordinate x in dimension i are in bin 0.
+Note that coordinates should have been scaled accordingly such that
+they range between 0 -&gt; n, where n are the maximum number of bins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>shape</strong><span class="classifier">tuple (int)</span></dt><dd><p>The number of bins in each dimension.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.base_tree.BaseTree.to_index">
+<span class="sig-name descname"><span class="pre">to_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/base_tree.html#BaseTree.to_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.base_tree.BaseTree.to_index" title="Link to this definition">¶</a></dt>
+<dd><p>Find the tree block indices of a coordinate or set of coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray (n_feature,) or (n_feature, n_coordinates)</span></dt><dd><p>The coordinates for which to return tree block indices.
+Coordinates should be scaled such that they range from
+0 -&gt; tree.shape[k] for the feature k.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>index or indices</strong><span class="classifier">np.int64 or np.ndarray (n_coordinates,)</span></dt><dd><p>The tree block indices for the supplied coordinates.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>A tree of shape (5, 6) in 2 dimensions contains coordinates ranging
+from 0-5 in x, and 0-6 in y.  The coordinate (x, y) = (2.7, 3.1) would
+exist in tree block [2, 3] (floored values), but the tree block
+structure is one-dimensional.  The actual block index would be
+15 since it is calculated as (2 * 6) + 3, or (x * shape[1]) + y.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-grig.tree.kernel_tree">
+<span id="grig-tree-kernel-tree-module"></span><h3>grig.tree.kernel_tree module<a class="headerlink" href="#module-grig.tree.kernel_tree" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.tree.kernel_tree.</span></span><span class="sig-name descname"><span class="pre">KernelTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imperfect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spline_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">distance_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/kernel_tree.html#KernelTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#grig.tree.base_tree.BaseTree" title="grig.tree.base_tree.BaseTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTree</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">balltree_initialized</span></code></dt><dd><p>Return <cite>True</cite> if the BallTree has been initialized.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.coefficients" title="grig.tree.kernel_tree.KernelTree.coefficients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coefficients</span></code></a></dt><dd><p>Return the spline coefficients.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.degrees" title="grig.tree.kernel_tree.KernelTree.degrees"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degrees</span></code></a></dt><dd><p>Return the degree of the spline fit.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.exit_code" title="grig.tree.kernel_tree.KernelTree.exit_code"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exit_code</span></code></a></dt><dd><p>Return the spline exit code.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.exit_message" title="grig.tree.kernel_tree.KernelTree.exit_message"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exit_message</span></code></a></dt><dd><p>Return the spline exit message.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.extent" title="grig.tree.kernel_tree.KernelTree.extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extent</span></code></a></dt><dd><p>Return the extent of the kernel coordinates in each dimension.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></dt><dd><p>Returns the number of features (dimensions) in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.fit_valid" title="grig.tree.kernel_tree.KernelTree.fit_valid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_valid</span></code></a></dt><dd><p>Return whether the spline successfully fit the provided kernel.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_initialized</span></code></dt><dd><p>Return <cite>True</cite> if the neighbourhood tree has been initialized.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.knot_steps" title="grig.tree.kernel_tree.KernelTree.knot_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">knot_steps</span></code></a></dt><dd><p>Return the 1-D panel mapping steps for each dimension.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.knots" title="grig.tree.kernel_tree.KernelTree.knots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">knots</span></code></a></dt><dd><p>Return the coordinates of the spline knots.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_blocks</span></code></dt><dd><p>Return the total number of blocks in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.n_knots" title="grig.tree.kernel_tree.KernelTree.n_knots"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_knots</span></code></a></dt><dd><p>Return the number of spline knots in each dimension.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_members</span></code></dt><dd><p>Return the total number of coordinates stored in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.nk1" title="grig.tree.kernel_tree.KernelTree.nk1"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nk1</span></code></a></dt><dd><p>Return the nk1 values for the knots.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.panel_mapping" title="grig.tree.kernel_tree.KernelTree.panel_mapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">panel_mapping</span></code></a></dt><dd><p>Return the 1-D to N-D panel mapping used for subsequent fitting.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.panel_steps" title="grig.tree.kernel_tree.KernelTree.panel_steps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">panel_steps</span></code></a></dt><dd><p>Return the 1-D panel mapping steps for each dimension.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.resampling_arguments" title="grig.tree.kernel_tree.KernelTree.resampling_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resampling_arguments</span></code></a></dt><dd><p>Return the spline parameters necessary for resampling.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></dt><dd><p>Return a search array used to identify neighbouring blocks.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></dt><dd><p>Return the shape of the coordinate bins of the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.smoothing" title="grig.tree.kernel_tree.KernelTree.smoothing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">smoothing</span></code></a></dt><dd><p>Return the spline smoothing factor.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.spline_mapping" title="grig.tree.kernel_tree.KernelTree.spline_mapping"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spline_mapping</span></code></a></dt><dd><p>Return the 1-D to N-D index map for the spline.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x[, reverse])</p></td>
+<td><p>Returns the block index of a coordinate</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">block_members</span></code>(block[, get_locations])</p></td>
+<td><p>Get block members from the neighborhood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_ball_tree_for_block</span></code>(block)</p></td>
+<td><p>Build a ball tree for a neighborhood around a single block.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_tree</span></code>(coordinates[, shape, method, ...])</p></td>
+<td><p>Create the ball and hood tree structures from coordinates.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_ball_tree_bytes</span></code>(coordinates[, ...])</p></td>
+<td><p>Estimate the maximum number of bytes used to construct the ball-tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_hood_tree_bytes</span></code>(coordinates[, window])</p></td>
+<td><p>Estimate the maximum byte size for the neighborhood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_max_bytes</span></code>(coordinates[, window, ...])</p></td>
+<td><p>Estimate the maximum number of bytes required by the tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_n_bins</span></code>(coordinates[, window])</p></td>
+<td><p>Estimate the number of bins in the hood tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_split_tree_bytes</span></code>(coordinates[, ...])</p></td>
+<td><p>Return the size of a ball tree for a single neighborhood.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.fit_spline" title="grig.tree.kernel_tree.KernelTree.fit_spline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_spline</span></code></a>([degrees, smoothing])</p></td>
+<td><p>Fit a spline to the tree kernel.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_index</span></code>(index)</p></td>
+<td><p>Find the lower corner coordinate for a tree block index.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code>(thing)</p></td>
+<td><p>Return a Tree class specific to a given grid, resampler, or name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code>(name)</p></td>
+<td><p>Return a Tree class of the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_members</span></code>(center_block[, get_locations])</p></td>
+<td><p>Find all members within the neighborhood of a single block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighborhood</span></code>(index[, cull, valid_neighbors])</p></td>
+<td><p>Make a neighborhood from an input index.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.parse_kernel" title="grig.tree.kernel_tree.KernelTree.parse_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_kernel</span></code></a>(kernel[, kernel_spacing, ...])</p></td>
+<td><p>Check and then convert the kernel arguments for spline fitting.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_radius</span></code>(coordinates[, radius, block])</p></td>
+<td><p>Return all tree members within a certain distance of given points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.set_kernel" title="grig.tree.kernel_tree.KernelTree.set_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_kernel</span></code></a>(kernel[, kernel_spacing, ...])</p></td>
+<td><p>Setting the kernel automatically initializes a <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> object that is solved and may be used for interpolating kernel values at locations away from the kernel vertices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_index</span></code>(coordinates)</p></td>
+<td><p>Find the tree block indices of a coordinate or set of coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.coefficients">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coefficients</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.coefficients" title="Link to this definition">¶</a></dt>
+<dd><p>Return the spline coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (float)</dt><dd><p>The spline coefficients of shape (n_coefficients,).  Here,
+n_coefficients = product(n_knots - degrees - 1) over all
+dimensions.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.degrees">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">degrees</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.degrees" title="Link to this definition">¶</a></dt>
+<dd><p>Return the degree of the spline fit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The spline degrees of shape (n_dimensions,) for each dimension
+in (x, y, z, …) order.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.exit_code">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exit_code</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.exit_code" title="Link to this definition">¶</a></dt>
+<dd><p>Return the spline exit code.</p>
+<p>Please see <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> for further details on all codes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.exit_message">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exit_message</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.exit_message" title="Link to this definition">¶</a></dt>
+<dd><p>Return the spline exit message.</p>
+<p>Please see <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> for further details on all codes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>str</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.extent">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extent</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.extent" title="Link to this definition">¶</a></dt>
+<dd><p>Return the extent of the kernel coordinates in each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>extent</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>An array of shape (n_dimensions, 2) where extent[0, 0] gives the
+minimum offset for dimension 0 and extent[0, 1] gives the maximum
+offset for dimension 0.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.fit_spline">
+<span class="sig-name descname"><span class="pre">fit_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">spline_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/kernel_tree.html#KernelTree.fit_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.fit_spline" title="Link to this definition">¶</a></dt>
+<dd><p>Fit a spline to the tree kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>degrees</strong><span class="classifier">int or numpy.ndarray (int), optional</span></dt><dd><p>The degree of spline to fit in each dimension.  Either a scalar can
+be supplied pertaining to all dimensions, or an array of shape
+(n_dimensions,) can be used.</p>
+</dd>
+<dt><strong>smoothing</strong><span class="classifier">float, optional</span></dt><dd><p>Used to specify the smoothing factor.  If set to <cite>None</cite>, the
+smoothing will be determined based on user settings or input data.
+If <cite>exact</cite> is <cite>True</cite>, smoothing will be disabled (zero).  If
+<cite>exact</cite> is <cite>False</cite>, smoothing will be set to n - sqrt(2 * n)
+where n is the number of data values.  For interpolation,
+smoothing should be set to zero.  Smoothing must be &gt;= 0.</p>
+</dd>
+<dt><strong>spline_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Please see <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> for a list of all spline initialization
+keyword arguments.  Note that <cite>solve</cite> will always be set to <cite>True</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>RuntimeError</dt><dd><p>If the fit to the kernel was not adequate for further fitting.  If
+no further tweaking of the input parameters is possible, set
+<cite>imperfect`=`True</cite> during initialization, or manually set the
+<cite>imperfect</cite> attribute to <cite>True</cite> manually.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.fit_valid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fit_valid</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.fit_valid" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the spline successfully fit the provided kernel.</p>
+<p>If imperfect fits are permitted, will return <cite>True</cite> so long as a
+solution exists.  In cases where imperfect fits are not allowed, the
+fit will only be considered valid if a full rank solution has been
+determine, or the fit was successful within the provided user or
+default parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>valid</strong><span class="classifier">bool</span></dt><dd><p><cite>True</cite> if the fit provides a valid solution, and <cite>False</cite> otherwise.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.knot_steps">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">knot_steps</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.knot_steps" title="Link to this definition">¶</a></dt>
+<dd><p>Return the 1-D panel mapping steps for each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The knot steps of shape (n_dimensions,)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.knots">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">knots</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.knots" title="Link to this definition">¶</a></dt>
+<dd><p>Return the coordinates of the spline knots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (float)</dt><dd><p>An array of shape (n_dimensions, max(n_knots)).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.n_knots">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_knots</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.n_knots" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of spline knots in each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>An array of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.nk1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nk1</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.nk1" title="Link to this definition">¶</a></dt>
+<dd><p>Return the nk1 values for the knots.</p>
+<p>The returned value is n_knots - degrees - 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The nk1 values of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.panel_mapping">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">panel_mapping</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.panel_mapping" title="Link to this definition">¶</a></dt>
+<dd><p>Return the 1-D to N-D panel mapping used for subsequent fitting.</p>
+<p>Each panel is bounded by the knot vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The 1-D to N-D panel map of shape (n_dimensions, n_panels).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.panel_steps">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">panel_steps</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.panel_steps" title="Link to this definition">¶</a></dt>
+<dd><p>Return the 1-D panel mapping steps for each dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The panel steps of shape (n_dimensions,)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.parse_kernel">
+<span class="sig-name descname"><span class="pre">parse_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/kernel_tree.html#KernelTree.parse_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.parse_kernel" title="Link to this definition">¶</a></dt>
+<dd><p>Check and then convert the kernel arguments for spline fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>kernel</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The kernel to set.  Must have n_features dimensions.</p>
+</dd>
+<dt><strong>kernel_spacing</strong><span class="classifier">float or numpy.ndarray (float), optional</span></dt><dd><p>The spacing between each kernel element in units of the
+coordinates. Supply either as a single value for all features,
+or as an array of shape (n_features,) giving the kernel spacing
+for each feature.</p>
+</dd>
+<dt><strong>kernel_offsets</strong><span class="classifier">tuple or array_like, optional</span></dt><dd><p>If the kernel is regular, should be an n-dimensional tuple
+containing the grid indices in each dimension.  Otherwise, should
+be an array of shape (n_dimensions, kernel.size).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.resampling_arguments">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resampling_arguments</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.resampling_arguments" title="Link to this definition">¶</a></dt>
+<dd><p>Return the spline parameters necessary for resampling.</p>
+<p>Returns all of the arguments in the correct order necessary for
+<code class="xref py py-func docutils literal notranslate"><span class="pre">perform_fit()</span></code> aside from the coordinates (the first argument).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>tuple</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.set_kernel">
+<span class="sig-name descname"><span class="pre">set_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_offsets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imperfect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">spline_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/kernel_tree.html#KernelTree.set_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.set_kernel" title="Link to this definition">¶</a></dt>
+<dd><p>Setting the kernel automatically initializes a <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> object
+that is solved and may be used for interpolating kernel values at
+locations away from the kernel vertices.  Both regular (grid) kernels
+and irregular kernels may be supplied.  Either <cite>kernel_spacing</cite> or
+<cite>kernel_offsets</cite> must be supplied in order to determine the coordinates
+of any interpolated points.  In the case of irregular kernels, these
+must be provided in <cite>kernel_offsets</cite>.  For regularly spaced grid,
+<cite>kernel_spacing</cite> may be provided instead.</p>
+<p>Generally, smoothing should be set to zero for interpolation.  However,
+in cases where a noisy irregular kernel is provided, smoothing may be
+set to <cite>None</cite> for a nominal fit, or provided if an optimal value is
+known.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>kernel</strong><span class="classifier">numpy.ndarray (float)</span></dt><dd><p>The kernel to set.  Must have n_features dimensions.</p>
+</dd>
+<dt><strong>kernel_spacing</strong><span class="classifier">float or numpy.ndarray (float), optional</span></dt><dd><p>The spacing between each kernel element in units of the
+coordinates. Supply either as a single value for all features,
+or as an array of shape (n_features,) giving the kernel
+spacing for each feature.</p>
+</dd>
+<dt><strong>kernel_offsets</strong><span class="classifier">tuple or array_like, optional</span></dt><dd><p>If the kernel is regular, should be an n-dimensional tuple
+containing the grid indices in each dimension.  Otherwise, should
+be an array of shape (n_dimensions, kernel.size).</p>
+</dd>
+<dt><strong>degrees</strong><span class="classifier">int or numpy.ndarray (int), optional</span></dt><dd><p>The degree of spline to fit in each dimension.  Either a scalar can
+be supplied pertaining to all dimensions, or an array of shape
+(n_dimensions,) can be used.</p>
+</dd>
+<dt><strong>smoothing</strong><span class="classifier">float, optional</span></dt><dd><p>Used to specify the smoothing factor.  If set to <cite>None</cite>, the
+smoothing will be determined based on user settings or input data.
+If <cite>exact</cite> is <cite>True</cite>, smoothing will be disabled (zero).  If
+<cite>exact</cite> is <cite>False</cite>, smoothing will be set to n - sqrt(2 * n)
+where n is the number of data values.  For interpolation,
+smoothing should be set to zero.  Smoothing must be &gt;= 0.</p>
+</dd>
+<dt><strong>imperfect</strong><span class="classifier">bool, optional</span></dt><dd><p>If a spline fit to the kernel is allowed to be imperfect (<cite>True</cite>),
+will only raise an error on spline fitting if a major error was
+encountered.  Otherwise, fits will be permitted so long as a
+solution was reached, even if that solution did not meet
+expectations.</p>
+</dd>
+<dt><strong>spline_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Please see <code class="xref py py-class docutils literal notranslate"><span class="pre">Spline</span></code> for a list of all spline initialization
+keyword arguments.  Note that <cite>solve</cite> will always be set to <cite>True</cite>.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.smoothing">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">smoothing</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.smoothing" title="Link to this definition">¶</a></dt>
+<dd><p>Return the spline smoothing factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>float</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.kernel_tree.KernelTree.spline_mapping">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spline_mapping</span></span><a class="headerlink" href="#grig.tree.kernel_tree.KernelTree.spline_mapping" title="Link to this definition">¶</a></dt>
+<dd><p>Return the 1-D to N-D index map for the spline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>The spline map of shape (n_dimensions, product(degrees + 1)).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-grig.tree.polynomial_tree">
+<span id="grig-tree-polynomial-tree-module"></span><h3>grig.tree.polynomial_tree module<a class="headerlink" href="#module-grig.tree.polynomial_tree" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.tree.polynomial_tree.</span></span><span class="sig-name descname"><span class="pre">PolynomialTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">distance_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#grig.tree.base_tree.BaseTree" title="grig.tree.base_tree.BaseTree"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTree</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">balltree_initialized</span></code></dt><dd><p>Return <cite>True</cite> if the BallTree has been initialized.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.derivative_term_map" title="grig.tree.polynomial_tree.PolynomialTree.derivative_term_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derivative_term_map</span></code></a></dt><dd><p>Returns mapping necessary to describe the 1st derivative of the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.exponents" title="grig.tree.polynomial_tree.PolynomialTree.exponents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">exponents</span></code></a></dt><dd><p>Return the polynomial exponents for the tree.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></dt><dd><p>Returns the number of features (dimensions) in the tree.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_initialized</span></code></dt><dd><p>Return <cite>True</cite> if the neighbourhood tree has been initialized.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_blocks</span></code></dt><dd><p>Return the total number of blocks in the tree.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_members</span></code></dt><dd><p>Return the total number of coordinates stored in the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order" title="grig.tree.polynomial_tree.PolynomialTree.order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">order</span></code></a></dt><dd><p>Return the order of the polynomial for the tree.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order_symmetry" title="grig.tree.polynomial_tree.PolynomialTree.order_symmetry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">order_symmetry</span></code></a></dt><dd><p>Return whether the orders are symmetrical.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order_varies" title="grig.tree.polynomial_tree.PolynomialTree.order_varies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">order_varies</span></code></a></dt><dd><p>Return whether the order may be decreased.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated" title="grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">phi_terms_precalculated</span></code></a></dt><dd><p>Return whether the polynomial terms have been calculated.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">search</span></code></dt><dd><p>Return a search array used to identify neighbouring blocks.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></dt><dd><p>Return the shape of the coordinate bins of the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(x[, reverse])</p></td>
+<td><p>Returns the block index of a coordinate</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.block_members" title="grig.tree.polynomial_tree.PolynomialTree.block_members"><code class="xref py py-obj docutils literal notranslate"><span class="pre">block_members</span></code></a>(block[, get_locations, get_terms])</p></td>
+<td><p>Find all members within a single block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_ball_tree_for_block</span></code>(block)</p></td>
+<td><p>Build a ball tree for a neighborhood around a single block.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_tree</span></code>(coordinates[, shape, method, ...])</p></td>
+<td><p>Create the ball and hood tree structures from coordinates.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for" title="grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_phi_terms_for</span></code></a>([block])</p></td>
+<td><p>Create the phi terms on demand.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_ball_tree_bytes</span></code>(coordinates[, ...])</p></td>
+<td><p>Estimate the maximum number of bytes used to construct the ball-tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_hood_tree_bytes</span></code>(coordinates[, window])</p></td>
+<td><p>Estimate the maximum byte size for the neighborhood tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes" title="grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_max_bytes</span></code></a>(coordinates[, window, ...])</p></td>
+<td><p>Estimate the maximum number of bytes required by the tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_n_bins</span></code>(coordinates[, window])</p></td>
+<td><p>Estimate the number of bins in the hood tree.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_split_tree_bytes</span></code>(coordinates[, ...])</p></td>
+<td><p>Return the size of a ball tree for a single neighborhood.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_index</span></code>(index)</p></td>
+<td><p>Find the lower corner coordinate for a tree block index.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code>(thing)</p></td>
+<td><p>Return a Tree class specific to a given grid, resampler, or name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code>(name)</p></td>
+<td><p>Return a Tree class of the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.hood_members" title="grig.tree.polynomial_tree.PolynomialTree.hood_members"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hood_members</span></code></a>(center_block[, get_locations, ...])</p></td>
+<td><p>Find all members within the neighborhood of a single block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">neighborhood</span></code>(index[, cull, valid_neighbors])</p></td>
+<td><p>Make a neighborhood from an input index.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms" title="grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">precalculate_phi_terms</span></code></a>()</p></td>
+<td><p>Calculates polynomial terms for the tree coordinates and order.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">query_radius</span></code>(coordinates[, radius, block])</p></td>
+<td><p>Return all tree members within a certain distance of given points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.set_order" title="grig.tree.polynomial_tree.PolynomialTree.set_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_order</span></code></a>(order[, fix_order])</p></td>
+<td><p>Set the order(s) of polynomial fit for the resampling algorithm tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_index</span></code>(coordinates)</p></td>
+<td><p>Find the tree block indices of a coordinate or set of coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.block_members">
+<span class="sig-name descname"><span class="pre">block_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_terms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.block_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.block_members" title="Link to this definition">¶</a></dt>
+<dd><p>Find all members within a single block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>block</strong><span class="classifier">int</span></dt><dd><p>The index of the block.</p>
+</dd>
+<dt><strong>get_locations</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return the coordinates of the hood members.</p>
+</dd>
+<dt><strong>get_terms</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return the calculated “phi” terms of hood members.  Note
+that a polynomial order must have been set, and terms calculated.
+See <a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.set_order" title="grig.tree.polynomial_tree.PolynomialTree.set_order"><code class="xref py py-func docutils literal notranslate"><span class="pre">PolynomialTree.set_order()</span></code></a>, and
+<a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms" title="grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms"><code class="xref py py-func docutils literal notranslate"><span class="pre">PolynomialTree.precalculate_phi_terms()</span></code></a> for further
+information.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>members, [coordinates, terms]</dt><dd><p>members is a numpy.ndarray of int and shape (found_members,).
+If <cite>get_locations</cite> was set to <cite>True,</cite> coordinates is of shape
+(n_features, found_members).  If <cite>get_terms</cite> was set to <cite>True</cite>,
+terms is of shape (n_terms, found_members).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for">
+<span class="sig-name descname"><span class="pre">create_phi_terms_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.create_phi_terms_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for" title="Link to this definition">¶</a></dt>
+<dd><p>Create the phi terms on demand.</p>
+<p>If <cite>block</cite> is None, creates the phi terms over all samples.  Otherwise,
+creates phi terms for all samples in the neighborhood of <cite>block</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>block</strong><span class="classifier">int, optional</span></dt><dd><p>The block for which to create the phi terms.  If <cite>None</cite> is
+supplied, will calculate for all coordinates.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>hood_members</strong><span class="classifier">numpy.ndarray (int) or slice or None</span></dt><dd><p>The samples within the neighborhood of block, all indices or
+<cite>None</cite> if not calculated.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.derivative_term_map">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derivative_term_map</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.derivative_term_map" title="Link to this definition">¶</a></dt>
+<dd><p>Returns mapping necessary to describe the 1st derivative of the tree.</p>
+<p>The terms describing the derivative of a polynomial function should all
+be present in the exponent terms of the tree, but need to be reordered
+in a specific way and may also contain an additional coefficient.
+Once the coefficients of the fit are known (c), the derivative of
+feature k may be be calculated by:</p>
+<blockquote>
+<div><p>sum(h[k, 0] * c[h[k, 1]] * p[h[k, 2], k])</p>
+</div></blockquote>
+<p>where p are the exponent terms, and h is the map returned by this
+property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>mapping</strong><span class="classifier">numpy.ndarray (int)</span></dt><dd><p>An array of shape (n_features, 3, n_terms).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">estimate_max_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.estimate_max_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Estimate the maximum number of bytes required by the tree.</p>
+<p>This includes pre-calculation of the phi terms for polynomial
+representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>coordinates</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>The coordinates for the tree of shape (n_dimensions, n)</p>
+</dd>
+<dt><strong>window</strong><span class="classifier">int or float, optional</span></dt><dd><p>The size of the tree windows</p>
+</dd>
+<dt><strong>leaf_size</strong><span class="classifier">int, optional</span></dt><dd><p>The number of leaves used to construct the ball-tree</p>
+</dd>
+<dt><strong>full_tree</strong><span class="classifier">bool, optional</span></dt><dd><p>Calculate the maximum number of bytes if the full ball-tree is
+pre-calculated.  Otherwise, calculates the size of a single
+neighborhood sized ball-tree.</p>
+</dd>
+<dt><strong>order</strong><span class="classifier">int or numpy.ndarray (int), optional</span></dt><dd><p>The order of polynomial to fit as an integer for all dimensions or
+an array of shape (n_dimensions,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>max_size</strong><span class="classifier">int</span></dt><dd><p>An upper limit for the maximum number of bytes used to construct
+the tree.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.exponents">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exponents</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.exponents" title="Link to this definition">¶</a></dt>
+<dd><p>Return the polynomial exponents for the tree.</p>
+<p>The polynomial exponents describe how the polynomial terms should be
+calculated.  For example, the exponents [[0, 0], [1, 0], [2, 0],
+[0, 1], [1, 1], [0, 2]] represent the equation:</p>
+<blockquote>
+<div><p>f(x, y) = c0 + c1.x + c2.x^2 + c3.y + c4.xy + c5.y^2</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (int)</dt><dd><p>An array of shape (n_exponents, n_features)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.hood_members">
+<span class="sig-name descname"><span class="pre">hood_members</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">center_block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_terms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.hood_members"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.hood_members" title="Link to this definition">¶</a></dt>
+<dd><p>Find all members within the neighborhood of a single block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>center_block</strong><span class="classifier">int</span></dt><dd><p>The index of the block at the center of the neighborhood.</p>
+</dd>
+<dt><strong>get_locations</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return the coordinates of the hood members.</p>
+</dd>
+<dt><strong>get_terms</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, return the calculated “phi” terms of hood members.  Note
+that a polynomial order must have been set, and terms calculated.
+See <a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.set_order" title="grig.tree.polynomial_tree.PolynomialTree.set_order"><code class="xref py py-func docutils literal notranslate"><span class="pre">PolynomialTree.set_order()</span></code></a>, and
+<a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms" title="grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms"><code class="xref py py-func docutils literal notranslate"><span class="pre">PolynomialTree.precalculate_phi_terms()</span></code></a> for further
+information.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>members, [coordinates, terms]</dt><dd><p>members is a numpy.ndarray of int and shape (found_members,).
+If <cite>get_locations</cite> was set to <cite>True,</cite> coordinates is of shape
+(n_features, found_members).  If <cite>get_terms</cite> was set to <cite>True</cite>,
+terms is of shape (n_terms, found_members).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.order">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.order" title="Link to this definition">¶</a></dt>
+<dd><p>Return the order of the polynomial for the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int or numpy.ndarray (int)</dt><dd><p>A scalar value if orders for each feature are identical, or an
+array of values of shape (n_features,) if values are not identical.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.order_symmetry">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order_symmetry</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.order_symmetry" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the orders are symmetrical.</p>
+<p>Orders are considered symmetrical when the orders of each feature are
+identical.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.order_varies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order_varies</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.order_varies" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the order may be decreased.</p>
+<p>The order of the polynomial may be reduced if specifically set by the
+user (fix_order=False) and the order is symmetrical.  In this case,
+a subset of polynomial terms can be extracted from the original terms
+to describe a lower order polynomial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">phi_terms_precalculated</span></span><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the polynomial terms have been calculated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms">
+<span class="sig-name descname"><span class="pre">precalculate_phi_terms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.precalculate_phi_terms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms" title="Link to this definition">¶</a></dt>
+<dd><p>Calculates polynomial terms for the tree coordinates and order.</p>
+<p>Calculates the <span class="math notranslate nohighlight">\(\Phi\)</span> terms for the equation:</p>
+<div class="math notranslate nohighlight">
+\[f(\Phi) = \hat{c} \cdot \Phi\]</div>
+<p>The polynomial terms are dependent on the tree coordinates, and the
+order of polynomial fit.  Please see <code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_exponents()</span></code> for
+a description on how terms are derived.</p>
+<p>If the order is not fixed (i.e., is allowed to vary as marked by the
+<cite>order_varies</cite> attribute), a set of terms will be derived for all
+orders up to the order defined by the user.  Please note that orders
+may only vary if the order is “symmetrical” as defined in
+<cite>PolynomialTree.set_order</cite>.  In addition, a mapping relating terms to
+derivatives of the fit is also created in the <cite>derivative_term_map</cite>
+attribute, details of which can be found in
+<code class="xref py py-func docutils literal notranslate"><span class="pre">polynomial_derivative_map()</span></code>.  When the order does vary, the
+terms for order k are given as:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>tree.phi_terms[tree.order_term_indices[k]:</dt><dd><p>tree.order_term_indices[k+1]]</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.tree.polynomial_tree.PolynomialTree.set_order">
+<span class="sig-name descname"><span class="pre">set_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fix_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/tree/polynomial_tree.html#PolynomialTree.set_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.tree.polynomial_tree.PolynomialTree.set_order" title="Link to this definition">¶</a></dt>
+<dd><p>Set the order(s) of polynomial fit for the resampling algorithm tree.</p>
+<p>In addition to declaring the desired order of polynomial fit, the user
+may also opt to select an algorithm to validate the desired order of
+fit is possible given a distribution of samples.  Please see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">resample_utils.check_orders()</span></code> for a full description of available
+algorithms.</p>
+<p>Throughout the resampling algorithm, orders are classified as either
+“symmetrical” or “asymmetrical”.  An order is termed as symmetrical
+if it is the same for all features of the polynomial fit.  i.e., the
+maximum exponent for each feature in a polynomial equation will be
+equal to the order.  For example, a 2-dimensional 2nd order polynomial
+is of the form:</p>
+<div class="math notranslate nohighlight">
+\[f(x, y) = c_0 + c_1 x + c_2 x^2 + c_3 y + c_4 x y + c_5 y^2\]</div>
+<p>where the maximum exponent for <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span> in any
+term is 2.</p>
+<p>An order is considered “asymmetrical” if orders are not equal across
+features or dimensions.  For example, a 2-dimensional polynomial with
+an order of 1 in <span class="math notranslate nohighlight">\(x\)</span>, and 2 in <span class="math notranslate nohighlight">\(y\)</span> would have the form:</p>
+<div class="math notranslate nohighlight">
+\[f(x, y) = c_0 + c_1 x + c_2 y + c_3 x y + c_4 y^2\]</div>
+<p>where the maximum exponent of <span class="math notranslate nohighlight">\(x\)</span> is 1, and the maximum exponent
+of <span class="math notranslate nohighlight">\(y\)</span> is 2.</p>
+<p>If orders are symmetrical, the user can allow the order to vary such
+that it passes the order validation algorithm.  For instance, if only
+2 samples exist for a 1-dimensional polynomial fit, and the user
+requested a 2nd order polynomial fit, the resampling algorithm will
+lower the order to 1, so that a fit can be performed (if the algorithm
+worked by counting the number of available samples).  If orders are
+asymmetrical, this option is not available and fits will be aborted
+if they fail the order validation algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>order</strong><span class="classifier">int or array_like (n_features,)</span></dt><dd><p>The symmetrical or asymmetrical orders respectively.</p>
+</dd>
+<dt><strong>fix_order</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>order</cite> is symmetrical, allow for a varying order in an attempt
+to pass the order validation algorithm (the order can only
+decrease).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">grig.tree package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li><a class="reference internal" href="#module-grig.tree.base_tree">grig.tree.base_tree module</a><ul>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree"><code class="docutils literal notranslate"><span class="pre">BaseTree</span></code></a><ul>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.balltree_initialized"><code class="docutils literal notranslate"><span class="pre">BaseTree.balltree_initialized</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.block_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.block_members()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.build_ball_tree_for_block"><code class="docutils literal notranslate"><span class="pre">BaseTree.build_ball_tree_for_block()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.build_tree"><code class="docutils literal notranslate"><span class="pre">BaseTree.build_tree()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_ball_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_ball_tree_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_hood_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_hood_tree_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_max_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_max_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_n_bins"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_n_bins()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.estimate_split_tree_bytes"><code class="docutils literal notranslate"><span class="pre">BaseTree.estimate_split_tree_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.features"><code class="docutils literal notranslate"><span class="pre">BaseTree.features</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.from_index"><code class="docutils literal notranslate"><span class="pre">BaseTree.from_index()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.get_class_for"><code class="docutils literal notranslate"><span class="pre">BaseTree.get_class_for()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.get_class_for_name"><code class="docutils literal notranslate"><span class="pre">BaseTree.get_class_for_name()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.hood_initialized"><code class="docutils literal notranslate"><span class="pre">BaseTree.hood_initialized</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.hood_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.hood_members()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.n_blocks"><code class="docutils literal notranslate"><span class="pre">BaseTree.n_blocks</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.n_members"><code class="docutils literal notranslate"><span class="pre">BaseTree.n_members</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.neighborhood"><code class="docutils literal notranslate"><span class="pre">BaseTree.neighborhood()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.query_radius"><code class="docutils literal notranslate"><span class="pre">BaseTree.query_radius()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.search"><code class="docutils literal notranslate"><span class="pre">BaseTree.search</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.shape"><code class="docutils literal notranslate"><span class="pre">BaseTree.shape</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.base_tree.BaseTree.to_index"><code class="docutils literal notranslate"><span class="pre">BaseTree.to_index()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.tree.kernel_tree">grig.tree.kernel_tree module</a><ul>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree"><code class="docutils literal notranslate"><span class="pre">KernelTree</span></code></a><ul>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.coefficients"><code class="docutils literal notranslate"><span class="pre">KernelTree.coefficients</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.degrees"><code class="docutils literal notranslate"><span class="pre">KernelTree.degrees</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.exit_code"><code class="docutils literal notranslate"><span class="pre">KernelTree.exit_code</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.exit_message"><code class="docutils literal notranslate"><span class="pre">KernelTree.exit_message</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.extent"><code class="docutils literal notranslate"><span class="pre">KernelTree.extent</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.fit_spline"><code class="docutils literal notranslate"><span class="pre">KernelTree.fit_spline()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.fit_valid"><code class="docutils literal notranslate"><span class="pre">KernelTree.fit_valid</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.knot_steps"><code class="docutils literal notranslate"><span class="pre">KernelTree.knot_steps</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.knots"><code class="docutils literal notranslate"><span class="pre">KernelTree.knots</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.n_knots"><code class="docutils literal notranslate"><span class="pre">KernelTree.n_knots</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.nk1"><code class="docutils literal notranslate"><span class="pre">KernelTree.nk1</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.panel_mapping"><code class="docutils literal notranslate"><span class="pre">KernelTree.panel_mapping</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.panel_steps"><code class="docutils literal notranslate"><span class="pre">KernelTree.panel_steps</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.parse_kernel"><code class="docutils literal notranslate"><span class="pre">KernelTree.parse_kernel()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.resampling_arguments"><code class="docutils literal notranslate"><span class="pre">KernelTree.resampling_arguments</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.set_kernel"><code class="docutils literal notranslate"><span class="pre">KernelTree.set_kernel()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.smoothing"><code class="docutils literal notranslate"><span class="pre">KernelTree.smoothing</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.kernel_tree.KernelTree.spline_mapping"><code class="docutils literal notranslate"><span class="pre">KernelTree.spline_mapping</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.tree.polynomial_tree">grig.tree.polynomial_tree module</a><ul>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree"><code class="docutils literal notranslate"><span class="pre">PolynomialTree</span></code></a><ul>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.block_members"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.block_members()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.create_phi_terms_for()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.derivative_term_map"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.derivative_term_map</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.estimate_max_bytes()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.exponents"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.exponents</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.hood_members"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.hood_members()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order_symmetry"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order_symmetry</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.order_varies"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.order_varies</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.phi_terms_precalculated"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.phi_terms_precalculated</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.precalculate_phi_terms()</span></code></a></li>
+<li><a class="reference internal" href="#grig.tree.polynomial_tree.PolynomialTree.set_order"><code class="docutils literal notranslate"><span class="pre">PolynomialTree.set_order()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="grig.toolkit.splines.html"
+                          title="previous chapter">grig.toolkit.splines package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../changelog.html"
+                          title="next chapter">Full Changelog</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/grig.tree.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../changelog.html" title="Full Changelog"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.splines.html" title="grig.toolkit.splines package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" >grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.tree package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

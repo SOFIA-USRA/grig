@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.tree.polynomial_tree &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+    <script src="../../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.tree.polynomial_tree</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.tree.polynomial_tree</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">grig.tree.base_tree</span> <span class="kn">import</span> <span class="n">BaseTree</span>
+<span class="kn">from</span> <span class="nn">grig.resample_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">polynomial_terms</span><span class="p">,</span> <span class="n">polynomial_exponents</span><span class="p">,</span> <span class="n">polynomial_derivative_map</span><span class="p">)</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;PolynomialTree&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PolynomialTree">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree">[docs]</a>
+<span class="k">class</span> <span class="nc">PolynomialTree</span><span class="p">(</span><span class="n">BaseTree</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">build_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                 <span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">large_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a tree structure for use with the resampling algorithm.</span>
+
+<span class="sd">        The resampling tree is primarily responsible for deriving and</span>
+<span class="sd">        storing all independent variables necessary for polynomial fitting,</span>
+<span class="sd">        as well as allowing fast access to those variables that belong to</span>
+<span class="sd">        coordinates within a certain radius of a given point.</span>
+
+<span class="sd">        TREE STRUCTURE AND ACCESS</span>
+
+<span class="sd">        The tree itself is divided into N-dimensional blocks, each of which</span>
+<span class="sd">        is allocated a set of coordinates.  The width of these blocks should</span>
+<span class="sd">        correspond to the `window` (:math:`\Omega`) defined in the resampling</span>
+<span class="sd">        algorithm, and coordinates should be scaled accordingly.  For example,</span>
+<span class="sd">        if the window radius is set to :math:`\Omega=4` in (arbitrary) units</span>
+<span class="sd">        for the purposes of resampling 1-dimensional data, and the independent</span>
+<span class="sd">        values are:</span>
+
+<span class="sd">            x = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]</span>
+
+<span class="sd">        They should be supplied to the tree as :math:`x^\prime = x / \Omega`.</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            x^\prime = \frac{x}{\Omega} =</span>
+<span class="sd">                [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5]</span>
+
+<span class="sd">        The tree defines blocks by grouping all coordinates with the same</span>
+<span class="sd">        floored values into a single block.  Therefore, in this case the tree</span>
+<span class="sd">        will contain 3 blocks.  The first contains [0.25, 0.5, 0.75], the</span>
+<span class="sd">        second contains [1, 1.25, 1.5, 1.75], and the third contains</span>
+<span class="sd">        [2, 2.25, 2.5].</span>
+
+<span class="sd">        The reasoning behind the whole tree structure is to allow for easy</span>
+<span class="sd">        extraction of all coordinates within range of a user supplied</span>
+<span class="sd">        coordinate.  This is done in two stages:  The first is to find out</span>
+<span class="sd">        which block the user supplied coordinate belongs to.  We can then</span>
+<span class="sd">        quickly narrow down the search by recognizing that coordinates in the</span>
+<span class="sd">        tree population inside the window region of the supplied coordinate</span>
+<span class="sd">        must either belong to the same block, or to immediately neighboring</span>
+<span class="sd">        blocks since each block of the tree is the same width as the window</span>
+<span class="sd">        radius.</span>
+
+<span class="sd">        Once all candidates have been identified, the next step is to keep</span>
+<span class="sd">        only those that are within a radius :math:`\Omega` of the user supplied</span>
+<span class="sd">        coordinate.  This can be accomplished quickly using the ball-tree</span>
+<span class="sd">        algorithm (see :func:`sklearn.neighbors.BallTree`.</span>
+
+<span class="sd">        In practice, the resampling algorithm loops through each block of</span>
+<span class="sd">        the tree in parallel.  For each block, all user supplied coordinates</span>
+<span class="sd">        (points at which a fit is required) within that block, and all tree</span>
+<span class="sd">        members within the neighborhood (the block and all adjacent blocks</span>
+<span class="sd">        including diagonals) are evaluated in one step by the ball-tree</span>
+<span class="sd">        algorithm so that for each point, we quickly get all tree members</span>
+<span class="sd">        within that point&#39;s window region.</span>
+
+<span class="sd">        POLYNOMIAL ORDER AND TERMS</span>
+
+<span class="sd">        The resampling tree is also responsible for deriving all polynomial</span>
+<span class="sd">        terms for the fit as well as mapping these terms to the derivative of</span>
+<span class="sd">        the function.  Please see :func:`power_product`,</span>
+<span class="sd">        :func:`polynomial_exponents`, and :func:`polynomial_derivative_map`</span>
+<span class="sd">        for further details.  It is also possible to calculate terms for</span>
+<span class="sd">        a range of orders in the case where order may vary to accommodate</span>
+<span class="sd">        fits where insufficient samples are present.  To allow `order` to</span>
+<span class="sd">        vary, set `fix_order` to `False`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        argument : numpy.ndarray (n_features, n_samples) or n-tuple</span>
+<span class="sd">            Either the independent coordinates of samples in n_features-space,</span>
+<span class="sd">            or the shape defining the skeleton of the tree.</span>
+<span class="sd">        shape : n-tuple, optional</span>
+<span class="sd">            If coordinates were supplied with `argument`, the shape of the</span>
+<span class="sd">            tree to build.  Otherwise, the shape will be determined from the</span>
+<span class="sd">            coordinate values in each dimension as</span>
+<span class="sd">            floor(max(coordinates[i])) + 1 for dimension i.</span>
+<span class="sd">        build_type : str, optional</span>
+<span class="sd">            Must be one of {&#39;hood&#39;, &#39;balltree&#39;, &#39;all&#39;, None}.  Defines the</span>
+<span class="sd">            type of tree structures to create.</span>
+<span class="sd">        order : int or array_like (n_features,), optional</span>
+<span class="sd">           The symmetrical or asymmetrical orders respectively.  Symmetrical</span>
+<span class="sd">           orders are selected by supplying an integer to this parameter.</span>
+<span class="sd">        fix_order : bool, optional</span>
+<span class="sd">            If `order` is symmetrical, allow for a varying order in an attempt</span>
+<span class="sd">            to pass the order validation algorithm (the order can only</span>
+<span class="sd">            decrease).</span>
+<span class="sd">        balltree_metric : str or sklearn.neighbors.DistanceMetric object</span>
+<span class="sd">            The distance metric to use for the tree. Default=’minkowski’ with</span>
+<span class="sd">            p=2 (that is, a euclidean metric). See the documentation of the</span>
+<span class="sd">            :func:`sklearn.neighbors.DistanceMetric` class for a list of</span>
+<span class="sd">            available metrics. ball_tree.valid_metrics gives a list of the</span>
+<span class="sd">            metrics which are valid for BallTree.</span>
+<span class="sd">        leaf_size : int, optional</span>
+<span class="sd">            If `build_type` was set to &#39;all&#39; or &#39;balltree&#39;, defines the leaf</span>
+<span class="sd">            size of the BallTree.  Please see</span>
+<span class="sd">            :func:`sklearn.neighbors.BallTree` for further details.</span>
+<span class="sd">        large_data : bool, optional</span>
+<span class="sd">            If `True`, indicates that this resampling algorithm will run on</span>
+<span class="sd">            a large set of data, and the ball tree should be created on</span>
+<span class="sd">            subsets of the data.</span>
+<span class="sd">        distance_kwargs : dict, optional</span>
+<span class="sd">            Optional keyword arguments passed into</span>
+<span class="sd">            :func:`sklearn.neighbors.DistanceMetric`.  The default is to use</span>
+<span class="sd">            the &quot;minkowski&quot; definition with `p=2`, i.e., the Euclidean</span>
+<span class="sd">            definition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">build_type</span><span class="o">=</span><span class="n">build_type</span><span class="p">,</span>
+                         <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">,</span> <span class="n">large_data</span><span class="o">=</span><span class="n">large_data</span><span class="p">,</span>
+                         <span class="o">**</span><span class="n">distance_kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_symmetry</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_required</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_varies</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_indices</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">derivative_term_indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_order</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="n">fix_order</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">precalculate_phi_terms</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the order of the polynomial for the tree.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int or numpy.ndarray (int)</span>
+<span class="sd">            A scalar value if orders for each feature are identical, or an</span>
+<span class="sd">            array of values of shape (n_features,) if values are not identical.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exponents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the polynomial exponents for the tree.</span>
+
+<span class="sd">        The polynomial exponents describe how the polynomial terms should be</span>
+<span class="sd">        calculated.  For example, the exponents [[0, 0], [1, 0], [2, 0],</span>
+<span class="sd">        [0, 1], [1, 1], [0, 2]] represent the equation:</span>
+
+<span class="sd">          f(x, y) = c0 + c1.x + c2.x^2 + c3.y + c4.xy + c5.y^2</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_exponents, n_features)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">derivative_term_map</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns mapping necessary to describe the 1st derivative of the tree.</span>
+
+<span class="sd">        The terms describing the derivative of a polynomial function should all</span>
+<span class="sd">        be present in the exponent terms of the tree, but need to be reordered</span>
+<span class="sd">        in a specific way and may also contain an additional coefficient.</span>
+<span class="sd">        Once the coefficients of the fit are known (c), the derivative of</span>
+<span class="sd">        feature k may be be calculated by:</span>
+
+<span class="sd">            sum(h[k, 0] * c[h[k, 1]] * p[h[k, 2], k])</span>
+
+<span class="sd">        where p are the exponent terms, and h is the map returned by this</span>
+<span class="sd">        property.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mapping : numpy.ndarray (int)</span>
+<span class="sd">            An array of shape (n_features, 3, n_terms).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order_symmetry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether the orders are symmetrical.</span>
+
+<span class="sd">        Orders are considered symmetrical when the orders of each feature are</span>
+<span class="sd">        identical.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_symmetry</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">order_varies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether the order may be decreased.</span>
+
+<span class="sd">        The order of the polynomial may be reduced if specifically set by the</span>
+<span class="sd">        user (fix_order=False) and the order is symmetrical.  In this case,</span>
+<span class="sd">        a subset of polynomial terms can be extracted from the original terms</span>
+<span class="sd">        to describe a lower order polynomial.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_order_varies</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phi_terms_precalculated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return whether the polynomial terms have been calculated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span>
+
+<div class="viewcode-block" id="PolynomialTree.estimate_max_bytes">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.estimate_max_bytes">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">estimate_max_bytes</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">coordinates</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                           <span class="n">full_tree</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimate the maximum number of bytes required by the tree.</span>
+
+<span class="sd">        This includes pre-calculation of the phi terms for polynomial</span>
+<span class="sd">        representation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coordinates : numpy.ndarray</span>
+<span class="sd">            The coordinates for the tree of shape (n_dimensions, n)</span>
+<span class="sd">        window : int or float, optional</span>
+<span class="sd">            The size of the tree windows</span>
+<span class="sd">        leaf_size : int, optional</span>
+<span class="sd">            The number of leaves used to construct the ball-tree</span>
+<span class="sd">        full_tree : bool, optional</span>
+<span class="sd">            Calculate the maximum number of bytes if the full ball-tree is</span>
+<span class="sd">            pre-calculated.  Otherwise, calculates the size of a single</span>
+<span class="sd">            neighborhood sized ball-tree.</span>
+<span class="sd">        order : int or numpy.ndarray (int), optional</span>
+<span class="sd">            The order of polynomial to fit as an integer for all dimensions or</span>
+<span class="sd">            an array of shape (n_dimensions,).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        max_size : int</span>
+<span class="sd">            An upper limit for the maximum number of bytes used to construct</span>
+<span class="sd">            the tree.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tree_bytes</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">estimate_max_bytes</span><span class="p">(</span>
+            <span class="n">coordinates</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">,</span>
+            <span class="n">full_tree</span><span class="o">=</span><span class="n">full_tree</span><span class="p">)</span>
+        <span class="n">float_bytes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">itemsize</span>
+        <span class="n">n_dimensions</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">size</span> <span class="o">//</span> <span class="n">n_dimensions</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">full_tree</span><span class="p">:</span>
+            <span class="n">n_bins</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">estimate_n_bins</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">)</span>
+            <span class="n">samples_per_bin</span> <span class="o">=</span> <span class="n">n</span> <span class="o">/</span> <span class="n">n_bins</span>
+            <span class="n">bins_per_hood</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">**</span> <span class="n">n_dimensions</span>
+            <span class="n">samples_per_hood</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">samples_per_bin</span> <span class="o">*</span> <span class="n">bins_per_hood</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">samples_per_hood</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">samples_per_hood</span>
+
+        <span class="n">exponents</span> <span class="o">=</span> <span class="n">polynomial_exponents</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="n">n_dimensions</span><span class="p">)</span>
+        <span class="n">n_coefficients</span> <span class="o">=</span> <span class="n">exponents</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">phi_bytes</span> <span class="o">=</span> <span class="n">n_coefficients</span> <span class="o">*</span> <span class="n">n</span> <span class="o">*</span> <span class="n">float_bytes</span>
+        <span class="k">return</span> <span class="n">phi_bytes</span> <span class="o">+</span> <span class="n">tree_bytes</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_set_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the shape of the tree.</span>
+
+<span class="sd">        The shape of the tree determines the number of n-dimensional coordinate</span>
+<span class="sd">        bins.  Once defined, a number of useful factors are pre-calculated to</span>
+<span class="sd">        allow for easy determination of neighboring bins to any given bin.</span>
+
+<span class="sd">        The search kernel is every permutation of [-1, 0, 1] over all features,</span>
+<span class="sd">        meaning each bin not on the edge of the tree bounds has :math:`3^n - 1`</span>
+<span class="sd">        neighbors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : n-tuple of int</span>
+<span class="sd">            The size for each of the n features of the tree.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_set_shape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="PolynomialTree.set_order">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.set_order">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_order</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">fix_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the order(s) of polynomial fit for the resampling algorithm tree.</span>
+
+<span class="sd">        In addition to declaring the desired order of polynomial fit, the user</span>
+<span class="sd">        may also opt to select an algorithm to validate the desired order of</span>
+<span class="sd">        fit is possible given a distribution of samples.  Please see</span>
+<span class="sd">        :func:`resample_utils.check_orders` for a full description of available</span>
+<span class="sd">        algorithms.</span>
+
+<span class="sd">        Throughout the resampling algorithm, orders are classified as either</span>
+<span class="sd">        &quot;symmetrical&quot; or &quot;asymmetrical&quot;.  An order is termed as symmetrical</span>
+<span class="sd">        if it is the same for all features of the polynomial fit.  i.e., the</span>
+<span class="sd">        maximum exponent for each feature in a polynomial equation will be</span>
+<span class="sd">        equal to the order.  For example, a 2-dimensional 2nd order polynomial</span>
+<span class="sd">        is of the form:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            f(x, y) = c_0 + c_1 x + c_2 x^2 + c_3 y + c_4 x y + c_5 y^2</span>
+
+<span class="sd">        where the maximum exponent for :math:`x` and :math:`y` in any</span>
+<span class="sd">        term is 2.</span>
+
+<span class="sd">        An order is considered &quot;asymmetrical&quot; if orders are not equal across</span>
+<span class="sd">        features or dimensions.  For example, a 2-dimensional polynomial with</span>
+<span class="sd">        an order of 1 in :math:`x`, and 2 in :math:`y` would have the form:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            f(x, y) = c_0 + c_1 x + c_2 y + c_3 x y + c_4 y^2</span>
+
+<span class="sd">        where the maximum exponent of :math:`x` is 1, and the maximum exponent</span>
+<span class="sd">        of :math:`y` is 2.</span>
+
+<span class="sd">        If orders are symmetrical, the user can allow the order to vary such</span>
+<span class="sd">        that it passes the order validation algorithm.  For instance, if only</span>
+<span class="sd">        2 samples exist for a 1-dimensional polynomial fit, and the user</span>
+<span class="sd">        requested a 2nd order polynomial fit, the resampling algorithm will</span>
+<span class="sd">        lower the order to 1, so that a fit can be performed (if the algorithm</span>
+<span class="sd">        worked by counting the number of available samples).  If orders are</span>
+<span class="sd">        asymmetrical, this option is not available and fits will be aborted</span>
+<span class="sd">        if they fail the order validation algorithm.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : int or array_like (n_features,)</span>
+<span class="sd">           The symmetrical or asymmetrical orders respectively.</span>
+<span class="sd">        fix_order : bool, optional</span>
+<span class="sd">            If `order` is symmetrical, allow for a varying order in an attempt</span>
+<span class="sd">            to pass the order validation algorithm (the order can only</span>
+<span class="sd">            decrease).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="n">order_symmetry</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">order_symmetry</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_features</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Number of orders (</span><span class="si">%i</span><span class="s2">) does not match number of &quot;</span>
+                    <span class="s2">&quot;features (</span><span class="si">%i</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">order_symmetry</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_order</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_symmetry</span> <span class="o">=</span> <span class="n">order_symmetry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_order_varies</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">fix_order</span> <span class="ow">and</span> <span class="n">order_symmetry</span></div>
+
+        <span class="c1"># Note, it is possible to vary orders if order_symmetry is False, but</span>
+        <span class="c1"># will require either a ton of either memory or computation time.</span>
+        <span class="c1"># (plus I&#39;ll need to write the code)</span>
+
+<div class="viewcode-block" id="PolynomialTree.precalculate_phi_terms">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.precalculate_phi_terms">[docs]</a>
+    <span class="k">def</span> <span class="nf">precalculate_phi_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates polynomial terms for the tree coordinates and order.</span>
+
+<span class="sd">        Calculates the :math:`\Phi` terms for the equation:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            f(\Phi) = \hat{c} \cdot \Phi</span>
+
+<span class="sd">        The polynomial terms are dependent on the tree coordinates, and the</span>
+<span class="sd">        order of polynomial fit.  Please see :func:`polynomial_exponents` for</span>
+<span class="sd">        a description on how terms are derived.</span>
+
+<span class="sd">        If the order is not fixed (i.e., is allowed to vary as marked by the</span>
+<span class="sd">        `order_varies` attribute), a set of terms will be derived for all</span>
+<span class="sd">        orders up to the order defined by the user.  Please note that orders</span>
+<span class="sd">        may only vary if the order is &quot;symmetrical&quot; as defined in</span>
+<span class="sd">        `PolynomialTree.set_order`.  In addition, a mapping relating terms to</span>
+<span class="sd">        derivatives of the fit is also created in the `derivative_term_map`</span>
+<span class="sd">        attribute, details of which can be found in</span>
+<span class="sd">        :func:`polynomial_derivative_map`.  When the order does vary, the</span>
+<span class="sd">        terms for order k are given as:</span>
+
+<span class="sd">            tree.phi_terms[tree.order_term_indices[k]:</span>
+<span class="sd">                           tree.order_term_indices[k+1]]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tree has not been populated with coordinates.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Order has not been set.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_varies</span><span class="p">:</span>  <span class="c1"># easy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">term_indices</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">exponents</span> <span class="o">=</span> <span class="n">polynomial_exponents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span> <span class="o">=</span> <span class="n">polynomial_derivative_map</span><span class="p">(</span><span class="n">exponents</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivative_term_indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># For each possible order generate phi terms and derivative maps.</span>
+            <span class="c1"># Also, since we concatenate the results into a single large array,</span>
+            <span class="c1"># create indices that reference correct terms for a given order.</span>
+            <span class="n">order_phi_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">order_derivative_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">order_derivative_maps</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">exponents</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">exponents</span> <span class="o">=</span> <span class="n">polynomial_exponents</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+                <span class="n">order_phi_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">exponents</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">order_phi_indices</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+                <span class="n">derivative_map</span> <span class="o">=</span> <span class="n">polynomial_derivative_map</span><span class="p">(</span><span class="n">exponents</span><span class="p">)</span>
+                <span class="n">order_derivative_maps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">derivative_map</span><span class="p">)</span>
+                <span class="n">order_derivative_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">derivative_map</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                                                <span class="o">+</span> <span class="n">order_derivative_indices</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">term_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">order_phi_indices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">order_derivative_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivative_term_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+                <span class="n">order_derivative_indices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">order_derivative_indices</span><span class="p">[</span><span class="n">o</span><span class="p">:</span> <span class="n">o</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_term_map</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">i0</span><span class="p">:</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">order_derivative_maps</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span> <span class="o">=</span> <span class="n">exponents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_phi_terms_for</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PolynomialTree.create_phi_terms_for">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.create_phi_terms_for">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_phi_terms_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the phi terms on demand.</span>
+
+<span class="sd">        If `block` is None, creates the phi terms over all samples.  Otherwise,</span>
+<span class="sd">        creates phi terms for all samples in the neighborhood of `block`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        block : int, optional</span>
+<span class="sd">            The block for which to create the phi terms.  If `None` is</span>
+<span class="sd">            supplied, will calculate for all coordinates.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        hood_members : numpy.ndarray (int) or slice or None</span>
+<span class="sd">            The samples within the neighborhood of block, all indices or</span>
+<span class="sd">            `None` if not calculated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">large_data</span> <span class="ow">and</span> <span class="n">block</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Do not precalculate the phi terms for large data.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">block</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">coordinates</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_members</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indices</span><span class="p">,</span> <span class="n">coordinates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hood_members</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">get_locations</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_varies</span><span class="p">:</span>  <span class="c1"># easy</span>
+            <span class="n">exponents</span> <span class="o">=</span> <span class="n">polynomial_exponents</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_order</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span> <span class="o">=</span> <span class="n">polynomial_terms</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">exponents</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="n">indices</span>
+
+        <span class="c1"># For each possible order generate phi terms and derivative maps.</span>
+        <span class="c1"># Also, since we concatenate the results into a single large array,</span>
+        <span class="c1"># create indices that reference correct terms for a given order.</span>
+        <span class="n">order_phi_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">order_phi</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">exponents</span> <span class="o">=</span> <span class="n">polynomial_exponents</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">ndim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="n">polynomial_terms</span><span class="p">(</span><span class="n">coordinates</span><span class="p">,</span> <span class="n">exponents</span><span class="p">)</span>
+            <span class="n">order_phi</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="n">order_phi_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exponents</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">order_phi_indices</span><span class="p">[</span><span class="n">o</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">order_phi_indices</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">n</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">i0</span><span class="p">,</span> <span class="n">i1</span> <span class="o">=</span> <span class="n">order_phi_indices</span><span class="p">[</span><span class="n">o</span><span class="p">:</span> <span class="n">o</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span><span class="p">[</span><span class="n">i0</span><span class="p">:</span> <span class="n">i1</span><span class="p">]</span> <span class="o">=</span> <span class="n">order_phi</span><span class="p">[</span><span class="n">o</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">indices</span></div>
+
+
+<div class="viewcode-block" id="PolynomialTree.block_members">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.block_members">[docs]</a>
+    <span class="k">def</span> <span class="nf">block_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="n">get_locations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_terms</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find all members within a single block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        block : int</span>
+<span class="sd">            The index of the block.</span>
+<span class="sd">        get_locations : bool, optional</span>
+<span class="sd">            If `True`, return the coordinates of the hood members.</span>
+<span class="sd">        get_terms : bool, optional</span>
+<span class="sd">            If `True`, return the calculated &quot;phi&quot; terms of hood members.  Note</span>
+<span class="sd">            that a polynomial order must have been set, and terms calculated.</span>
+<span class="sd">            See :func:`PolynomialTree.set_order`, and</span>
+<span class="sd">            :func:`PolynomialTree.precalculate_phi_terms` for further</span>
+<span class="sd">            information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        members, [coordinates, terms]</span>
+<span class="sd">            members is a numpy.ndarray of int and shape (found_members,).</span>
+<span class="sd">            If `get_locations` was set to `True,` coordinates is of shape</span>
+<span class="sd">            (n_features, found_members).  If `get_terms` was set to `True`,</span>
+<span class="sd">            terms is of shape (n_terms, found_members).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">block_members</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">get_locations</span><span class="o">=</span><span class="n">get_locations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_terms</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">get_locations</span> <span class="k">else</span> <span class="n">result</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">large_data</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Phi terms have not been calculated.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span><span class="p">[:,</span> <span class="n">indices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">get_locations</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">terms</span><span class="p">,</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">,</span> <span class="n">terms</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="PolynomialTree.hood_members">
+<a class="viewcode-back" href="../../../source/grig.tree.html#grig.tree.polynomial_tree.PolynomialTree.hood_members">[docs]</a>
+    <span class="k">def</span> <span class="nf">hood_members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">center_block</span><span class="p">,</span> <span class="n">get_locations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_terms</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Find all members within the neighborhood of a single block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        center_block : int</span>
+<span class="sd">            The index of the block at the center of the neighborhood.</span>
+<span class="sd">        get_locations : bool, optional</span>
+<span class="sd">            If `True`, return the coordinates of the hood members.</span>
+<span class="sd">        get_terms : bool, optional</span>
+<span class="sd">            If `True`, return the calculated &quot;phi&quot; terms of hood members.  Note</span>
+<span class="sd">            that a polynomial order must have been set, and terms calculated.</span>
+<span class="sd">            See :func:`PolynomialTree.set_order`, and</span>
+<span class="sd">            :func:`PolynomialTree.precalculate_phi_terms` for further</span>
+<span class="sd">            information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        members, [coordinates, terms]</span>
+<span class="sd">            members is a numpy.ndarray of int and shape (found_members,).</span>
+<span class="sd">            If `get_locations` was set to `True,` coordinates is of shape</span>
+<span class="sd">            (n_features, found_members).  If `get_terms` was set to `True`,</span>
+<span class="sd">            terms is of shape (n_terms, found_members).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">hood_members</span><span class="p">(</span><span class="n">center_block</span><span class="p">,</span>
+                                      <span class="n">get_locations</span><span class="o">=</span><span class="n">get_locations</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">get_terms</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">get_locations</span> <span class="k">else</span> <span class="n">result</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">large_data</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phi_terms_precalculated</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Phi terms have not been calculated.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">phi_terms</span><span class="p">[:,</span> <span class="n">indices</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">get_locations</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">terms</span><span class="p">,</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="p">,</span> <span class="n">terms</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+</div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.tree.polynomial_tree</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

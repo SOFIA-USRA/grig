@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>grig.grid package &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+    <script src="../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="grig.toolkit package" href="grig.toolkit.html" />
+    <link rel="prev" title="grig package" href="grig.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.html" title="grig.toolkit package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grig.html" title="grig package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" accesskey="U">grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.grid package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="grig-grid-package">
+<h1>grig.grid package<a class="headerlink" href="#grig-grid-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<section id="module-grig.grid.base_grid">
+<span id="grig-grid-base-grid-module"></span><h3>grig.grid.base_grid module<a class="headerlink" href="#module-grig.grid.base_grid" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.grid.base_grid.</span></span><span class="sig-name descname"><span class="pre">BaseGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.features" title="grig.grid.base_grid.BaseGrid.features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></a></dt><dd><p>Return the number of grid dimensions.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.regular" title="grig.grid.base_grid.BaseGrid.regular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">regular</span></code></a></dt><dd><p>Return whether the grid contains feature aligned grid coordinates.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale_factor" title="grig.grid.base_grid.BaseGrid.scale_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_factor</span></code></a></dt><dd><p>Return the scaling factor between actual and grid coordinates.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale_offset" title="grig.grid.base_grid.BaseGrid.scale_offset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_offset</span></code></a></dt><dd><p>Return the scaling offset between actual and grid coordinates.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.shape" title="grig.grid.base_grid.BaseGrid.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></dt><dd><p>Return the shape of the grid.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.singular" title="grig.grid.base_grid.BaseGrid.singular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">singular</span></code></a></dt><dd><p>Return whether the grid consists of only a single output coordinate.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.size" title="grig.grid.base_grid.BaseGrid.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a></dt><dd><p>Return the number of grid vertices.</p>
+</dd>
+<dt><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.tree_class" title="grig.grid.base_grid.BaseGrid.tree_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_class</span></code></a></dt><dd><p>Return the relevant tree class for this grid.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>()</p></td>
+<td><p>Returns the grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_class_for" title="grig.grid.base_grid.BaseGrid.get_class_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code></a>(thing)</p></td>
+<td><p>Return a Grid class specific to a given tree, resampler, or name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_class_for_name" title="grig.grid.base_grid.BaseGrid.get_class_for_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code></a>(name)</p></td>
+<td><p>Return a Grid class of the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_tree_class" title="grig.grid.base_grid.BaseGrid.get_tree_class"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tree_class</span></code></a>()</p></td>
+<td><p>Return the relevant tree class for the grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.rescale" title="grig.grid.base_grid.BaseGrid.rescale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code></a>()</p></td>
+<td><p>Re-apply the previous scaling factors and offsets if removed.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.reshape_data" title="grig.grid.base_grid.BaseGrid.reshape_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reshape_data</span></code></a>(data)</p></td>
+<td><p>Reshape data to the grid dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale" title="grig.grid.base_grid.BaseGrid.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a>(factor, offset)</p></td>
+<td><p>Apply a scaling factor and offset to the grid coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.set_indexer" title="grig.grid.base_grid.BaseGrid.set_indexer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_indexer</span></code></a>([shape, build_tree, build_type])</p></td>
+<td><p>Calculate the indexing mapping the grid coordinates to the tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.unscale" title="grig.grid.base_grid.BaseGrid.unscale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code></a>()</p></td>
+<td><p>Unscale the grid coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.features">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">features</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.features" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of grid dimensions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.get_class_for">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_class_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thing</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.get_class_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.get_class_for" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Grid class specific to a given tree, resampler, or name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>thing</strong><span class="classifier">BaseTree or ResampleBase or str</span></dt><dd><p>Either a sub-class of a BaseTree, ResampleBase, or a string.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>BaseTree subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.get_class_for_name">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_class_for_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.get_class_for_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.get_class_for_name" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Grid class of the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of the grid.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>BaseGrid subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.get_tree_class">
+<span class="sig-name descname"><span class="pre">get_tree_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.get_tree_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.get_tree_class" title="Link to this definition">¶</a></dt>
+<dd><p>Return the relevant tree class for the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>BaseGrid subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.regular">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">regular</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.regular" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the grid contains feature aligned grid coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.rescale">
+<span class="sig-name descname"><span class="pre">rescale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.rescale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.rescale" title="Link to this definition">¶</a></dt>
+<dd><p>Re-apply the previous scaling factors and offsets if removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.reshape_data">
+<span class="sig-name descname"><span class="pre">reshape_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.reshape_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.reshape_data" title="Link to this definition">¶</a></dt>
+<dd><p>Reshape data to the grid dimensions.</p>
+<p>Note that this will only reshape data if the grid is regular.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Data of the shape (n_sets, grid.size) or (grid.size,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>reshaped_data</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>Data of shape (grid.shape).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.scale" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a scaling factor and offset to the grid coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>factor</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>A scaling factor of shape (n_features,).</p>
+</dd>
+<dt><strong>offset</strong><span class="classifier">numpy.ndarray</span></dt><dd><p>A scaling offset of shape (n_features,).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.scale_factor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale_factor</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.scale_factor" title="Link to this definition">¶</a></dt>
+<dd><p>Return the scaling factor between actual and grid coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (float)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.scale_offset">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale_offset</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.scale_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Return the scaling offset between actual and grid coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>numpy.ndarray (float)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.set_indexer">
+<span class="sig-name descname"><span class="pre">set_indexer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hood'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.set_indexer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.set_indexer" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the indexing mapping the grid coordinates to the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>shape</strong><span class="classifier">tuple (int), optional</span></dt><dd><p>The shape of the grid.  If not supplied, uses the maximum internal
+grid coordinates + 1 in each dimension.</p>
+</dd>
+<dt><strong>build_tree</strong><span class="classifier">bool, optional</span></dt><dd><p>If <cite>True</cite>, builds a neighborhood tree of the type <cite>build_type</cite>.</p>
+</dd>
+<dt><strong>build_type</strong><span class="classifier">str, optional</span></dt><dd><p>Must be one of {‘hood’, ‘balltree’, ‘all’, None}.  Please see
+<code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTree</span></code> for further details.  The default type necessary
+for resampling is ‘hood’.</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Optional keyword arguments passed into the tree initialization.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.shape" title="Link to this definition">¶</a></dt>
+<dd><p>Return the shape of the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>tuple (int)</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.singular">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">singular</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.singular" title="Link to this definition">¶</a></dt>
+<dd><p>Return whether the grid consists of only a single output coordinate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>bool</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.size" title="Link to this definition">¶</a></dt>
+<dd><p>Return the number of grid vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>int</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.tree_class">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tree_class</span></span><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.tree_class" title="Link to this definition">¶</a></dt>
+<dd><p>Return the relevant tree class for this grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>BaseTree subclass</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="grig.grid.base_grid.BaseGrid.unscale">
+<span class="sig-name descname"><span class="pre">unscale</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/base_grid.html#BaseGrid.unscale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.base_grid.BaseGrid.unscale" title="Link to this definition">¶</a></dt>
+<dd><p>Unscale the grid coordinates.</p>
+<p>Remove a scaling factor and offset if previously applied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>None</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-grig.grid.kernel_grid">
+<span id="grig-grid-kernel-grid-module"></span><h3>grig.grid.kernel_grid module<a class="headerlink" href="#module-grig.grid.kernel_grid" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.grid.kernel_grid.KernelGrid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.grid.kernel_grid.</span></span><span class="sig-name descname"><span class="pre">KernelGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/kernel_grid.html#KernelGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.kernel_grid.KernelGrid" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#grig.grid.base_grid.BaseGrid" title="grig.grid.base_grid.BaseGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseGrid</span></code></a></p>
+<p>The polynomial grid contains a KernelTree instead of the BaseTree object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></dt><dd><p>Return the number of grid dimensions.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">regular</span></code></dt><dd><p>Return whether the grid contains feature aligned grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_factor</span></code></dt><dd><p>Return the scaling factor between actual and grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_offset</span></code></dt><dd><p>Return the scaling offset between actual and grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></dt><dd><p>Return the shape of the grid.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">singular</span></code></dt><dd><p>Return whether the grid consists of only a single output coordinate.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></dt><dd><p>Return the number of grid vertices.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_class</span></code></dt><dd><p>Return the relevant tree class for this grid.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>()</p></td>
+<td><p>Returns the grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code>(thing)</p></td>
+<td><p>Return a Grid class specific to a given tree, resampler, or name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code>(name)</p></td>
+<td><p>Return a Grid class of the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tree_class</span></code>()</p></td>
+<td><p>Return the relevant tree class for the grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code>()</p></td>
+<td><p>Re-apply the previous scaling factors and offsets if removed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reshape_data</span></code>(data)</p></td>
+<td><p>Reshape data to the grid dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(factor, offset)</p></td>
+<td><p>Apply a scaling factor and offset to the grid coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_indexer</span></code>([shape, build_tree, build_type])</p></td>
+<td><p>Calculate the indexing mapping the grid coordinates to the tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>()</p></td>
+<td><p>Unscale the grid coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+<section id="module-grig.grid.polynomial_grid">
+<span id="grig-grid-polynomial-grid-module"></span><h3>grig.grid.polynomial_grid module<a class="headerlink" href="#module-grig.grid.polynomial_grid" title="Link to this heading">¶</a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="grig.grid.polynomial_grid.PolynomialGrid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">grig.grid.polynomial_grid.</span></span><span class="sig-name descname"><span class="pre">PolynomialGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_tree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/grig/grid/polynomial_grid.html#PolynomialGrid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#grig.grid.polynomial_grid.PolynomialGrid" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#grig.grid.base_grid.BaseGrid" title="grig.grid.base_grid.BaseGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseGrid</span></code></a></p>
+<p>The polynomial grid contains a PolynomialTree instead of the BaseTree
+object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">features</span></code></dt><dd><p>Return the number of grid dimensions.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">regular</span></code></dt><dd><p>Return whether the grid contains feature aligned grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_factor</span></code></dt><dd><p>Return the scaling factor between actual and grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_offset</span></code></dt><dd><p>Return the scaling offset between actual and grid coordinates.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></dt><dd><p>Return the shape of the grid.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">singular</span></code></dt><dd><p>Return whether the grid consists of only a single output coordinate.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></dt><dd><p>Return the number of grid vertices.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_class</span></code></dt><dd><p>Return the relevant tree class for this grid.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>()</p></td>
+<td><p>Returns the grid.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for</span></code>(thing)</p></td>
+<td><p>Return a Grid class specific to a given tree, resampler, or name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_class_for_name</span></code>(name)</p></td>
+<td><p>Return a Grid class of the given name.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tree_class</span></code>()</p></td>
+<td><p>Return the relevant tree class for the grid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">rescale</span></code>()</p></td>
+<td><p>Re-apply the previous scaling factors and offsets if removed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">reshape_data</span></code>(data)</p></td>
+<td><p>Reshape data to the grid dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code>(factor, offset)</p></td>
+<td><p>Apply a scaling factor and offset to the grid coordinates.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_indexer</span></code>([shape, build_tree, build_type])</p></td>
+<td><p>Calculate the indexing mapping the grid coordinates to the tree.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale</span></code>()</p></td>
+<td><p>Unscale the grid coordinates.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">grig.grid package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li><a class="reference internal" href="#module-grig.grid.base_grid">grig.grid.base_grid module</a><ul>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid"><code class="docutils literal notranslate"><span class="pre">BaseGrid</span></code></a><ul>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.features"><code class="docutils literal notranslate"><span class="pre">BaseGrid.features</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_class_for"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_class_for()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_class_for_name"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_class_for_name()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.get_tree_class"><code class="docutils literal notranslate"><span class="pre">BaseGrid.get_tree_class()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.regular"><code class="docutils literal notranslate"><span class="pre">BaseGrid.regular</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.rescale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.rescale()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.reshape_data"><code class="docutils literal notranslate"><span class="pre">BaseGrid.reshape_data()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale_factor"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale_factor</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.scale_offset"><code class="docutils literal notranslate"><span class="pre">BaseGrid.scale_offset</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.set_indexer"><code class="docutils literal notranslate"><span class="pre">BaseGrid.set_indexer()</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.shape"><code class="docutils literal notranslate"><span class="pre">BaseGrid.shape</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.singular"><code class="docutils literal notranslate"><span class="pre">BaseGrid.singular</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.size"><code class="docutils literal notranslate"><span class="pre">BaseGrid.size</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.tree_class"><code class="docutils literal notranslate"><span class="pre">BaseGrid.tree_class</span></code></a></li>
+<li><a class="reference internal" href="#grig.grid.base_grid.BaseGrid.unscale"><code class="docutils literal notranslate"><span class="pre">BaseGrid.unscale()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.grid.kernel_grid">grig.grid.kernel_grid module</a><ul>
+<li><a class="reference internal" href="#grig.grid.kernel_grid.KernelGrid"><code class="docutils literal notranslate"><span class="pre">KernelGrid</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-grig.grid.polynomial_grid">grig.grid.polynomial_grid module</a><ul>
+<li><a class="reference internal" href="#grig.grid.polynomial_grid.PolynomialGrid"><code class="docutils literal notranslate"><span class="pre">PolynomialGrid</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="grig.html"
+                          title="previous chapter">grig package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="grig.toolkit.html"
+                          title="next chapter">grig.toolkit package</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/source/grig.grid.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grig.toolkit.html" title="grig.toolkit package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grig.html" title="grig package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../grig/index.html" >Grig Documentation</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grig.html" >grig package</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.grid package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

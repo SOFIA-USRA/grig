@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>Resampling (grig.resample) &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Polynomial Representation of K-dimensional Data" href="polynomial_theory.html" />
+    <link rel="prev" title="Grig Documentation" href="../index.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="polynomial_theory.html" title="Polynomial Representation of K-dimensional Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Grig Documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Grig Documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Resampling (<cite>grig.resample</cite>)</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="resampling-grig-resample">
+<span id="grig-resampling"></span><h1>Resampling (<cite>grig.resample</cite>)<a class="headerlink" href="#resampling-grig-resample" title="Link to this heading">¶</a></h1>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference internal" href="../../source/grig.html#module-grig.resample" title="grig.resample"><code class="xref py py-mod docutils literal notranslate"><span class="pre">grig.resample</span></code></a> module allows the local fitting of polynomials
+to N-dimensional data for resampling.</p>
+<p>Samples (coordinates with associated value) are passed into the
+<a class="reference internal" href="../../source/grig.html#grig.resample.Resample" title="grig.resample.Resample"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resample</span></code></a> class during initialization, and then resampled onto second
+set of coordinates (points) during a call to the <a class="reference internal" href="../../source/grig.html#grig.resample.Resample" title="grig.resample.Resample"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resample</span></code></a> instance.
+The <code class="xref py py-func docutils literal notranslate"><span class="pre">resample()</span></code> function acts as wrapper on <a class="reference internal" href="../../source/grig.html#grig.resample.Resample" title="grig.resample.Resample"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resample</span></code></a> to directly
+resample from a set of samples to points.</p>
+</section>
+<section id="numba">
+<h2>Numba<a class="headerlink" href="#numba" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference external" href="https://numba.pydata.org/">numba</a> package is used heavily to achieve C
+performance using JIT (just-in-time) compilation.  As a result, the initial
+call to <a class="reference internal" href="../../source/grig.html#grig.resample.Resample" title="grig.resample.Resample"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resample</span></code></a> will introduce additional overhead while any JIT code
+compiles.  Compilation results are stored in a cache for future use so that
+this overhead burden is only encountered once.  For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">grig.resample</span> <span class="kn">import</span> <span class="n">Resample</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">time</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">resampler</span> <span class="o">=</span> <span class="n">Resample</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y2</span> <span class="o">=</span> <span class="n">resampler</span><span class="p">(</span><span class="mf">4.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y2</span> <span class="o">=</span> <span class="n">resampler</span><span class="p">(</span><span class="mf">4.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t3</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The 1st run-through took </span><span class="si">%.6f</span><span class="s2"> seconds&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">))</span>  
+<span class="go">The 1st run-through took 0.018941 seconds</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The 2nd run-through took </span><span class="si">%.6f</span><span class="s2"> seconds&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">t3</span> <span class="o">-</span> <span class="n">t2</span><span class="p">))</span>  
+<span class="go">The 2nd run-through took 0.001095 seconds</span>
+</pre></div>
+</div>
+</section>
+<section id="k-dimensional-polynomial-theory">
+<h2>K-dimensional Polynomial Theory<a class="headerlink" href="#k-dimensional-polynomial-theory" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="polynomial_theory.html">Polynomial Representation of K-dimensional Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="polynomial_theory.html#polynomial-resampling">Polynomial Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="polynomial_theory.html#implementation">Implementation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="polynomial_theory.html#terminology">Terminology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polynomial_theory.html#unit-conversion-and-the-window-parameter">Unit Conversion and the Window Parameter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polynomial_theory.html#block-processing">Block Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polynomial_theory.html#weighting">Weighting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="polynomial_theory.html#deriving-point-solutions">Deriving Point Solutions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Basic Usage Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#fitting-noisy-data">Fitting noisy data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#multiple-data-sets">Multiple data-sets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#order-limits-and-edge-clipping">Order limits and edge clipping</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html#adaptive-weighting">Adaptive Weighting</a></li>
+</ul>
+</div>
+</section>
+<section id="irregular-kernel-resampling">
+<h2>Irregular Kernel Resampling<a class="headerlink" href="#irregular-kernel-resampling" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="kernel_resampler.html">Kernel Resampling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_resampler.html#use-cases">Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_resampler.html#caveats">Caveats</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kernel_resampler.html#examples">Examples</a></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <div>
+    <h3><a href="../../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Resampling (<cite>grig.resample</cite>)</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#numba">Numba</a></li>
+<li><a class="reference internal" href="#k-dimensional-polynomial-theory">K-dimensional Polynomial Theory</a></li>
+<li><a class="reference internal" href="#examples">Examples</a></li>
+<li><a class="reference internal" href="#irregular-kernel-resampling">Irregular Kernel Resampling</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../index.html"
+                          title="previous chapter">Grig Documentation</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="polynomial_theory.html"
+                          title="next chapter">Polynomial Representation of K-dimensional Data</a></p>
+  </div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/grig/resampling/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="polynomial_theory.html" title="Polynomial Representation of K-dimensional Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Grig Documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Grig Documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Resampling (<cite>grig.resample</cite>)</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>grig.clean_image &#8212; Grig 1.0.1.dev4+g74c80f7 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pyramid.css?v=a5b9c134" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script src="../../_static/documentation_options.js?v=9559a862"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" href="../../_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
+<![endif]-->
+
+  </head><body>
+
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.clean_image</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for grig.clean_image</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed under a 3-clause BSD style license - see LICENSE.rst</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.resample_polynomial</span> <span class="kn">import</span> <span class="n">ResamplePolynomial</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;clean_image&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="clean_image">
+<a class="viewcode-back" href="../../source/grig.html#grig.clean_image.clean_image">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                <span class="n">fix_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">leaf_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Uses `ResamplePolynomial` to correct NaNs in image and/or supplied in mask.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    image : array_like of float</span>
+<span class="sd">        (M, N) array of data values.  NaN values will automatically be</span>
+<span class="sd">        considered &#39;bad&#39; and replaced.</span>
+<span class="sd">    error : array_like of float, optional</span>
+<span class="sd">        (M, N) array of error (1-sigma) values</span>
+<span class="sd">        associated with the `data` array.  `error` will be used to</span>
+<span class="sd">        weight fits and also be propagated to the output error values.</span>
+<span class="sd">    mask : array_like of bool, optional</span>
+<span class="sd">        (M, N) array of bool where True indicates a valid data point</span>
+<span class="sd">        that can be included the fitting and False indicates data points</span>
+<span class="sd">        that should be excluded from the fit and replaced.</span>
+<span class="sd">        Masked points will be reflected in the output counts array.</span>
+<span class="sd">    window : array_like or float or int, optional</span>
+<span class="sd">        (2,) array or single float value specifying the maximum</span>
+<span class="sd">        euclidean distance of a data sample from a resampling point such</span>
+<span class="sd">        that it can be included in a local fit.  `window` may be declared</span>
+<span class="sd">        for each feature.  For example, when fitting 2-dimensional (x, y)</span>
+<span class="sd">        data, a window of 1.0 would create a circular fitting window</span>
+<span class="sd">        around each resampling point, whereas a window of (1.0, 0.5)</span>
+<span class="sd">        would create an eliptical fitting window with a semi-major axis</span>
+<span class="sd">        of 1.0 in x and semi-minor axis of 0.5 in y.  If not supplied,</span>
+<span class="sd">        `window` is calculated based on an estimate of the median</span>
+<span class="sd">        population density of the data for each feature.</span>
+<span class="sd">    order : array_like or int, optional</span>
+<span class="sd">        (2,) array or single integer value specifying the</span>
+<span class="sd">        polynomial fit order for each feature.</span>
+<span class="sd">    fix_order : bool, optional</span>
+<span class="sd">        In order for local polynomial fitting to occur, the default</span>
+<span class="sd">        requirement is that nsamples &gt;= (order + 1) ** 2,</span>
+<span class="sd">        where nsamples is the number of data samples within `window`.</span>
+<span class="sd">        If `fix_order` is True and this condition is not met, then</span>
+<span class="sd">        local fitting will be aborted for that point and a value of</span>
+<span class="sd">        `cval` will be returned instead.  If `fix_order` is False,</span>
+<span class="sd">        then `order` will be reduced to the maximum value where this</span>
+<span class="sd">        condition can be met.  NOTE: this is only available if</span>
+<span class="sd">        `order` is symmetrical. i.e. it was passed in as a single</span>
+<span class="sd">        integer to be applied across both x and y.  Otherwise, it is</span>
+<span class="sd">        unclear as to which dimension order should be reduced to meet</span>
+<span class="sd">        the condition.</span>
+<span class="sd">    robust : float, optional</span>
+<span class="sd">        Specifies an outlier rejection threshold for `data`.</span>
+<span class="sd">        A data point is identified as an outlier if::</span>
+
+<span class="sd">            |x_i - x_med|/MAD &gt; robust,</span>
+
+<span class="sd">        where x_med is the median,</span>
+<span class="sd">        and MAD is the Median Absolute Deviation defined as::</span>
+
+<span class="sd">            1.482 * median(|x_i - x_med|).</span>
+
+<span class="sd">    negthresh : float, optional</span>
+<span class="sd">        Specifies a negative value rejection threshold such that</span>
+<span class="sd">        data &lt; (-stddev(data) * negthresh) will be excluded from</span>
+<span class="sd">        the fit.</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        The type of check to perform on whether the sample distribution</span>
+<span class="sd">        for each resampling point is adequate to derive a polynomial fit.</span>
+<span class="sd">        Depending on `order` and `fix_order`, if the distribution does</span>
+<span class="sd">        not meet the criteria for `mode`, either the fit will be aborted,</span>
+<span class="sd">        returning a value of `cval` or the fit order will be reduced.</span>
+<span class="sd">        Available modes are:</span>
+
+<span class="sd">            - &#39;edges&#39;: Require that there are `order` samples in both</span>
+<span class="sd">              the negative and positive directions of each feature</span>
+<span class="sd">              from the resampling point.</span>
+<span class="sd">            - &#39;counts&#39;: Require that there are (order + 1) ** 2</span>
+<span class="sd">              samples within the `window` of each resampling point.</span>
+<span class="sd">            - &#39;extrapolate&#39;: Attempt to fit regardless of the sample</span>
+<span class="sd">              distribution.</span>
+
+<span class="sd">        Note that &#39;edges&#39; is the most robust mode as it ensures</span>
+<span class="sd">        that no singular values will be encountered during the</span>
+<span class="sd">        least-squares fitting of polynomial coefficients.</span>
+<span class="sd">    leaf_size : int, optional</span>
+<span class="sd">        Number of points at which to switch to brute-force during the</span>
+<span class="sd">        ball tree query algorithm.  See `sklearn.neighbours.BallTree`</span>
+<span class="sd">        for further details.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cleaned_image, [variance_out], [counts] : n_tuple of numpy.ndarray (M, N)</span>
+<span class="sd">        See `grig.ResamplePolynomial`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">missing</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">nfind</span> <span class="o">=</span> <span class="n">missing</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">nfind</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">corrected</span>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">corrected</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+    <span class="n">ygrid</span><span class="p">,</span> <span class="n">xgrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[:</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+
+    <span class="n">resampler</span> <span class="o">=</span> <span class="n">ResamplePolynomial</span><span class="p">([</span><span class="n">xgrid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">ygrid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()],</span>
+                                   <span class="n">corrected</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                   <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                                   <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="n">window</span><span class="p">,</span>
+                                   <span class="n">fix_order</span><span class="o">=</span><span class="n">fix_order</span><span class="p">,</span>
+                                   <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">negthresh</span><span class="o">=</span><span class="n">negthresh</span><span class="p">,</span>
+                                   <span class="n">leaf_size</span><span class="o">=</span><span class="n">leaf_size</span><span class="p">)</span>
+
+    <span class="n">corrected</span><span class="p">[</span><span class="n">missing</span><span class="p">]</span> <span class="o">=</span> <span class="n">resampler</span><span class="p">([</span><span class="n">xgrid</span><span class="p">[</span><span class="n">missing</span><span class="p">],</span> <span class="n">ygrid</span><span class="p">[</span><span class="n">missing</span><span class="p">]],</span>
+                                   <span class="n">order_algorithm</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">corrected</span></div>
+
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">Grig 1.0.1.dev4+g74c80f7 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">grig.clean_image</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+    &#169; Copyright 2023, SOFIA-USRA.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    </div>
+  </body>
+</html>
