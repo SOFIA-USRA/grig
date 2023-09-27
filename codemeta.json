@@ -4,7 +4,7 @@
         "http://schema.org"
     ],
     "@type": "SoftwareSourceCode",
-    "identifier": "TBD",
+    "identifier": "https://doi.org/10.5281/zenodo.8176181",
     "name": "grig",
     "description": "N-Dimensional Resampler for Irregularly Gridded Data",
     "license": "BSD 3-Clause",
